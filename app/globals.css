@@ -1,0 +1,149 @@
+@import "tailwindcss";
+
+/* Design tokens adapted from Multica's packages/ui/styles/tokens.css:
+   zinc-neutral surfaces, a single blue brand hue, compact radii and a
+   role-named type scale. */
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --font-sans: var(--font-stack-sans);
+  --font-mono: var(--font-stack-mono);
+  --color-app-shell: var(--app-shell);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-selected: var(--surface-selected);
+  --color-surface-border: var(--surface-border);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-faint-foreground: var(--faint-foreground);
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-brand-soft: var(--brand-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-destructive: var(--destructive);
+  --color-destructive-soft: var(--destructive-soft);
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: calc(var(--radius) * 0.75);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.5);
+}
+
+@theme {
+  --text-micro: 11px;
+  --text-micro--line-height: 15px;
+  --text-caption: 12px;
+  --text-caption--line-height: 16px;
+  --text-label: 13px;
+  --text-label--line-height: 18px;
+  --text-body: 14px;
+  --text-body--line-height: 20px;
+  --text-body-lg: 15px;
+  --text-body-lg--line-height: 22px;
+  --text-title-sm: 16px;
+  --text-title-sm--line-height: 24px;
+  --text-title: 18px;
+  --text-title--line-height: 28px;
+  --text-title-lg: 20px;
+  --text-title-lg--line-height: 28px;
+  --text-display-sm: 24px;
+  --text-display-sm--line-height: 32px;
+  --text-display: 36px;
+  --text-display--line-height: 40px;
+}
+
+:root {
+  color-scheme: light;
+  --font-stack-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-stack-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --radius: 0.5rem;
+  --app-shell: oklch(0.964435 0.001327 286.375);
+  --background: oklch(0.988087 0 0);
+  --foreground: oklch(0.141 0.005 285.823);
+  --surface: oklch(1 0 0);
+  --surface-hover: oklch(0.967 0.001 286.375);
+  --surface-selected: oklch(0.95 0.002 286.375);
+  --surface-border: oklch(0.92 0.004 286.32);
+  --surface-shadow: 0 1px 2px rgb(15 23 42 / 0.04), 0 1px 1px rgb(15 23 42 / 0.03);
+  --primary: oklch(0.21 0.006 285.885);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.967 0.001 286.375);
+  --secondary-foreground: oklch(0.21 0.006 285.885);
+  --muted: oklch(0.967 0.001 286.375);
+  --muted-foreground: oklch(0.505 0.016 285.938);
+  --faint-foreground: oklch(0.606 0.016 285.938);
+  --border: oklch(0.945 0.003 286.32);
+  --input: oklch(0.92 0.004 286.32);
+  --ring: oklch(0.705 0.015 286.067);
+  --brand: oklch(0.56079497 0.19449888 256.41258418);
+  --brand-foreground: oklch(0.985 0 0);
+  --brand-soft: oklch(0.56 0.19 256 / 0.1);
+  --success: oklch(0.55 0.16 145);
+  --success-soft: oklch(0.55 0.16 145 / 0.12);
+  --warning: oklch(0.75 0.16 85);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-soft: oklch(0.577 0.245 27.325 / 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --app-shell: oklch(0.155 0.005 285.823);
+    --background: oklch(0.18 0.005 285.823);
+    --foreground: oklch(0.985 0 0);
+    --surface: oklch(0.21 0.006 285.885);
+    --surface-hover: oklch(0.274 0.006 286.033);
+    --surface-selected: oklch(0.3 0.006 286.033);
+    --surface-border: oklch(1 0 0 / 10%);
+    --surface-shadow: 0 1px 2px rgb(0 0 0 / 0.2), 0 1px 1px rgb(0 0 0 / 0.16);
+    --primary: oklch(0.92 0.004 286.32);
+    --primary-foreground: oklch(0.21 0.006 285.885);
+    --secondary: oklch(0.274 0.006 286.033);
+    --secondary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.274 0.006 286.033);
+    --muted-foreground: oklch(0.705 0.015 286.067);
+    --faint-foreground: oklch(0.6 0.015 286.067);
+    --border: oklch(1 0 0 / 6%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.552 0.016 285.938);
+    --brand: oklch(0.65 0.16 255);
+    --brand-soft: oklch(0.65 0.16 255 / 0.16);
+    --success: oklch(0.65 0.15 145);
+    --success-soft: oklch(0.65 0.15 145 / 0.16);
+    --warning: oklch(0.7 0.16 85);
+    --destructive: oklch(0.704 0.191 22.216);
+    --destructive-soft: oklch(0.704 0.191 22.216 / 0.14);
+  }
+}
+
+html,
+body {
+  background: var(--app-shell);
+  color: var(--foreground);
+  font-family: var(--font-stack-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.surface {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: calc(var(--radius) * 1.5);
+  box-shadow: var(--surface-shadow);
+}
+
+@keyframes pop {
+  0% { transform: scale(0.96); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.animate-pop { animation: pop 160ms ease-out both; }
