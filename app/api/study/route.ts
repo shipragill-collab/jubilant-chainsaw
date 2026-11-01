@@ -4,7 +4,7 @@ import { createStudySet } from "@/lib/study";
 import type { StudySetSummary } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 180;
+export const maxDuration = 60;
 
 /** Post study material; AI turns it into notes + flashcards. */
 export async function POST(req: Request) {

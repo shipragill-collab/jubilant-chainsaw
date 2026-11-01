@@ -1,7 +1,7 @@
 import { createRematch } from "@/lib/duels";
 import { body, handle, playerIdFrom } from "@/lib/http";
 
-export const maxDuration = 120;
+export const maxDuration = 60;
 
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   return handle(async () => {

@@ -74,7 +74,8 @@ async function generateWithClaude(notes: string, avoid: string[]): Promise<Gener
     fallbacks: "default",
     system: SYSTEM,
     messages: [{ role: "user", content: `<notes>\n${notes}\n</notes>${avoidText}` }],
-  });
+  // Leave time to fall back to the offline generator within a 60-second serverless limit.
+  }, { timeout: 45_000, maxRetries: 0 });
 
   if (response.stop_reason === "refusal" || !response.parsed_output) return null;
   const questions = validateQuestions(response.parsed_output.questions);

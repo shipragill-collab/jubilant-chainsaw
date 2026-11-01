@@ -85,7 +85,7 @@ export async function* claudeReply(history: ChatMessage[], set: StudySet | null)
     fallbacks: "default",
     system: systemPrompt(set),
     messages: history,
-  });
+  }, { timeout: 50_000, maxRetries: 1 });
   let any = false;
   for await (const event of stream) {
     if (event.type === "content_block_delta" && event.delta.type === "text_delta") {

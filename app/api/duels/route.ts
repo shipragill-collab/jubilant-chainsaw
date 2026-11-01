@@ -1,7 +1,7 @@
 import { createDuel } from "@/lib/duels";
 import { body, handle, playerIdFrom } from "@/lib/http";
 
-export const maxDuration = 120;
+export const maxDuration = 60;
 
 export async function POST(req: Request) {
   return handle(async () => {

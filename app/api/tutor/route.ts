@@ -7,7 +7,7 @@ import { read } from "@/lib/store";
 import { claudeReply, offlineReply, rateLimited, sanitizeHistory } from "@/lib/tutor";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 120;
+export const maxDuration = 60;
 
 /** Chat with Raj. Streams the reply as plain text. */
 export async function POST(req: Request) {

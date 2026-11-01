@@ -79,14 +79,15 @@ async function generateWithClaude(material: string): Promise<GeneratedStudySet |
   const client = new Anthropic();
   const stream = client.beta.messages.stream({
     model: "claude-opus-5-5",
-    max_tokens: 32000,
+    max_tokens: 16000,
     output_config: { effort: "low", format: betaZodOutputFormat(StudySchema) },
     // Server-side fallback: if the model declines, the API retries on its default fallback model.
     betas: ["server-side-fallback-2026-07-01"],
     fallbacks: "default",
     system: SYSTEM,
     messages: [{ role: "user", content: `<material>\n${material}\n</material>` }],
-  });
+  // Leave time to fall back to the offline generator within a 60-second serverless limit.
+  }, { timeout: 45_000, maxRetries: 0 });
   const message = await stream.finalMessage();
   if (message.stop_reason === "refusal" || message.stop_reason === "max_tokens") return null;
   const text = message.content.flatMap((b) => (b.type === "text" ? [b.text] : [])).join("");

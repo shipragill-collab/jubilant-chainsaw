@@ -73,9 +73,13 @@ The duel page shows which generator was used for that quiz.
 - The server times each question from the moment it's revealed. A late answer counts as a timeout.
 - Players are identified by an anonymous ID stored in the browser. There are no accounts.
 
+## Put it online
+
+To deploy for free on Vercel with a Neon Postgres database, follow [DEPLOY.md](DEPLOY.md). It takes about 10 minutes and needs only a Vercel account.
+
 ## Storage
 
-Duels are stored in a JSON file at `./data/db.json` (set `DATA_DIR` to change this), with writes serialized inside the server process. This works for a single Node server (`npm run build && npm start`). Serverless hosts with ephemeral disks need a real database: swap out `lib/store.ts`.
+With `DATABASE_URL` set, data is stored in Postgres: one row per collection, and every write runs in a transaction that locks those rows, so concurrent serverless instances can't overwrite each other. Without it, data goes to a JSON file at `./data/db.json` (set `DATA_DIR` to change this), which works for a single Node server. To run the Postgres tests, set `TEST_DATABASE_URL` and run `npm test`.
 
 ## Project layout
 
