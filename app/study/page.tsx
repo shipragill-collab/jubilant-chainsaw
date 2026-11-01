@@ -169,7 +169,7 @@ export default function StudyPage() {
     </Section>
 
     <section className="py-10 sm:py-14">
-      <h2 className="mb-8 text-[32px] leading-[1.15] tracking-tight sm:text-[40px]">Your study sets</h2>
+      <h2 className="mb-10 text-[32px] leading-[1.15] tracking-tight sm:text-[40px]">Your study sets</h2>
       {sets === null ? (
         <p className="flex items-center gap-2 text-body text-muted-foreground">
           <Spinner /> Loading…
@@ -190,11 +190,9 @@ export default function StudyPage() {
       ) : (
         <ul>
           {sets.map((s) => (
-            <li
-              key={s.id}
-              className="grid gap-6 border-t border-surface-border py-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-16"
-            >
-              <div className="space-y-3">
+            <li key={s.id} className="grid gap-6 pb-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-16">
+              {/* Divider under the name column only; previews on the right run edge to edge. */}
+              <div className="space-y-3 border-t border-surface-border pt-10">
                 <Link href={`/study/${s.id}`} className="block text-[30px] leading-[1.15] tracking-tight hover:text-brand sm:text-[36px]">
                   {s.title}
                 </Link>
@@ -207,7 +205,7 @@ export default function StudyPage() {
                   <span>{timeAgo(s.createdAt)}</span>
                 </div>
               </div>
-              <div className="-mr-4 flex snap-x gap-8 overflow-x-auto pr-4 pb-2 sm:-mr-8 sm:pr-8">
+              <div className="-mr-4 flex snap-x gap-8 overflow-x-auto pr-4 pb-2 sm:-mr-8 sm:pr-8 lg:pt-10">
                 <PreviewCard href={`/study/${s.id}`} title="Notes" meta={timeAgo(s.createdAt)} dot={Date.now() - s.createdAt < 864e5} className="w-[78%] shrink-0 snap-start sm:w-[420px]">
                   <SetThumbnail title={s.title} kicker="Notes" lines={s.preview.map((c) => c.front)} seed={s.id} />
                 </PreviewCard>

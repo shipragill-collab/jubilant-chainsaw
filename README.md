@@ -7,7 +7,7 @@ The design follows two references.
 - **A Pinterest-style hero:** a collage of rounded tiles, a huge left-aligned headline, and stacked red and grey pill buttons.
 - **A Siteinspire-style gallery:** a red-dot logo, grey nav with a black pill button, and a full-width grey band with a tagline on the left and tabbed category links on the right ("Popular Subjects", "Study Tools", "Your Sets"). Previews sit in grey frames with "Title · 2 months ago" captions, and the "Your study sets" rows have a name and tags on the left with a scrolling row of previews on the right.
 
-It works in light and dark mode and at phone width. The **Popular Subjects** links open ready-made sample material (Biology, Chemistry, History, Physics, Geography, Economics, Psychology, Computer Science), so you can try everything in one click.
+It works in light and dark mode and at phone width. To put real photos in the home page collage, as in the reference, drop `1.jpg` to `4.jpg` into `public/hero/` (see the README there). Tiles without a photo keep their illustration. The header search finds your study sets and the sample subjects. The **Popular Subjects** links open ready-made sample material (Biology, Chemistry, History, Physics, Geography, Economics, Psychology, Computer Science), so you can try everything in one click.
 
 ## Quick start
 
@@ -75,6 +75,7 @@ app/                     Next.js App Router pages + API routes
   api/duels/...          create, view, join, start, answer, rematch
   api/study/...          create/list study sets, view/delete one
   tutor/                 chat with Raj
+  search/                search your sets and sample subjects
   api/tutor              Raj's streaming chat endpoint
 lib/
   game.ts                rules: scoring, joining, answering, outcome, leaderboard
