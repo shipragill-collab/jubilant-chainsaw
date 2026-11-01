@@ -16,9 +16,9 @@ async function load(): Promise<Db> {
   try {
     const raw = await fs.readFile(dbFile(), "utf8");
     const db = JSON.parse(raw) as Partial<Db>;
-    return { quizzes: db.quizzes ?? {}, duels: db.duels ?? {} };
+    return { quizzes: db.quizzes ?? {}, duels: db.duels ?? {}, studySets: db.studySets ?? {} };
   } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === "ENOENT") return { quizzes: {}, duels: {} };
+    if ((err as NodeJS.ErrnoException).code === "ENOENT") return { quizzes: {}, duels: {}, studySets: {} };
     throw err;
   }
 }

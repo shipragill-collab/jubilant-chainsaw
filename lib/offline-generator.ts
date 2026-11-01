@@ -6,7 +6,7 @@ import { QUESTION_COUNT, type Question } from "./types";
  * questions, using key terms from elsewhere in the notes as distractors.
  */
 
-const STOPWORDS = new Set(
+export const STOPWORDS = new Set(
   (
     "a an the and or but if then else when while of to in on at by for with from into onto over under about " +
     "as is are was were be been being am do does did done has have had having it its this that these those " +

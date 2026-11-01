@@ -48,9 +48,51 @@ export interface Duel {
   rematchId: string | null;
 }
 
+export interface NoteSection {
+  heading: string;
+  points: string[];
+}
+
+export interface KeyTerm {
+  term: string;
+  definition: string;
+}
+
+export interface StudyNotes {
+  summary: string;
+  sections: NoteSection[];
+  keyTerms: KeyTerm[];
+}
+
+export interface Flashcard {
+  front: string;
+  back: string;
+}
+
+/** Study material a user posted, plus the AI-made notes and flashcards. */
+export interface StudySet {
+  id: string;
+  ownerId: string;
+  title: string;
+  material: string;
+  notes: StudyNotes;
+  flashcards: Flashcard[];
+  source: QuestionSource;
+  createdAt: number;
+}
+
+/** Study set as listed in "your sets" (no heavy content). */
+export interface StudySetSummary {
+  id: string;
+  title: string;
+  cardCount: number;
+  createdAt: number;
+}
+
 export interface Db {
   quizzes: Record<string, Quiz>;
   duels: Record<string, Duel>;
+  studySets: Record<string, StudySet>;
 }
 
 /** Question as sent to a player who hasn't answered it yet: no answer key. */

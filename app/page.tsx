@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button, Card, Spinner, inputClass } from "@/components/ui";
@@ -26,7 +27,20 @@ export default function Home() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => setName(getSavedName()), []);
+  const [fromSet, setFromSet] = useState<string | null>(null);
+
+  useEffect(() => {
+    setName(getSavedName());
+    // "Quiz a friend on this" from a study set pre-fills that set's material.
+    const studyId = new URLSearchParams(window.location.search).get("study");
+    if (!studyId) return;
+    api<{ title: string; material: string }>(`/api/study/${encodeURIComponent(studyId)}`)
+      .then((s) => {
+        setNotes(s.material);
+        setFromSet(s.title);
+      })
+      .catch(() => undefined);
+  }, []);
 
   const len = notes.trim().length;
   const canSubmit = !busy && name.trim().length > 0 && len >= MIN && len <= MAX;
@@ -57,6 +71,12 @@ export default function Home() {
           play the same quiz. Highest score wins.
         </p>
       </div>
+
+      {fromSet && (
+        <p className="rounded-lg bg-brand-soft px-3 py-2 text-label text-brand">
+          Using the material from your study set “{fromSet}”.
+        </p>
+      )}
 
       <Card>
         <form onSubmit={create} className="space-y-5">
@@ -113,6 +133,14 @@ export default function Home() {
           </Button>
         </form>
       </Card>
+
+      <p className="text-label text-muted-foreground">
+        Want to review first?{" "}
+        <Link href="/study" className="text-brand hover:underline">
+          Make notes and flashcards from your material
+        </Link>
+        .
+      </p>
 
       <ol className="grid gap-3 text-label text-muted-foreground sm:grid-cols-3">
         {["Paste notes and create the duel", "Share the link with a friend", "Both play — compare scores"].map((s, i) => (

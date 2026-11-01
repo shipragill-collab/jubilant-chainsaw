@@ -22,6 +22,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Link href="/" className="rounded-md px-2.5 py-1 text-label text-muted-foreground hover:bg-surface-hover hover:text-foreground">
               New duel
             </Link>
+            <Link href="/study" className="rounded-md px-2.5 py-1 text-label text-muted-foreground hover:bg-surface-hover hover:text-foreground">
+              Study
+            </Link>
             <Link
               href="/leaderboard"
               className="rounded-md px-2.5 py-1 text-label text-muted-foreground hover:bg-surface-hover hover:text-foreground"

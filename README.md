@@ -21,6 +21,16 @@ npm run dev                  # http://localhost:3000
 5. **Rematch:** either player clicks *Rematch*. This builds a new quiz from the same notes, avoiding the questions you just had. The other player sees *Join rematch*.
 6. **Leaderboard:** `/leaderboard` ranks players by wins, then total points, across every finished duel.
 
+## Study: AI notes and flashcards
+
+Open **Study** in the top bar to post study material. You can paste text, or upload or drag in a `.txt`, `.md`, `.csv` or `.html` file. The app turns it into:
+
+- **Notes:** a short summary, sections of bullet points, and a key-terms glossary. You can copy them or download them as Markdown.
+- **Flashcards:** a deck you click (or press Space) to flip. Mark each card *Know it* or *Still learning*, then review only the cards you're still learning. Shuffle and reset are available. Progress is saved in your browser.
+- **Quiz a friend on this:** starts a duel from the same material.
+
+Each study set has its own shareable link. "Your study sets" lists the sets created in your browser, and only the person who created a set can delete it. Generation works like the quizzes: Claude when `ANTHROPIC_API_KEY` is set, otherwise an offline generator. The offline generator reorganizes your own sentences: it follows your headings, pulls "X is …" sentences out as definitions, and makes recall cards from fill-in-the-blank sentences.
+
 ### Question generation
 
 - **With `ANTHROPIC_API_KEY` set:** Claude (`claude-opus-5-5`) writes the quiz using structured outputs, so the response is always valid JSON. Server-side refusal fallback is on (`fallbacks: "default"`).
@@ -45,11 +55,15 @@ app/                     Next.js App Router pages + API routes
   page.tsx               create a duel
   duel/[id]/             join / play / results / rematch
   leaderboard/           leaderboard
+  study/                 post material; study/[id] shows notes + flashcards
   api/duels/...          create, view, join, start, answer, rematch
+  api/study/...          create/list study sets, view/delete one
 lib/
   game.ts                rules: scoring, joining, answering, outcome, leaderboard
   generate.ts            Claude question generation + fallback
   offline-generator.ts   no-API question builder
+  study.ts               Claude notes + flashcards generation + fallback
+  offline-study.ts       no-API notes + flashcards builder
   store.ts               JSON-file persistence
 tests/                   vitest unit tests
 ```
