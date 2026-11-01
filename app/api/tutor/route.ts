@@ -1,6 +1,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
-import { body } from "@/lib/http";
+import { GameError } from "@/lib/game";
+import { body, playerIdFrom } from "@/lib/http";
+import { meter } from "@/lib/profile";
 import { read } from "@/lib/store";
 import { claudeReply, offlineReply, rateLimited, sanitizeHistory } from "@/lib/tutor";
 
@@ -16,6 +18,15 @@ export async function POST(req: Request) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
   if (rateLimited(ip)) {
     return NextResponse.json({ error: "Raj needs a short break. Try again in a few minutes." }, { status: 429 });
+  }
+
+  let playerId: string;
+  try {
+    playerId = playerIdFrom(b.playerId);
+    await meter(playerId, "rajMessages");
+  } catch (err) {
+    const status = err instanceof GameError ? err.status : 400;
+    return NextResponse.json({ error: (err as Error).message, upgrade: status === 402 }, { status });
   }
 
   const setId = typeof b.setId === "string" ? b.setId : null;

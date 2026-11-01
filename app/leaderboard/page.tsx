@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { Panel, Section } from "@/components/ui";
+import { Avatar } from "@/components/avatar";
+import { RankBadge } from "@/components/rank-badge";
+import { Badge, Panel, Section } from "@/components/ui";
 import { leaderboard } from "@/lib/game";
 import { read } from "@/lib/store";
 
@@ -22,7 +24,7 @@ export default async function LeaderboardPage() {
           <table className="w-full text-body-lg">
             <thead>
               <tr className="border-b border-surface-border text-left text-label text-muted-foreground">
-                <th className="w-10 px-4 py-2 font-medium">#</th>
+                <th className="w-14 px-4 py-2 font-medium">Rank</th>
                 <th className="px-2 py-2 font-medium">Player</th>
                 <th className="px-2 py-2 text-right font-medium">W</th>
                 <th className="px-2 py-2 text-right font-medium">L</th>
@@ -34,8 +36,16 @@ export default async function LeaderboardPage() {
             <tbody>
               {rows.map((r, i) => (
                 <tr key={r.name} className="border-b border-surface-border last:border-0 hover:bg-surface-hover">
-                  <td className="px-4 py-4 text-muted-foreground tabular-nums">{i < 3 ? ["🥇", "🥈", "🥉"][i] : i + 1}</td>
-                  <td className="px-2 py-4 font-medium">{r.name}</td>
+                  <td className="px-4 py-3">
+                    <RankBadge rank={i + 1} />
+                  </td>
+                  <td className="px-2 py-3">
+                    <span className="flex items-center gap-3 font-medium">
+                      <Avatar equipped={r.avatar} size={40} />
+                      <span className="truncate">{r.name}</span>
+                      {r.pro && <Badge tone="brand">Pro</Badge>}
+                    </span>
+                  </td>
                   <td className="px-2 py-4 text-right tabular-nums">{r.wins}</td>
                   <td className="px-2 py-4 text-right tabular-nums text-muted-foreground">{r.losses}</td>
                   <td className="px-2 py-4 text-right tabular-nums text-muted-foreground">{r.ties}</td>

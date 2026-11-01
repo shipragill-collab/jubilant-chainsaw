@@ -36,11 +36,24 @@ Open **Study** in the top bar to post study material. You can paste text, or upl
 
 Each study set has its own shareable link. "Your study sets" lists the sets created in your browser, and only the person who created a set can delete it. Generation works like the quizzes: Claude when `ANTHROPIC_API_KEY` is set, otherwise an offline generator. The offline generator reorganizes your own sentences: it follows your headings, pulls "X is …" sentences out as definitions, and makes recall cards from fill-in-the-blank sentences.
 
+## Plans, coins and the shop
+
+- **Free:** 5 AI quizzes or study sets a day, and 25 messages with Raj a day.
+- **Pro (£4.99/month):** unlimited AI, 1,000 bonus coins every month, Pro-only items, and a Pro badge on the leaderboard.
+- **Coins:** you earn 20 for finishing a duel (plus 30 for a win, or 15 for a tie), or buy coin packs (£0.99, £2.49, £4.99).
+- **Shop:** coins buy skins and accessories (hats, eyewear and neckwear) for your avatar. You can try items on before buying. Your avatar appears in the header, on duel scoreboards and on the leaderboard.
+- **Leaderboard:** custom rosette badges mark the top three, and every row shows the player's avatar.
+- **Payments:** with `STRIPE_SECRET_KEY` set, purchases go through Stripe Checkout. That's Stripe's hosted page, so this app never sees card details. Monthly renewals come in through the webhook at `/api/billing/webhook`, and "Manage subscription" opens Stripe's billing portal.
+- **Demo mode:** without Stripe keys, the app runs a clearly labelled demo checkout. It grants purchases for £0.00 and never asks for payment details.
+- **Account security:** players are anonymous browser IDs. The real ID is never shown to other players; duel views and the leaderboard use a one-way hash of it instead.
+
 ## Raj, the AI tutor
 
 Raj is available on the **Ask Raj** page, and as a tab in every study set.
 
-- **On a study set:** Raj has read your material and flashcards. Raj explains ideas simply, answers questions about them, checks your understanding with follow-up questions, and quizzes you one card at a time when you say "quiz me".
+- **On a study set:** Raj has read your material and flashcards, and teaches by doing. Each turn is a short explanation, then a question to try, with tap-to-answer choices.
+- **Wrong answers:** the first miss gets a hint and a second try. Only after a second miss does Raj explain the answer.
+- **Hints and streaks:** a "Give me a hint" button gives a small nudge, the header shows a streak counter, and Raj's face changes with the conversation (thinking, celebrating, encouraging).
 - **On the Ask Raj page:** you can also chat about anything you're studying, without picking a set.
 - Replies stream in as they're written. Each conversation is saved in your browser, one per study set.
 - **With `ANTHROPIC_API_KEY` set:** Claude powers Raj. Your material is prompt-cached across the turns of a conversation.

@@ -46,6 +46,8 @@ export interface Duel {
   players: Player[];
   rematchOf: string | null;
   rematchId: string | null;
+  /** Coins have been paid out for this finished duel. */
+  rewarded?: boolean;
 }
 
 export interface NoteSection {
@@ -93,10 +95,36 @@ export interface StudySetSummary {
   preview: Flashcard[];
 }
 
+export interface Profile {
+  plan: "free" | "pro";
+  /** Pro access lasts until this time (ms). */
+  proUntil: number | null;
+  coins: number;
+  owned: string[];
+  equipped: Partial<Record<"skin" | "hat" | "eyes" | "neck", string>>;
+  usage: { day: string; aiGenerations: number; rajMessages: number };
+  /** Stripe ids, when real payments are connected. */
+  stripeCustomerId?: string;
+  stripeSubscriptionId?: string;
+  /** Checkout sessions already credited (idempotency). */
+  credited: string[];
+}
+
+export interface Order {
+  id: string;
+  playerId: string;
+  kind: "pro" | "coins";
+  packId?: string;
+  createdAt: number;
+  status: "pending" | "paid";
+}
+
 export interface Db {
+  orders: Record<string, Order>;
   quizzes: Record<string, Quiz>;
   duels: Record<string, Duel>;
   studySets: Record<string, StudySet>;
+  profiles: Record<string, Profile>;
 }
 
 /** Question as sent to a player who hasn't answered it yet: no answer key. */
@@ -106,7 +134,10 @@ export interface PublicQuestion {
 }
 
 export interface PublicPlayer {
+  /** A hash of the player's id: the real id is a secret that unlocks their coins. */
   id: string;
+  avatar: Partial<Record<"skin" | "hat" | "eyes" | "neck", string>>;
+  pro: boolean;
   name: string;
   score: number;
   answered: number;
@@ -130,6 +161,7 @@ export interface DuelView {
   /** Only present for the requesting player. */
   me: {
     playerId: string;
+    publicId: string;
     nextIndex: number;
     question: PublicQuestion | null;
     timeLeftMs: number | null;
@@ -141,6 +173,8 @@ export interface DuelView {
 
 export interface LeaderboardRow {
   name: string;
+  avatar: Partial<Record<"skin" | "hat" | "eyes" | "neck", string>>;
+  pro: boolean;
   played: number;
   wins: number;
   losses: number;

@@ -83,7 +83,7 @@ describe("duel flow", () => {
     expect(out).toEqual({ status: "finished", winnerId: "p1" });
     expect(toView(d, quiz, "p2").review).toHaveLength(2);
 
-    const db: Db = { quizzes: { q1: quiz }, duels: { d1: d }, studySets: {} };
+    const db: Db = { quizzes: { q1: quiz }, duels: { d1: d }, studySets: {}, profiles: {}, orders: {} };
     const rows = leaderboard(db);
     expect(rows.map((r) => [r.name, r.wins, r.losses])).toEqual([
       ["Sam", 1, 0],
@@ -99,6 +99,6 @@ describe("duel flow", () => {
     play(d, "p1", [0, 1], 1000);
     play(d, "p2", [0, 1], 1000);
     expect(duelOutcome(d).winnerId).toBeNull();
-    expect(leaderboard({ quizzes: { q1: quiz }, duels: { d1: d }, studySets: {} })[0].ties).toBe(1);
+    expect(leaderboard({ quizzes: { q1: quiz }, duels: { d1: d }, studySets: {}, profiles: {}, orders: {} })[0].ties).toBe(1);
   });
 });

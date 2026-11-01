@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { FlashcardThumbnail, PreviewCard, SetThumbnail } from "@/components/gallery";
-import { Button, Panel, Section, Spinner, inputClass } from "@/components/ui";
+import { Button, Panel, Section, Spinner, inputClass, ErrorText } from "@/components/ui";
 import { SAMPLES, sampleBySlug } from "@/lib/samples";
 import { timeAgo } from "@/lib/time";
 import { api, getPlayerId } from "@/lib/player";
@@ -151,7 +151,7 @@ export default function StudyPage() {
 
           {error && (
             <p role="alert" className="rounded-2xl bg-destructive-soft px-4 py-3 text-body text-destructive">
-              {error}
+              <ErrorText message={error} />
             </p>
           )}
 

@@ -3,7 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Avatar } from "@/components/avatar";
+import { Coins } from "@/components/coin";
 import { Badge, Button, Card, Spinner, inputClass } from "@/components/ui";
+import { DUEL_REWARD } from "@/lib/catalog";
+import { refreshProfiles } from "@/lib/use-profile";
 import { api, getPlayerId, getSavedName, saveName } from "@/lib/player";
 import type { DuelView, PlayerAnswer, PublicPlayer } from "@/lib/types";
 
@@ -78,7 +82,7 @@ export function DuelClient({ id }: { id: string }) {
 
       {!me ? (
         <JoinCard view={view} playerId={playerId} onJoined={setView} />
-      ) : me.question || (me.nextIndex < view.questionCount && !isFinished(view, me.playerId)) ? (
+      ) : me.question || (me.nextIndex < view.questionCount && !isFinished(view, me.publicId)) ? (
         <Play view={view} playerId={playerId} onView={setView} />
       ) : (
         <Results view={view} playerId={playerId} />
@@ -87,7 +91,7 @@ export function DuelClient({ id }: { id: string }) {
   );
 }
 
-const isFinished = (view: DuelView, pid: string) => view.players.find((p) => p.id === pid)?.finished ?? false;
+const isFinished = (view: DuelView, publicId: string) => view.players.find((p) => p.id === publicId)?.finished ?? false;
 
 function ShareLink({ compact = false }: { compact?: boolean }) {
   const [copied, setCopied] = useState(false);
@@ -199,7 +203,7 @@ function Play({ view, playerId, onView }: { view: DuelView; playerId: string; on
 
   const question = me.question;
   const index = me.nextIndex;
-  const opponent = view.players.find((p) => p.id !== playerId);
+  const opponent = view.players.find((p) => p.id !== me.publicId);
 
   const start = useCallback(async () => {
     setBusy(true);
@@ -372,7 +376,8 @@ function Play({ view, playerId, onView }: { view: DuelView; playerId: string; on
   );
 }
 
-function Scoreboard({ view, playerId }: { view: DuelView; playerId: string }) {
+function Scoreboard({ view }: { view: DuelView; playerId?: string }) {
+  const myId = view.me?.publicId;
   const slots: (PublicPlayer | null)[] = [view.players[0] ?? null, view.players[1] ?? null];
   return (
     <div className="grid grid-cols-2 gap-3">
@@ -386,9 +391,10 @@ function Scoreboard({ view, playerId }: { view: DuelView; playerId: string }) {
             {p ? (
               <>
                 <div className="flex items-center justify-between gap-2">
-                  <span className="truncate text-label font-medium">
+                  <span className="flex min-w-0 items-center gap-2 truncate text-label font-medium">
+                    <Avatar equipped={p.avatar} size={30} />
                     {p.name}
-                    {p.id === playerId && <span className="text-muted-foreground"> (you)</span>}
+                    {p.id === myId && <span className="text-muted-foreground"> (you)</span>}
                   </span>
                   {winner && <Badge tone="brand">Winner</Badge>}
                 </div>
@@ -419,9 +425,13 @@ function Results({ view, playerId }: { view: DuelView; playerId: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const me = view.players.find((p) => p.id === playerId);
-  const opponent = view.players.find((p) => p.id !== playerId);
+  const myId = view.me?.publicId;
+  const me = view.players.find((p) => p.id === myId);
+  const opponent = view.players.find((p) => p.id !== myId);
   const done = view.status === "finished";
+  useEffect(() => {
+    if (done) refreshProfiles();
+  }, [done]);
 
   let headline = "Nice work!";
   let sub = opponent ? `Waiting for ${opponent.name} to finish…` : "Waiting for your friend to play.";
@@ -429,8 +439,8 @@ function Results({ view, playerId }: { view: DuelView; playerId: string }) {
     if (view.winnerId === null) {
       headline = "It's a tie!";
       sub = "Same score. Rematch to settle it.";
-    } else if (view.winnerId === playerId) {
-      headline = "You win! 🏆";
+    } else if (view.winnerId === myId) {
+      headline = "You win!";
       sub = `You beat ${opponent?.name} by ${(me?.score ?? 0) - (opponent?.score ?? 0)} points.`;
     } else {
       headline = `${opponent?.name} wins`;
@@ -456,6 +466,16 @@ function Results({ view, playerId }: { view: DuelView; playerId: string }) {
       <Card className="animate-pop space-y-1 text-center">
         <h2 className="text-display-sm font-semibold">{headline}</h2>
         <p className="text-body text-muted-foreground">{sub}</p>
+        {done && (
+          <p className="pt-2 text-body text-muted-foreground">
+            You earned{" "}
+            <Coins
+              className="font-semibold text-foreground"
+              amount={DUEL_REWARD.played + (view.winnerId === null ? DUEL_REWARD.tie : view.winnerId === myId ? DUEL_REWARD.win : 0)}
+            />{" "}
+            coins for the shop.
+          </p>
+        )}
       </Card>
 
       <Scoreboard view={view} playerId={playerId} />

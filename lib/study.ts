@@ -4,6 +4,7 @@ import { z } from "zod";
 import { GameError } from "./game";
 import { MAX_NOTES_LENGTH, MIN_NOTES_LENGTH } from "./generate";
 import { offlineStudySet } from "./offline-study";
+import { meter } from "./profile";
 import { newId, update } from "./store";
 import type { Flashcard, QuestionSource, StudyNotes, StudySet } from "./types";
 
@@ -122,7 +123,11 @@ export async function createStudySet(input: { material: unknown; title: unknown;
   if (material.length > MAX_NOTES_LENGTH) {
     throw new GameError(`Material is too long (max ${MAX_NOTES_LENGTH.toLocaleString()} characters).`);
   }
-  const generated = await generateStudySet(material);
+  const refund = await meter(input.ownerId, "aiGenerations");
+  const generated = await generateStudySet(material).catch(async (err) => {
+    await refund();
+    throw err;
+  });
   if (generated.flashcards.length === 0 && generated.notes.sections.length === 0) {
     throw new GameError("Couldn't make notes from this. Try pasting full sentences rather than fragments.", 422);
   }

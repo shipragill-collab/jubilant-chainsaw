@@ -61,3 +61,20 @@ export function Section({ title, intro, children, aside }: { title: ReactNode; i
 
 export const inputClass =
   "w-full rounded-2xl border border-input bg-surface px-4 text-body-lg text-foreground placeholder:text-faint-foreground outline-none transition focus:border-foreground";
+
+/** An error message; when it's about the Free plan's limits, adds a link to the plans page. */
+export function ErrorText({ message }: { message: string }) {
+  return (
+    <>
+      {message}
+      {/Upgrade to Pro/.test(message) && (
+        <>
+          {" "}
+          <a href="/pricing" className="font-medium underline underline-offset-4">
+            See Pro
+          </a>
+        </>
+      )}
+    </>
+  );
+}

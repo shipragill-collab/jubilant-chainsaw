@@ -3,12 +3,17 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import { useProfile } from "@/lib/use-profile";
+import { Avatar } from "./avatar";
+import { Coins } from "./coin";
 import { buttonClass } from "./ui";
 
 const NAV = [
   { href: "/study", label: "Study" },
   { href: "/tutor", label: "Ask Raj" },
   { href: "/leaderboard", label: "Leaderboard" },
+  { href: "/shop", label: "Shop" },
+  { href: "/pricing", label: "Plans" },
 ];
 
 function SearchIcon({ className = "size-[18px]" }: { className?: string }) {
@@ -45,6 +50,20 @@ function HeaderSearch() {
   );
 }
 
+function WalletChip() {
+  const { profile } = useProfile();
+  return (
+    <Link
+      href="/shop"
+      aria-label="Your avatar and coins"
+      className="flex items-center gap-2 rounded-full bg-panel py-1 pr-3.5 pl-1 text-body transition hover:bg-surface-selected"
+    >
+      <Avatar equipped={profile?.equipped} size={32} />
+      <Coins amount={profile?.coins ?? 0} className="font-medium" />
+    </Link>
+  );
+}
+
 export function SiteHeader() {
   const path = usePathname();
   return (
@@ -54,7 +73,7 @@ export function SiteHeader() {
           <span aria-hidden className="size-9 rounded-full bg-brand sm:size-11" />
           <span className="text-[22px] tracking-tight sm:text-[26px]">Quiz Duel</span>
         </Link>
-        <nav className="hidden items-center gap-9 md:flex">
+        <nav className="hidden items-center gap-8 lg:flex">
           {NAV.map((n) => {
             const active = path === n.href || path.startsWith(`${n.href}/`);
             return (
@@ -69,17 +88,20 @@ export function SiteHeader() {
           })}
           <HeaderSearch />
         </nav>
-        <Link href="/search" aria-label="Search" className="grid size-10 place-items-center rounded-full text-muted-foreground hover:text-foreground md:hidden">
+        <Link href="/search" aria-label="Search" className="grid size-10 place-items-center rounded-full text-muted-foreground hover:text-foreground lg:hidden">
           <SearchIcon className="size-5" />
         </Link>
-        <Link href="/#start" className={`${buttonClass({ variant: "primary" })} md:ml-6`}>
+        <span className="lg:ml-4">
+          <WalletChip />
+        </span>
+        <Link href="/#start" className={`${buttonClass({ variant: "primary" })} hidden sm:inline-flex`}>
           <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
             <path d="M12 5v14M5 12h14" strokeLinecap="round" />
           </svg>
           New duel
         </Link>
       </div>
-      <nav className="flex gap-6 overflow-x-auto px-4 pb-3 md:hidden">
+      <nav className="flex gap-6 overflow-x-auto px-4 pb-3 sm:px-8 lg:hidden">
         {NAV.map((n) => (
           <Link
             key={n.href}

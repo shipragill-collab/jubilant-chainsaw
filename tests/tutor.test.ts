@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { offlineReply, rateLimited, sanitizeHistory } from "@/lib/tutor";
+import { maskedHint, offlineReply, rateLimited, sanitizeHistory } from "@/lib/tutor";
 import type { StudySet } from "@/lib/types";
 
 const set: StudySet = {
@@ -43,19 +43,51 @@ describe("offline Raj", () => {
     expect(reply).toContain("cellular respiration");
   });
 
-  it("runs a flashcard quiz and checks the answer", () => {
-    const q = offlineReply([{ role: "user", content: "Quiz me" }], set);
+  it("runs Brilliant-style practice: choices, a hint and retry, then the answer", () => {
+    const q = offlineReply([{ role: "user", content: "Start practice" }], set);
     const n = Number(q.match(/Flashcard (\d+)/)![1]);
     const card = set.flashcards[n - 1];
-    const verdict = offlineReply(
+    const choices = q.match(/<choices>(.*)<\/choices>/)![1].split(" | ");
+    expect(choices).toContain(card.back);
+
+    const wrong = choices.find((c) => c !== card.back)!;
+    const retry = offlineReply(
       [
-        { role: "user", content: "Quiz me" },
+        { role: "user", content: "Start practice" },
         { role: "assistant", content: q },
+        { role: "user", content: wrong },
+      ],
+      set,
+    );
+    expect(retry).toMatch(/^\*\*Not quite\.\*\*/);
+    expect(retry).toContain("(try 2)");
+    expect(retry).not.toContain(`<choices>${wrong}`);
+
+    const right = offlineReply(
+      [
+        { role: "user", content: "Start practice" },
+        { role: "assistant", content: q },
+        { role: "user", content: wrong },
+        { role: "assistant", content: retry },
         { role: "user", content: card.back },
       ],
       set,
     );
-    expect(verdict).toContain("that's right");
+    expect(right).toMatch(/^\*\*Correct!\*\*/);
+  });
+
+  it("gives a masked hint without revealing the answer", () => {
+    const q = offlineReply([{ role: "user", content: "Quiz me" }], set);
+    const hint = offlineReply(
+      [
+        { role: "user", content: "Quiz me" },
+        { role: "assistant", content: q },
+        { role: "user", content: "Give me a hint" },
+      ],
+      set,
+    );
+    expect(hint).toContain("nudge");
+    expect(maskedHint("The mitochondria")).toBe("T _ _   m _ _ _ _ _ _ _ _");
   });
 
   it("asks for material when no set is chosen", () => {

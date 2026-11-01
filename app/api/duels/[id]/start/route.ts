@@ -12,7 +12,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
       const { duel, quiz } = getDuel(db, id);
       if (!duel.players.some((p) => p.id === playerId)) throw new GameError("Join the duel first.", 403);
       markShown(duel, playerId);
-      return toView(duel, quiz, playerId);
+      return toView(duel, quiz, playerId, Date.now(), db.profiles);
     });
   });
 }

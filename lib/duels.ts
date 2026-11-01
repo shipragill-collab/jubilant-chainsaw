@@ -1,5 +1,6 @@
 import { addPlayer, cleanName, GameError } from "./game";
 import { generateQuiz, MAX_NOTES_LENGTH, MIN_NOTES_LENGTH } from "./generate";
+import { meter } from "./profile";
 import { newId, read, update } from "./store";
 import type { Db, Duel, Quiz } from "./types";
 
@@ -29,7 +30,11 @@ export async function createDuel(input: { notes: unknown; name: unknown; playerI
     throw new GameError(`Notes are too long (max ${MAX_NOTES_LENGTH.toLocaleString()} characters).`);
   }
   const name = cleanName(input.name);
-  const quiz = await buildQuiz(notes);
+  const refund = await meter(input.playerId, "aiGenerations");
+  const quiz = await buildQuiz(notes).catch(async (err) => {
+    await refund();
+    throw err;
+  });
   return update((db) => {
     const duel: Duel = { id: newId(), quizId: quiz.id, createdAt: Date.now(), players: [], rematchOf: null, rematchId: null };
     addPlayer(duel, input.playerId, name);
@@ -51,7 +56,11 @@ export function createRematch(duelId: string, playerId: string): Promise<Duel> {
     if (!me) throw new GameError("Only players in this duel can start a rematch.", 403);
     if (duel.rematchId) return getDuel(await read(), duel.rematchId).duel;
 
-    const next = await buildQuiz(quiz.notes, quiz.questions.map((q) => q.prompt));
+    const refund = await meter(playerId, "aiGenerations");
+    const next = await buildQuiz(quiz.notes, quiz.questions.map((q) => q.prompt)).catch(async (err) => {
+      await refund();
+      throw err;
+    });
     return update((db) => {
       const original = db.duels[duelId];
       if (original.rematchId && db.duels[original.rematchId]) return db.duels[original.rematchId];

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { PreviewCard, SetThumbnail } from "@/components/gallery";
-import { Button, Panel, Spinner, buttonClass, inputClass } from "@/components/ui";
+import { Button, Panel, Spinner, buttonClass, inputClass, ErrorText } from "@/components/ui";
 import { api, getPlayerId, getSavedName, saveName } from "@/lib/player";
 import { SAMPLES } from "@/lib/samples";
 import { timeAgo } from "@/lib/time";
@@ -277,7 +277,7 @@ function StartDuel() {
 
           {error && (
             <p role="alert" className="rounded-2xl bg-destructive-soft px-4 py-3 text-body text-destructive">
-              {error}
+              <ErrorText message={error} />
             </p>
           )}
 

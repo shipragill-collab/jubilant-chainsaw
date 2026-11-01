@@ -1,3 +1,4 @@
+import { peekProfile, publicId } from "./profile";
 import {
   MAX_PLAYERS,
   QUESTION_TIME_LIMIT_S,
@@ -115,8 +116,15 @@ export function duelOutcome(duel: Duel) {
   return { status: "finished" as const, winnerId };
 }
 
-export function toView(duel: Duel, quiz: Quiz, playerId: string | null, now = Date.now()): DuelView {
+export function toView(
+  duel: Duel,
+  quiz: Quiz,
+  playerId: string | null,
+  now = Date.now(),
+  profiles: Db["profiles"] = {},
+): DuelView {
   const { status, winnerId } = duelOutcome(duel);
+  const look = (id: string) => peekProfile({ profiles } as Db, id, now);
   const me = playerId ? duel.players.find((p) => p.id === playerId) : undefined;
   const nextIndex = me ? me.answers.length : 0;
   // A question is only revealed once its clock has started (see markShown).
@@ -128,11 +136,13 @@ export function toView(duel: Duel, quiz: Quiz, playerId: string | null, now = Da
     source: quiz.source,
     questionCount: quiz.questions.length,
     status,
-    winnerId,
+    winnerId: winnerId ? publicId(winnerId) : null,
     rematchId: duel.rematchId,
     rematchOf: duel.rematchOf,
     players: duel.players.map((p) => ({
-      id: p.id,
+      id: publicId(p.id),
+      avatar: look(p.id).equipped,
+      pro: look(p.id).pro,
       name: p.name,
       score: p.score,
       answered: p.answers.length,
@@ -143,6 +153,7 @@ export function toView(duel: Duel, quiz: Quiz, playerId: string | null, now = Da
     me: me
       ? {
           playerId: me.id,
+          publicId: publicId(me.id),
           nextIndex,
           question: q ? { prompt: q.prompt, options: q.options } : null,
           timeLeftMs: q && me.questionShownAt !== null ? Math.max(0, limitMs - (now - me.questionShownAt)) : null,
@@ -155,7 +166,7 @@ export function toView(duel: Duel, quiz: Quiz, playerId: string | null, now = Da
 
 /** Aggregate every finished two-player duel by (case-insensitive) player name. */
 export function leaderboard(db: Db): LeaderboardRow[] {
-  const rows = new Map<string, LeaderboardRow & { answered: number; correct: number }>();
+  const rows = new Map<string, LeaderboardRow & { answered: number; correct: number; lastAt: number }>();
   for (const duel of Object.values(db.duels)) {
     const quiz = db.quizzes[duel.quizId];
     if (!quiz) continue;
@@ -165,7 +176,14 @@ export function leaderboard(db: Db): LeaderboardRow[] {
       const key = p.name.replace(/ \(2\)$/, "").toLowerCase();
       const row =
         rows.get(key) ??
-        { name: p.name.replace(/ \(2\)$/, ""), played: 0, wins: 0, losses: 0, ties: 0, points: 0, accuracy: 0, answered: 0, correct: 0 };
+        { name: p.name.replace(/ \(2\)$/, ""), avatar: {}, pro: false, played: 0, wins: 0, losses: 0, ties: 0, points: 0, accuracy: 0, answered: 0, correct: 0, lastAt: 0 };
+      // Show the look of whoever most recently played under this name.
+      if (duel.createdAt >= row.lastAt) {
+        const look = peekProfile(db, p.id);
+        row.avatar = look.equipped;
+        row.pro = look.pro;
+        row.lastAt = duel.createdAt;
+      }
       row.played += 1;
       if (winnerId === null) row.ties += 1;
       else if (winnerId === p.id) row.wins += 1;
@@ -177,6 +195,6 @@ export function leaderboard(db: Db): LeaderboardRow[] {
     }
   }
   return [...rows.values()]
-    .map(({ answered, correct, ...r }) => ({ ...r, accuracy: answered ? correct / answered : 0 }))
+    .map(({ answered, correct, lastAt: _lastAt, ...r }) => ({ ...r, accuracy: answered ? correct / answered : 0 }))
     .sort((a, b) => b.wins - a.wins || b.points - a.points || a.name.localeCompare(b.name));
 }
