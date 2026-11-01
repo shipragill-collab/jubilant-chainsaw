@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Button, Card, Spinner, inputClass } from "@/components/ui";
+import { Button, Panel, Section, Spinner, inputClass } from "@/components/ui";
 import { api, getPlayerId } from "@/lib/player";
 import type { StudySetSummary } from "@/lib/types";
 
@@ -67,23 +67,19 @@ export default function StudyPage() {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="space-y-2">
-        <h1 className="text-display-sm font-semibold tracking-tight">Study</h1>
-        <p className="text-body-lg text-muted-foreground">
-          Post your study material and AI will turn it into organized notes and a deck of flashcards. When
-          you&apos;re ready, challenge a friend to a quiz on it.
-        </p>
-      </div>
-
-      <Card>
-        <form onSubmit={create} className="space-y-5">
+    <>
+    <Section
+      title="Study"
+      intro="Post your study material and AI turns it into organized notes and a deck of flashcards. Then ask Raj about it, or challenge a friend to a quiz."
+    >
+      <Panel>
+        <form onSubmit={create} className="space-y-6">
           <label className="block space-y-1.5">
-            <span className="text-label font-medium">
+            <span className="text-body font-medium">
               Title <span className="font-normal text-muted-foreground">(optional)</span>
             </span>
             <input
-              className={`${inputClass} h-9`}
+              className={`${inputClass} h-12`}
               value={title}
               maxLength={80}
               onChange={(e) => setTitle(e.target.value)}
@@ -93,11 +89,11 @@ export default function StudyPage() {
 
           <div className="space-y-1.5">
             <div className="flex items-baseline justify-between gap-2">
-              <span className="text-label font-medium">Study material</span>
+              <span className="text-body font-medium">Study material</span>
               <button
                 type="button"
                 onClick={() => fileInput.current?.click()}
-                className="text-caption text-brand hover:underline"
+                className="text-label text-muted-foreground underline underline-offset-4 hover:text-foreground"
               >
                 Upload a file
               </button>
@@ -125,11 +121,11 @@ export default function StudyPage() {
                 const f = e.dataTransfer.files?.[0];
                 if (f) void loadFile(f);
               }}
-              className={`rounded-lg transition ${dragging ? "ring-2 ring-brand" : ""}`}
+              className={`rounded-2xl transition ${dragging ? "ring-2 ring-brand" : ""}`}
             >
               <textarea
                 aria-label="Study material"
-                className={`${inputClass} min-h-64 resize-y py-2 leading-relaxed`}
+                className={`${inputClass} min-h-64 resize-y py-3 leading-relaxed`}
                 value={material}
                 onChange={(e) => setMaterial(e.target.value)}
                 placeholder="Paste lecture notes, a textbook section or an article. You can also drop a .txt or .md file here."
@@ -144,7 +140,7 @@ export default function StudyPage() {
           </div>
 
           {error && (
-            <p role="alert" className="rounded-lg bg-destructive-soft px-3 py-2 text-label text-destructive">
+            <p role="alert" className="rounded-2xl bg-destructive-soft px-4 py-3 text-body text-destructive">
               {error}
             </p>
           )}
@@ -159,23 +155,23 @@ export default function StudyPage() {
             )}
           </Button>
         </form>
-      </Card>
+      </Panel>
+    </Section>
 
-      <section className="space-y-3">
-        <h2 className="text-title-sm font-semibold">Your study sets</h2>
+    <Section title="Your study sets" intro="Sets you create in this browser.">
         {sets === null ? (
           <p className="flex items-center gap-2 text-label text-muted-foreground">
             <Spinner /> Loading…
           </p>
         ) : sets.length === 0 ? (
-          <p className="text-label text-muted-foreground">Nothing yet. Sets you create in this browser show up here.</p>
+          <p className="text-body-lg text-muted-foreground">Nothing yet. Your first set will show up here.</p>
         ) : (
-          <ul className="surface divide-y divide-surface-border overflow-hidden">
+          <ul className="grid gap-4 sm:grid-cols-2">
             {sets.map((s) => (
               <li key={s.id}>
-                <Link href={`/study/${s.id}`} className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-surface-hover">
-                  <span className="truncate text-body font-medium">{s.title}</span>
-                  <span className="shrink-0 text-caption text-muted-foreground">
+                <Link href={`/study/${s.id}`} className="panel group block p-6 transition hover:bg-surface-selected">
+                  <span className="block truncate text-title-lg">{s.title}</span>
+                  <span className="mt-1 block text-body text-muted-foreground">
                     {s.cardCount} cards · {new Date(s.createdAt).toLocaleDateString()}
                   </span>
                 </Link>
@@ -183,7 +179,7 @@ export default function StudyPage() {
             ))}
           </ul>
         )}
-      </section>
-    </div>
+    </Section>
+    </>
   );
 }

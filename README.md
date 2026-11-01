@@ -2,7 +2,7 @@
 
 Paste your notes and get 10 multiple-choice questions. Send the link to a friend, and you both play the same quiz. Highest score wins. There's a rematch button, and a leaderboard across all finished duels.
 
-The look is borrowed from [Multica](https://github.com/multica-ai/multica)'s design tokens (zinc surfaces, one blue brand hue, compact radii, role-named type scale). It reuses none of Multica's code.
+The design is a clean gallery look: a white page, light-grey panels, one confident red, pill-shaped buttons, heavy display headlines with a rounded tile collage on the home page, and two-column sections (a label on the left, content on the right). It works in light and dark mode and at phone width.
 
 ## Quick start
 
@@ -31,6 +31,17 @@ Open **Study** in the top bar to post study material. You can paste text, or upl
 
 Each study set has its own shareable link. "Your study sets" lists the sets created in your browser, and only the person who created a set can delete it. Generation works like the quizzes: Claude when `ANTHROPIC_API_KEY` is set, otherwise an offline generator. The offline generator reorganizes your own sentences: it follows your headings, pulls "X is …" sentences out as definitions, and makes recall cards from fill-in-the-blank sentences.
 
+## Raj, the AI tutor
+
+Raj is available on the **Ask Raj** page, and as a tab in every study set.
+
+- **On a study set:** Raj has read your material and flashcards. Raj explains ideas simply, answers questions about them, checks your understanding with follow-up questions, and quizzes you one card at a time when you say "quiz me".
+- **On the Ask Raj page:** you can also chat about anything you're studying, without picking a set.
+- Replies stream in as they're written. Each conversation is saved in your browser, one per study set.
+- **With `ANTHROPIC_API_KEY` set:** Claude powers Raj. Your material is prompt-cached across the turns of a conversation.
+- **Without a key:** an offline mode finds the most relevant sentences in your notes, summarizes them, and runs flashcard quizzes with answer checking.
+- `/api/tutor` is rate-limited per IP (40 messages per 10 minutes), so a public deployment can't run up your API bill.
+
 ### Question generation
 
 - **With `ANTHROPIC_API_KEY` set:** Claude (`claude-opus-5-5`) writes the quiz using structured outputs, so the response is always valid JSON. Server-side refusal fallback is on (`fallbacks: "default"`).
@@ -58,12 +69,18 @@ app/                     Next.js App Router pages + API routes
   study/                 post material; study/[id] shows notes + flashcards
   api/duels/...          create, view, join, start, answer, rematch
   api/study/...          create/list study sets, view/delete one
+  tutor/                 chat with Raj
+  api/tutor              Raj's streaming chat endpoint
 lib/
   game.ts                rules: scoring, joining, answering, outcome, leaderboard
   generate.ts            Claude question generation + fallback
   offline-generator.ts   no-API question builder
   study.ts               Claude notes + flashcards generation + fallback
   offline-study.ts       no-API notes + flashcards builder
+  tutor.ts               Raj: persona, Claude streaming, offline mode, rate limit
+components/
+  raj-chat.tsx           chat UI (also used inside study sets)
+  site-header.tsx, ui.tsx  header and design-system primitives
   store.ts               JSON-file persistence
 tests/                   vitest unit tests
 ```

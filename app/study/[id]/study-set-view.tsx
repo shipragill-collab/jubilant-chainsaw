@@ -2,12 +2,18 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Badge, Button, Card } from "@/components/ui";
+import { RajChat } from "@/components/raj-chat";
+import { Badge, Button, Card, Section } from "@/components/ui";
 import { api, getPlayerId } from "@/lib/player";
 import type { Flashcard, StudyNotes, StudySet } from "@/lib/types";
 
 type PublicSet = Omit<StudySet, "ownerId" | "material">;
-type Tab = "notes" | "flashcards";
+type Tab = "notes" | "flashcards" | "raj";
+const TABS: { id: Tab; label: string }[] = [
+  { id: "notes", label: "Notes" },
+  { id: "flashcards", label: "Flashcards" },
+  { id: "raj", label: "Ask Raj" },
+];
 
 export function notesToMarkdown(title: string, notes: StudyNotes): string {
   const out = [`# ${title}`, "", notes.summary, ""];
@@ -33,7 +39,8 @@ export function StudySetView({ set, ownerHash }: { set: PublicSet; ownerHash: st
 
   useEffect(() => {
     void sha256Hex(getPlayerId()).then((h) => setIsOwner(h === ownerHash)).catch(() => undefined);
-    if (window.location.hash === "#flashcards") setTab("flashcards");
+    const hash = window.location.hash.slice(1);
+    if (hash === "flashcards" || hash === "raj") setTab(hash);
   }, [ownerHash]);
 
   function flash(msg: string) {
@@ -66,59 +73,65 @@ export function StudySetView({ set, ownerHash }: { set: PublicSet; ownerHash: st
   }
 
   return (
-    <div className="space-y-6">
-      <header className="space-y-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge>{set.source === "claude" ? "Written by Claude" : "Auto-generated"}</Badge>
-          <Badge>{set.flashcards.length} flashcards</Badge>
-          <Badge>{set.notes.keyTerms.length} key terms</Badge>
-        </div>
-        <h1 className="text-display-sm font-semibold tracking-tight">{set.title}</h1>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="brand" onClick={() => router.push(`/?study=${set.id}`)}>
-            Quiz a friend on this
-          </Button>
-          <Button variant="secondary" onClick={() => copy(window.location.href.split("#")[0], "Link copied")}>
-            {copied === "Link copied" ? "Link copied!" : "Share"}
-          </Button>
-          {isOwner && (
-            <Button variant="ghost" onClick={remove}>
-              Delete
+    <Section
+      title={set.title}
+      aside={
+        <div className="space-y-5 pt-1">
+          <div className="flex flex-wrap gap-2">
+            <Badge>{set.source === "claude" ? "Written by Claude" : "Auto-generated"}</Badge>
+            <Badge>{set.flashcards.length} flashcards</Badge>
+            <Badge>{set.notes.keyTerms.length} key terms</Badge>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="brand" onClick={() => router.push(`/?study=${set.id}#start`)}>
+              Quiz a friend on this
             </Button>
-          )}
+            <Button variant="secondary" onClick={() => copy(window.location.href.split("#")[0], "Link copied")}>
+              {copied === "Link copied" ? "Link copied!" : "Share"}
+            </Button>
+            {isOwner && (
+              <Button variant="ghost" onClick={remove}>
+                Delete
+              </Button>
+            )}
+          </div>
         </div>
-      </header>
+      }
+    >
+      <div className="space-y-6">
+        <div role="tablist" className="flex flex-wrap gap-1">
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              role="tab"
+              aria-selected={tab === t.id}
+              onClick={() => {
+                setTab(t.id);
+                history.replaceState(null, "", t.id === "notes" ? window.location.pathname : `#${t.id}`);
+              }}
+              className={`rounded-full px-4 py-2 text-body-lg transition ${
+                tab === t.id ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
 
-      <div role="tablist" className="inline-flex rounded-lg bg-muted p-0.5">
-        {(["notes", "flashcards"] as const).map((t) => (
-          <button
-            key={t}
-            role="tab"
-            aria-selected={tab === t}
-            onClick={() => {
-              setTab(t);
-              history.replaceState(null, "", t === "flashcards" ? "#flashcards" : window.location.pathname);
-            }}
-            className={`rounded-md px-3 py-1 text-label font-medium transition ${
-              tab === t ? "bg-surface text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {t === "notes" ? "Notes" : "Flashcards"}
-          </button>
-        ))}
+        {tab === "notes" ? (
+          <NotesView
+            set={set}
+            onCopy={() => copy(notesToMarkdown(set.title, set.notes), "Notes copied")}
+            copied={copied === "Notes copied"}
+            onDownload={download}
+          />
+        ) : tab === "flashcards" ? (
+          <FlashcardsView setId={set.id} cards={set.flashcards} />
+        ) : (
+          <RajChat setId={set.id} setTitle={set.title} />
+        )}
       </div>
-
-      {tab === "notes" ? (
-        <NotesView
-          set={set}
-          onCopy={() => copy(notesToMarkdown(set.title, set.notes), "Notes copied")}
-          copied={copied === "Notes copied"}
-          onDownload={download}
-        />
-      ) : (
-        <FlashcardsView setId={set.id} cards={set.flashcards} />
-      )}
-    </div>
+    </Section>
   );
 }
 
@@ -136,9 +149,9 @@ function NotesView({
   const { notes } = set;
   return (
     <div className="space-y-4">
-      <Card className="space-y-2">
+      <Card className="space-y-3">
         <div className="flex items-center justify-between gap-2">
-          <h2 className="text-title-sm font-semibold">Summary</h2>
+          <h2 className="text-title font-semibold">Summary</h2>
           <div className="flex gap-1">
             <Button variant="ghost" onClick={onCopy}>
               {copied ? "Copied!" : "Copy"}
@@ -153,11 +166,11 @@ function NotesView({
 
       {notes.sections.map((s, i) => (
         <Card key={i} className="space-y-2">
-          <h3 className="text-title-sm font-semibold">{s.heading}</h3>
+          <h3 className="text-title font-semibold">{s.heading}</h3>
           <ul className="space-y-1.5">
             {s.points.map((p, j) => (
-              <li key={j} className="flex gap-2.5 text-body leading-relaxed">
-                <span aria-hidden className="mt-2 size-1.5 shrink-0 rounded-full bg-brand" />
+              <li key={j} className="flex gap-3 text-body-lg leading-relaxed">
+                <span aria-hidden className="mt-2.5 size-1.5 shrink-0 rounded-full bg-brand" />
                 <span>{p}</span>
               </li>
             ))}
@@ -167,7 +180,7 @@ function NotesView({
 
       {notes.keyTerms.length > 0 && (
         <Card className="space-y-3">
-          <h3 className="text-title-sm font-semibold">Key terms</h3>
+          <h3 className="text-title font-semibold">Key terms</h3>
           <dl className="divide-y divide-surface-border">
             {notes.keyTerms.map((k, i) => (
               <div key={i} className="grid gap-1 py-2.5 first:pt-0 last:pb-0 sm:grid-cols-[minmax(0,12rem)_1fr] sm:gap-4">
@@ -329,18 +342,18 @@ function FlashcardsView({ setId, cards }: { setId: string; cards: Flashcard[] })
               className="block w-full [perspective:1200px]"
             >
               <div
-                className={`relative grid min-h-64 transition-transform duration-300 [transform-style:preserve-3d] ${
+                className={`relative grid min-h-72 transition-transform duration-300 [transform-style:preserve-3d] ${
                   flipped ? "[transform:rotateY(180deg)]" : ""
                 }`}
               >
                 <div className="surface col-start-1 row-start-1 flex flex-col items-center justify-center gap-3 p-8 [backface-visibility:hidden]">
                   <span className="text-micro font-medium tracking-wide text-muted-foreground uppercase">Question</span>
-                  <p className="text-title-lg font-semibold leading-snug">{card.front}</p>
+                  <p className="text-[24px] leading-[32px] font-bold tracking-tight sm:text-[28px] sm:leading-[36px]">{card.front}</p>
                   <span className="text-caption text-faint-foreground">Click or press Space to flip</span>
                 </div>
                 <div className="surface col-start-1 row-start-1 flex flex-col items-center justify-center gap-3 p-8 [backface-visibility:hidden] [transform:rotateY(180deg)]">
                   <span className="text-micro font-medium tracking-wide text-brand uppercase">Answer</span>
-                  <p className="text-title font-medium leading-snug">{card.back}</p>
+                  <p className="text-title-lg font-medium leading-snug">{card.back}</p>
                 </div>
               </div>
             </button>

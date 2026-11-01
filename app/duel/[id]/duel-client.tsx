@@ -48,7 +48,7 @@ export function DuelClient({ id }: { id: string }) {
 
   if (error && !view) {
     return (
-      <Card className="text-center">
+      <Card className="mx-auto my-14 max-w-3xl text-center">
         <p className="text-body text-muted-foreground">{error}</p>
         <Link href="/" className="mt-3 inline-block text-label text-brand hover:underline">
           Create a new duel
@@ -66,14 +66,14 @@ export function DuelClient({ id }: { id: string }) {
 
   const me = view.me;
   return (
-    <div className="space-y-6">
-      <header className="space-y-2">
+    <div className="mx-auto max-w-3xl space-y-6 py-10 sm:py-14">
+      <header className="space-y-3">
         <div className="flex flex-wrap items-center gap-2">
           {view.rematchOf && <Badge tone="brand">Rematch</Badge>}
           <Badge>{view.source === "claude" ? "Written by Claude" : "Auto-generated"}</Badge>
           <Badge>{view.questionCount} questions</Badge>
         </div>
-        <h1 className="text-display-sm font-semibold tracking-tight">{view.title}</h1>
+        <h1 className="display text-[36px] sm:text-[48px]">{view.title}</h1>
       </header>
 
       {!me ? (
@@ -114,8 +114,8 @@ function ShareLink({ compact = false }: { compact?: boolean }) {
 
   return (
     <div className={`flex gap-2 ${compact ? "" : "flex-col sm:flex-row"}`}>
-      <input readOnly value={url} onFocus={(e) => e.target.select()} className={`${inputClass} h-9 font-mono text-label`} />
-      <Button variant="primary" onClick={share} className="h-9 shrink-0">
+      <input readOnly value={url} onFocus={(e) => e.target.select()} className={`${inputClass} h-10 font-mono text-label`} />
+      <Button variant="primary" onClick={share} className="shrink-0">
         {copied ? "Copied!" : "Copy link"}
       </Button>
     </div>
@@ -171,7 +171,7 @@ function JoinCard({ view, playerId, onJoined }: { view: DuelView; playerId: stri
         <label className="block space-y-1.5">
           <span className="text-label font-medium">Your name</span>
           <input
-            className={`${inputClass} h-9`}
+            className={`${inputClass} h-12`}
             value={name}
             maxLength={24}
             onChange={(e) => setName(e.target.value)}
@@ -327,7 +327,7 @@ function Play({ view, playerId, onView }: { view: DuelView; playerId: string; on
       </div>
 
       <Card key={index} className="animate-pop space-y-5">
-        <h2 className="text-title font-semibold leading-snug">{question.prompt}</h2>
+        <h2 className="text-title-lg font-semibold leading-snug sm:text-[24px] sm:leading-[32px]">{question.prompt}</h2>
         <div className="grid gap-2">
           {question.options.map((opt, i) => {
             let state = "border-surface-border hover:bg-surface-hover";
@@ -341,9 +341,9 @@ function Play({ view, playerId, onView }: { view: DuelView; playerId: string; on
                 key={i}
                 disabled={!!result || picked !== null}
                 onClick={() => answer(i)}
-                className={`flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left text-body transition ${state}`}
+                className={`flex w-full items-center gap-3 rounded-2xl border px-4 py-3.5 text-left text-body-lg transition ${state}`}
               >
-                <span className="grid size-6 shrink-0 place-items-center rounded-md bg-muted text-caption font-semibold text-muted-foreground">
+                <span className="grid size-7 shrink-0 place-items-center rounded-full bg-muted text-label font-semibold text-muted-foreground">
                   {LETTERS[i]}
                 </span>
                 <span>{opt}</span>
