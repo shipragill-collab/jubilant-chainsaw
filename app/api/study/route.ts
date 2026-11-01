@@ -22,7 +22,15 @@ export async function GET(req: Request) {
     const sets: StudySetSummary[] = Object.values((await read()).studySets)
       .filter((s) => s.ownerId === ownerId)
       .sort((a, b) => b.createdAt - a.createdAt)
-      .map((s) => ({ id: s.id, title: s.title, cardCount: s.flashcards.length, createdAt: s.createdAt }));
+      .map((s) => ({
+        id: s.id,
+        title: s.title,
+        cardCount: s.flashcards.length,
+        termCount: s.notes.keyTerms.length,
+        source: s.source,
+        createdAt: s.createdAt,
+        preview: s.flashcards.slice(0, 3),
+      }));
     return { sets };
   });
 }

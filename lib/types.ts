@@ -86,7 +86,11 @@ export interface StudySetSummary {
   id: string;
   title: string;
   cardCount: number;
+  termCount: number;
+  source: QuestionSource;
   createdAt: number;
+  /** A few cards to preview in galleries. */
+  preview: Flashcard[];
 }
 
 export interface Db {

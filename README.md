@@ -2,7 +2,12 @@
 
 Paste your notes and get 10 multiple-choice questions. Send the link to a friend, and you both play the same quiz. Highest score wins. There's a rematch button, and a leaderboard across all finished duels.
 
-The design is a clean gallery look: a white page, light-grey panels, one confident red, pill-shaped buttons, heavy display headlines with a rounded tile collage on the home page, and two-column sections (a label on the left, content on the right). It works in light and dark mode and at phone width.
+The design follows two references.
+
+- **A Pinterest-style hero:** a collage of rounded tiles, a huge left-aligned headline, and stacked red and grey pill buttons.
+- **A Siteinspire-style gallery:** a red-dot logo, grey nav with a black pill button, and a full-width grey band with a tagline on the left and tabbed category links on the right ("Popular Subjects", "Study Tools", "Your Sets"). Previews sit in grey frames with "Title · 2 months ago" captions, and the "Your study sets" rows have a name and tags on the left with a scrolling row of previews on the right.
+
+It works in light and dark mode and at phone width. The **Popular Subjects** links open ready-made sample material (Biology, Chemistry, History, Physics, Geography, Economics, Psychology, Computer Science), so you can try everything in one click.
 
 ## Quick start
 

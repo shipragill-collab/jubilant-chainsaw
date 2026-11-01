@@ -48,6 +48,8 @@ describe("offline flashcards", () => {
     const cards = offlineFlashcards(STRUCTURED);
     expect(cards.length).toBeGreaterThanOrEqual(5);
     expect(cards.find((c) => c.front === "What is Osmosis?")?.back).toMatch(/^The diffusion of water/);
+    expect(cards.some((c) => c.front === "What is the mitochondria?")).toBe(true);
+    expect(cards.some((c) => c.front === "What are ribosomes?")).toBe(true);
     expect(new Set(cards.map((c) => c.front)).size).toBe(cards.length);
     for (const c of cards) expect(c.back.trim()).not.toBe("");
   });

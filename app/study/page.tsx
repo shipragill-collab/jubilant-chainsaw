@@ -3,7 +3,10 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { FlashcardThumbnail, PreviewCard, SetThumbnail } from "@/components/gallery";
 import { Button, Panel, Section, Spinner, inputClass } from "@/components/ui";
+import { SAMPLES, sampleBySlug } from "@/lib/samples";
+import { timeAgo } from "@/lib/time";
 import { api, getPlayerId } from "@/lib/player";
 import type { StudySetSummary } from "@/lib/types";
 
@@ -28,6 +31,13 @@ export default function StudyPage() {
   const fileInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    // Subject links on the home page open here with ?sample=<subject>.
+    const sample = sampleBySlug(new URLSearchParams(window.location.search).get("sample"));
+    if (sample) {
+      setMaterial(sample.material);
+      setTitle(sample.title);
+      setFileName(`${sample.subject} sample`);
+    }
     api<{ sets: StudySetSummary[] }>(`/api/study?playerId=${getPlayerId()}`)
       .then((r) => setSets(r.sets))
       .catch(() => setSets([]));
@@ -158,28 +168,60 @@ export default function StudyPage() {
       </Panel>
     </Section>
 
-    <Section title="Your study sets" intro="Sets you create in this browser.">
-        {sets === null ? (
-          <p className="flex items-center gap-2 text-label text-muted-foreground">
-            <Spinner /> Loading…
-          </p>
-        ) : sets.length === 0 ? (
-          <p className="text-body-lg text-muted-foreground">Nothing yet. Your first set will show up here.</p>
-        ) : (
-          <ul className="grid gap-4 sm:grid-cols-2">
-            {sets.map((s) => (
-              <li key={s.id}>
-                <Link href={`/study/${s.id}`} className="panel group block p-6 transition hover:bg-surface-selected">
-                  <span className="block truncate text-title-lg">{s.title}</span>
-                  <span className="mt-1 block text-body text-muted-foreground">
-                    {s.cardCount} cards · {new Date(s.createdAt).toLocaleDateString()}
-                  </span>
+    <section className="py-10 sm:py-14">
+      <h2 className="mb-8 text-[32px] leading-[1.15] tracking-tight sm:text-[40px]">Your study sets</h2>
+      {sets === null ? (
+        <p className="flex items-center gap-2 text-body text-muted-foreground">
+          <Spinner /> Loading…
+        </p>
+      ) : sets.length === 0 ? (
+        <p className="text-body-lg text-muted-foreground">
+          Nothing yet. Your first set will show up here. Or try a sample:{" "}
+          {SAMPLES.slice(0, 4).map((x, i) => (
+            <span key={x.slug}>
+              {i > 0 && ", "}
+              <Link href={`/study?sample=${x.slug}`} className="text-foreground underline underline-offset-4">
+                {x.subject}
+              </Link>
+            </span>
+          ))}
+          .
+        </p>
+      ) : (
+        <ul>
+          {sets.map((s) => (
+            <li
+              key={s.id}
+              className="grid gap-6 border-t border-surface-border py-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-16"
+            >
+              <div className="space-y-3">
+                <Link href={`/study/${s.id}`} className="block text-[30px] leading-[1.15] tracking-tight hover:text-brand sm:text-[36px]">
+                  {s.title}
                 </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-    </Section>
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-body-lg text-muted-foreground">
+                  <span>{s.cardCount} Flashcards</span>
+                  <span>{s.termCount} Key terms</span>
+                </div>
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-body-lg text-muted-foreground">
+                  <span>{s.source === "claude" ? "Written by Claude" : "Auto-generated"}</span>
+                  <span>{timeAgo(s.createdAt)}</span>
+                </div>
+              </div>
+              <div className="-mr-4 flex snap-x gap-8 overflow-x-auto pr-4 pb-2 sm:-mr-8 sm:pr-8">
+                <PreviewCard href={`/study/${s.id}`} title="Notes" meta={timeAgo(s.createdAt)} dot={Date.now() - s.createdAt < 864e5} className="w-[78%] shrink-0 snap-start sm:w-[420px]">
+                  <SetThumbnail title={s.title} kicker="Notes" lines={s.preview.map((c) => c.front)} seed={s.id} />
+                </PreviewCard>
+                {s.preview.map((c, i) => (
+                  <PreviewCard key={i} href={`/study/${s.id}#flashcards`} title={`Flashcard ${i + 1}`} meta={`of ${s.cardCount}`} className="w-[78%] shrink-0 snap-start sm:w-[420px]">
+                    <FlashcardThumbnail front={c.front} index={i} seed={s.id} />
+                  </PreviewCard>
+                ))}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
     </>
   );
 }

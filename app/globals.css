@@ -163,3 +163,11 @@ body {
   100% { transform: scale(1); opacity: 1; }
 }
 .animate-pop { animation: pop 160ms ease-out both; }
+
+/* Full-width background band from inside a centered container, without
+   causing horizontal scroll. */
+.bleed {
+  box-shadow: 0 0 0 100vmax var(--panel);
+  clip-path: inset(0 -100vmax);
+  background: var(--panel);
+}
