@@ -1,0 +1,410 @@
+<title>Raj Companion</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one centred column. The live companion card leads; the expression sheet and tokens sit below as reference. */
+:root {
+  --paper: #faf7f0;        /* warm off-white page */
+  --surface: #ffffff;      /* the companion card */
+  --ink: #1d2620;          /* text, green-biased near-black */
+  --muted: #5d6a61;
+  --line: #e6e0d3;         /* crisp borders + flat shadows */
+  --forest: #1e6b47;       /* signature accent 1: Raj's body */
+  --forest-deep: #134a31;  /* fold + pressed states */
+  --mustard: #e8b23a;      /* signature accent 2: ribbon, sparks */
+  --face: #fff8e6;         /* eyes + mouth */
+  --tint: #edf4ee;         /* soft green wash for Raj's bubble */
+  --chip: #f4f0e6;
+  --font-ui: "Plus Jakarta Sans", ui-rounded, "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --shadow: 0 3px 0 var(--line);
+  --radius: 22px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #131714; --surface: #1b211d; --ink: #eef2ec; --muted: #a2ada5; --line: #2d3530;
+    --forest: #2f8a5e; --forest-deep: #1d5e3f; --mustard: #f0c255; --face: #fff8e6;
+    --tint: #1f2c24; --chip: #232a25; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #131714; --surface: #1b211d; --ink: #eef2ec; --muted: #a2ada5; --line: #2d3530;
+  --forest: #2f8a5e; --forest-deep: #1d5e3f; --mustard: #f0c255; --face: #fff8e6;
+  --tint: #1f2c24; --chip: #232a25; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--paper); color: var(--ink); font-family: var(--font-ui); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 64px;
+}
+.wrap { max-width: 920px; margin: 0 auto; display: grid; gap: 56px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+p { margin: 0; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+/* Intro */
+.intro { display: grid; gap: 12px; max-width: 62ch; }
+.intro h1 { font-size: clamp(32px, 5vw, 48px); font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; }
+.intro p { color: var(--muted); font-size: 17px; }
+
+/* ---------- The companion card ---------- */
+.companion {
+  background: var(--surface); border: 1.5px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow); overflow: hidden;
+}
+.c-head { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-bottom: 1.5px solid var(--line); }
+.c-head .who { display: grid; line-height: 1.2; }
+.c-head .who b { font-weight: 700; }
+.c-head .who span { font-size: 13px; color: var(--muted); }
+.status {
+  margin-left: auto; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600;
+  padding: 6px 12px; border-radius: 999px; background: var(--chip); color: var(--ink); white-space: nowrap;
+}
+.status i { width: 8px; height: 8px; border-radius: 2px; background: var(--forest); transition: transform .3s, background .3s; }
+[data-state="thinking"] .status i { background: var(--mustard); animation: spinSquare 1.2s cubic-bezier(.6,0,.4,1) infinite; }
+[data-state="happy"] .status i { border-radius: 50%; background: var(--mustard); }
+@keyframes spinSquare { to { transform: rotate(180deg); } }
+
+.c-stage { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 28px; align-items: center; padding: 32px 28px 24px; }
+.figure { display: grid; justify-items: center; }
+.bubble {
+  position: relative; min-width: 0; background: var(--tint); border-radius: 20px 20px 20px 6px; padding: 18px 20px;
+  font-size: 17px; line-height: 1.6; min-height: 96px;
+}
+.bubble strong { color: var(--forest); font-weight: 700; }
+:root[data-theme="dark"] .bubble strong { color: #8fd4ad; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .bubble strong { color: #8fd4ad; } }
+.bubble .caret { display: inline-block; width: 8px; height: 1.1em; vertical-align: -0.15em; background: var(--forest); margin-left: 2px; border-radius: 2px; animation: caret 1s steps(1) infinite; }
+@keyframes caret { 50% { opacity: 0; } }
+.bubble.is-thinking { color: var(--muted); }
+
+.c-choices { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 28px 20px; }
+.chip {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink); background: var(--surface);
+  border: 1.5px solid var(--line); border-radius: 999px; padding: 8px 14px; cursor: pointer;
+  box-shadow: 0 2px 0 var(--line); transition: transform .12s, box-shadow .12s, border-color .12s;
+}
+.chip:hover { border-color: var(--forest); }
+.chip:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line); }
+.chip:focus-visible, .send:focus-visible, .seg button:focus-visible, .ask:focus-visible { outline: 2.5px solid var(--forest); outline-offset: 2px; }
+
+.c-input { display: flex; gap: 10px; padding: 14px; border-top: 1.5px solid var(--line); background: var(--paper); }
+.ask {
+  flex: 1; min-width: 0; font: inherit; font-size: 16px; color: var(--ink); background: var(--surface);
+  border: 1.5px solid var(--line); border-radius: 14px; padding: 12px 14px; outline: none;
+}
+.ask::placeholder { color: var(--muted); }
+.ask:focus { border-color: var(--forest); }
+.send {
+  font: inherit; font-weight: 700; color: #fff; background: var(--forest); border: 0; border-radius: 14px;
+  padding: 0 20px; cursor: pointer; box-shadow: 0 3px 0 var(--forest-deep); transition: transform .12s, box-shadow .12s;
+}
+.send:active { transform: translateY(3px); box-shadow: 0 0 0 var(--forest-deep); }
+
+/* Demo state switch (outside the component) */
+.controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.seg { display: inline-flex; gap: 4px; padding: 4px; background: var(--chip); border-radius: 999px; border: 1.5px solid var(--line); }
+.seg button { font: inherit; font-size: 14px; font-weight: 600; color: var(--muted); background: none; border: 0; border-radius: 999px; padding: 8px 16px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 2px 0 var(--line); }
+.hint { font-size: 14px; color: var(--muted); }
+
+/* ---------- Expression sheet ---------- */
+.sheet { display: grid; gap: 20px; }
+.sheet-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.state-card { background: var(--surface); border: 1.5px solid var(--line); border-radius: 18px; padding: 20px; display: grid; gap: 10px; box-shadow: var(--shadow); }
+.state-card .pad { background: var(--paper); border-radius: 12px; display: grid; place-items: center; padding: 18px 0 10px; }
+.state-card h3 { font-size: 17px; font-weight: 700; }
+.state-card p { font-size: 14px; color: var(--muted); }
+
+/* ---------- Tokens ---------- */
+.tokens { display: grid; gap: 20px; }
+.swatches { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.sw { border: 1.5px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--surface); }
+.sw div { height: 64px; }
+.sw p { padding: 10px 12px; font-size: 13px; display: grid; }
+.sw code { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.type-spec { display: grid; gap: 6px; background: var(--surface); border: 1.5px solid var(--line); border-radius: 14px; padding: 18px 20px; }
+.type-spec .big { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; }
+
+/* ---------- Raj: the character ----------
+   A living flashcard: rounded card body, folded corner, mustard bookmark,
+   dot eyes and a line mouth. Every part is a simple primitive. */
+.raj { overflow: visible; display: block; }
+.raj * { transform-box: fill-box; }
+.raj .body { fill: var(--forest); }
+.raj .fold { fill: var(--forest-deep); transform-origin: 0% 0%; }
+.raj .ribbon { fill: var(--mustard); transform-origin: 50% 0%; }
+.raj .feature { fill: var(--face); }
+.raj .stroke { fill: none; stroke: var(--face); stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round; }
+.raj .shadow { fill: var(--ink); opacity: .08; transform-origin: 50% 50%; }
+.raj .spark { stroke: var(--mustard); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 24; stroke-dashoffset: 24; }
+.raj .dot { fill: var(--mustard); opacity: 0; }
+.raj .float, .raj .tilt, .raj .eyes, .raj .pupils { transform-origin: 50% 100%; transition: transform .45s cubic-bezier(.3,1.4,.5,1); }
+.raj .eyes { transform-origin: 50% 50%; }
+.raj .happy-eyes, .raj .mouth-open, .raj .mouth-flat { opacity: 0; transition: opacity .15s; }
+.raj .dot-eyes, .raj .mouth-smile { transition: opacity .15s; }
+
+/* Idle / listening */
+.raj[data-state="idle"] .float { animation: float 4.2s ease-in-out infinite; }
+.raj[data-state="idle"] .blink { animation: blink 4.8s infinite; transform-origin: 50% 50%; }
+.raj[data-state="idle"] .ribbon { animation: sway 4.2s ease-in-out infinite; }
+.raj[data-listening="true"][data-state="idle"] .tilt { transform: rotate(-6deg); }
+.raj[data-listening="true"][data-state="idle"] .eyes { transform: translate(-2px, 3px); }
+@keyframes float { 50% { transform: translateY(-4px); } }
+@keyframes blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
+@keyframes sway { 50% { transform: rotate(4deg); } }
+
+/* Thinking: the card rocks like it's turning a page, the corner flaps, eyes scan up */
+.raj[data-state="thinking"] .tilt { animation: ponder 1.5s cubic-bezier(.45,0,.55,1) infinite alternate; }
+.raj[data-state="thinking"] .fold { animation: flap .75s cubic-bezier(.45,0,.55,1) infinite alternate; }
+.raj[data-state="thinking"] .eyes { transform: translate(3px, -4px); }
+.raj[data-state="thinking"] .pupils { animation: scan 1.5s ease-in-out infinite alternate; }
+.raj[data-state="thinking"] .mouth-smile { opacity: 0; }
+.raj[data-state="thinking"] .mouth-flat { opacity: 1; }
+.raj[data-state="thinking"] .ribbon { animation: tug .75s ease-in-out infinite alternate; }
+.raj[data-state="thinking"] .dot { animation: hop 1.2s ease-in-out infinite; }
+.raj[data-state="thinking"] .dot:nth-of-type(2) { animation-delay: .15s; }
+.raj[data-state="thinking"] .dot:nth-of-type(3) { animation-delay: .3s; }
+@keyframes ponder { from { transform: rotate(-7deg); } to { transform: rotate(5deg); } }
+@keyframes flap { from { transform: scale(1); } to { transform: scale(.55); } }
+@keyframes scan { from { transform: translateX(-3px); } to { transform: translateX(3px); } }
+@keyframes tug { from { transform: rotate(-6deg) scaleY(1); } to { transform: rotate(6deg) scaleY(.9); } }
+@keyframes hop { 0%, 60%, 100% { opacity: .25; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-6px); } }
+
+/* Responding / happy: a squashy hop, arc eyes, open smile, sparks draw in */
+.raj[data-state="happy"] .float { animation: jump .9s cubic-bezier(.3,0,.3,1) 2, settle 3s ease-in-out 1.8s infinite; }
+.raj[data-state="happy"] .shadow { animation: squish .9s cubic-bezier(.3,0,.3,1) 2; }
+.raj[data-state="happy"] .dot-eyes, .raj[data-state="happy"] .mouth-smile { opacity: 0; }
+.raj[data-state="happy"] .happy-eyes, .raj[data-state="happy"] .mouth-open { opacity: 1; }
+.raj[data-state="happy"] .ribbon { animation: flick .9s cubic-bezier(.3,1.6,.5,1) 2; }
+.raj[data-state="happy"] .spark { animation: draw .5s ease-out .15s forwards, fade .4s ease-in 1.6s forwards; }
+.raj[data-state="happy"] .spark:nth-of-type(2) { animation-delay: .22s, 1.65s; }
+.raj[data-state="happy"] .spark:nth-of-type(3) { animation-delay: .29s, 1.7s; }
+@keyframes jump {
+  0% { transform: translateY(0) scale(1, 1); }
+  18% { transform: translateY(0) scale(1.08, .9); }
+  45% { transform: translateY(-14px) scale(.96, 1.05); }
+  75% { transform: translateY(0) scale(1.06, .94); }
+  100% { transform: translateY(0) scale(1, 1); }
+}
+@keyframes squish { 45% { transform: scale(.7); opacity: .04; } }
+@keyframes settle { 50% { transform: translateY(-3px) rotate(2deg); } }
+@keyframes flick { 40% { transform: rotate(-24deg); } }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes fade { to { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .raj *, .status i, .bubble .caret { animation: none !important; transition: none !important; }
+  .raj[data-state="happy"] .spark { stroke-dashoffset: 0; }
+}
+
+/* Phone */
+@media (max-width: 640px) {
+  .c-stage { grid-template-columns: 1fr; justify-items: center; padding: 24px 18px 18px; gap: 18px; }
+  .bubble { width: 100%; border-radius: 6px 20px 20px 20px; }
+  .c-choices { padding: 0 18px 18px; }
+  .sheet-grid { grid-template-columns: 1fr; }
+  .c-head .who span { display: none; }
+}
+</style>
+
+<div class="wrap">
+  <header class="intro">
+    <p class="eyebrow">Quiz Duel · AI study companion</p>
+    <h1>Meet Raj, a flashcard that thinks with you</h1>
+    <p>Raj is drawn from five simple shapes: a rounded card, a folded corner, a bookmark ribbon, two dots and a line. Ask a question below to watch Raj listen, think and answer.</p>
+  </header>
+
+  <section aria-label="Live companion" class="live" style="display:grid;gap:16px">
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Preview a state">
+        <button type="button" data-set="idle" aria-pressed="true">Idle</button>
+        <button type="button" data-set="thinking" aria-pressed="false">Thinking</button>
+        <button type="button" data-set="happy" aria-pressed="false">Responding</button>
+      </div>
+      <p class="hint">Raj's eyes follow your pointer while idle.</p>
+    </div>
+
+    <article class="companion" id="companion" data-state="idle">
+      <div class="c-head">
+        <span id="mini"></span>
+        <div class="who"><b>Raj</b><span>Studying: Photosynthesis</span></div>
+        <span class="status" aria-live="polite"><i></i><span id="statusText">Listening</span></span>
+      </div>
+      <div class="c-stage">
+        <div class="figure" id="hero"></div>
+        <div class="bubble" id="bubble" aria-live="polite">Hi! I've read your notes on photosynthesis. Want to start with a quick question, or should I explain the big idea first?</div>
+      </div>
+      <div class="c-choices" id="choices">
+        <button class="chip" type="button">Explain the big idea</button>
+        <button class="chip" type="button">Quiz me</button>
+        <button class="chip" type="button">Why does it need light?</button>
+      </div>
+      <form class="c-input" id="form">
+        <input class="ask" id="ask" name="ask" placeholder="Ask Raj about your notes…" autocomplete="off" aria-label="Ask Raj">
+        <button class="send" type="submit">Ask</button>
+      </form>
+    </article>
+  </section>
+
+  <section class="sheet" aria-labelledby="sheetTitle">
+    <div style="display:grid;gap:6px">
+      <p class="eyebrow">Expression sheet</p>
+      <h2 id="sheetTitle" style="font-size:26px;font-weight:800;letter-spacing:-0.02em">Three states, one character</h2>
+    </div>
+    <div class="sheet-grid">
+      <div class="state-card"><div class="pad" data-raj="idle"></div><h3>Idle · Listening</h3><p>Floats gently and blinks. When you start typing, Raj leans in and looks toward the input.</p></div>
+      <div class="state-card"><div class="pad" data-raj="thinking"></div><h3>Thinking</h3><p>Rocks like a card being turned over, the corner flaps and the eyes scan upward while three mustard dots hop.</p></div>
+      <div class="state-card"><div class="pad" data-raj="happy"></div><h3>Responding</h3><p>A squashy hop, eyes curve into arcs, the ribbon flicks and three sparks draw in, then Raj settles.</p></div>
+    </div>
+  </section>
+
+  <section class="tokens" aria-labelledby="tokTitle">
+    <div style="display:grid;gap:6px">
+      <p class="eyebrow">Identity</p>
+      <h2 id="tokTitle" style="font-size:26px;font-weight:800;letter-spacing:-0.02em">Palette and type</h2>
+    </div>
+    <div class="swatches">
+      <div class="sw"><div style="background:var(--forest)"></div><p><b>Forest</b><code>#1E6B47</code></p></div>
+      <div class="sw"><div style="background:var(--mustard)"></div><p><b>Mustard</b><code>#E8B23A</code></p></div>
+      <div class="sw"><div style="background:var(--paper)"></div><p><b>Paper</b><code>#FAF7F0</code></p></div>
+      <div class="sw"><div style="background:var(--ink)"></div><p><b>Ink</b><code>#1D2620</code></p></div>
+      <div class="sw"><div style="background:var(--line)"></div><p><b>Line</b><code>#E6E0D3</code></p></div>
+    </div>
+    <div class="type-spec">
+      <span class="big">Plus Jakarta Sans</span>
+      <span>Friendly, structural letterforms for everything Raj says. Weights 500, 700 and 800.</span>
+      <code style="font-family:var(--font-mono);font-size:13px;color:var(--muted)">JetBrains Mono for small labels</code>
+    </div>
+  </section>
+</div>
+
+<script>
+// Raj's SVG: every part is a primitive shape, grouped so CSS can animate it by state.
+let uid = 0;
+function rajSVG(size, state) {
+  const id = ++uid;
+  return `
+  <svg class="raj" viewBox="-14 -14 148 150" width="${size}" height="${size}" data-state="${state}" role="img" aria-label="Raj, ${state}">
+    <ellipse class="shadow" cx="60" cy="124" rx="34" ry="5"/>
+    <g class="sparks">
+      <line class="spark" x1="12" y1="18" x2="3" y2="9"/>
+      <line class="spark" x1="7" y1="34" x2="-5" y2="32"/>
+      <line class="spark" x1="26" y1="8" x2="23" y2="-4"/>
+    </g>
+    <g class="dots">
+      <rect class="dot" x="104" y="10" width="7" height="7" rx="2"/>
+      <rect class="dot" x="114" y="2" width="7" height="7" rx="2"/>
+      <rect class="dot" x="124" y="-6" width="7" height="7" rx="2"/>
+    </g>
+    <g class="float"><g class="tilt">
+      <path class="body" d="M44 22 H76 A26 26 0 0 1 102 48 V82 L84 104 H44 A26 26 0 0 1 18 78 V48 A26 26 0 0 1 44 22 Z"/>
+      <path class="fold" d="M102 82 L84 104 L86 88 Z" stroke-linejoin="round"/>
+      <path class="ribbon" d="M70 14 H84 V46 L77 40 L70 46 Z"/>
+      <g class="eyes"><g class="pupils">
+        <g class="dot-eyes"><g class="blink"><circle class="feature" cx="47" cy="60" r="6"/><circle class="feature" cx="73" cy="60" r="6"/></g></g>
+        <g class="happy-eyes"><path class="stroke" d="M41 62 Q47 53 53 62"/><path class="stroke" d="M67 62 Q73 53 79 62"/></g>
+      </g></g>
+      <path class="stroke mouth-smile" d="M53 78 Q60 84 67 78"/>
+      <path class="stroke mouth-flat" d="M55 80 H65"/>
+      <path class="feature mouth-open" d="M51 76 Q60 90 69 76 Z"/>
+    </g></g>
+  </svg>`;
+}
+
+const companion = document.getElementById("companion");
+document.getElementById("mini").innerHTML = rajSVG(36, "idle");
+document.getElementById("hero").innerHTML = rajSVG(180, "idle");
+document.querySelectorAll("[data-raj]").forEach((el) => { el.innerHTML = rajSVG(132, el.dataset.raj); });
+
+const heroRaj = document.querySelector("#hero .raj");
+const miniRaj = document.querySelector("#mini .raj");
+const statusText = document.getElementById("statusText");
+const bubble = document.getElementById("bubble");
+const choices = document.getElementById("choices");
+const ask = document.getElementById("ask");
+const segButtons = document.querySelectorAll(".seg button");
+const LABELS = { idle: "Listening", thinking: "Thinking", happy: "Here's an idea" };
+
+function setState(state) {
+  companion.dataset.state = state;
+  [heroRaj, miniRaj].forEach((r) => {
+    r.dataset.state = state;
+    r.setAttribute("aria-label", `Raj, ${LABELS[state].toLowerCase()}`);
+    // restart one-shot animations when re-entering a state
+    r.querySelectorAll(".float, .spark, .shadow, .ribbon").forEach((n) => { n.style.animation = "none"; void n.getBBox(); n.style.animation = ""; });
+  });
+  heroRaj.querySelector(".eyes").style.transform = "";
+  statusText.textContent = LABELS[state];
+  segButtons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.set === state)));
+}
+
+// Eyes follow the pointer while idle (subtle: at most 3px).
+const eyes = heroRaj.querySelector(".eyes");
+window.addEventListener("pointermove", (e) => {
+  if (heroRaj.dataset.state !== "idle" || heroRaj.dataset.listening === "true") return;
+  const r = heroRaj.getBoundingClientRect();
+  const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
+  const len = Math.hypot(dx, dy) || 1, k = Math.min(3, len / 60);
+  eyes.style.transform = `translate(${(dx / len) * k}px, ${(dy / len) * k}px)`;
+});
+ask.addEventListener("focus", () => { heroRaj.dataset.listening = "true"; eyes.style.transform = ""; });
+ask.addEventListener("blur", () => { heroRaj.dataset.listening = "false"; });
+
+// Canned answers about the sample notes, so the demo flows end to end.
+const ANSWERS = [
+  { match: /big idea|explain/i, text: "Plants are tiny sugar factories. In the <strong>chloroplasts</strong>, light energy splits water and powers the <strong>Calvin cycle</strong>, which turns carbon dioxide into glucose. Oxygen is the leftover.", next: ["Quiz me on that", "What's the Calvin cycle?"] },
+  { match: /light/i, text: "Light is the energy source. <strong>Chlorophyll</strong> absorbs red and blue light, and that energy splits water to make ATP and NADPH, the batteries the Calvin cycle runs on.", next: ["Why is it green, then?", "Quiz me"] },
+  { match: /quiz/i, text: "Here's one: where in the cell does the <strong>Calvin cycle</strong> happen? Take a guess and I'll give you a hint if you need one.", next: ["The stroma", "The thylakoids", "Give me a hint"] },
+  { match: /stroma/i, text: "<strong>Correct!</strong> The Calvin cycle runs in the stroma, the fluid around the thylakoids. That's three in a row.", next: ["Next question", "Explain it more"] },
+  { match: /.*/, text: "Good question. From your notes: <strong>glucose</strong> made by photosynthesis can be stored as starch, so the plant can use the energy later.", next: ["Quiz me", "Explain the big idea"] },
+];
+
+let timer = null;
+function typeOut(html, done) {
+  // Reveal the answer word by word, keeping <strong> tags intact.
+  const parts = html.split(/(\s+|<\/?strong>)/).filter(Boolean);
+  let i = 0, shown = "";
+  clearInterval(timer);
+  timer = setInterval(() => {
+    shown += parts[i++];
+    bubble.innerHTML = shown + (i < parts.length ? '<span class="caret"></span>' : "");
+    if (i >= parts.length) { clearInterval(timer); done && done(); }
+  }, 45);
+}
+
+function respond(question) {
+  const a = ANSWERS.find((x) => x.match.test(question));
+  setState("thinking");
+  bubble.classList.add("is-thinking");
+  bubble.textContent = "Flipping through your notes…";
+  choices.innerHTML = "";
+  setTimeout(() => {
+    setState("happy");
+    bubble.classList.remove("is-thinking");
+    typeOut(a.text, () => {
+      choices.innerHTML = a.next.map((n) => `<button class="chip" type="button">${n}</button>`).join("");
+      setTimeout(() => { if (companion.dataset.state === "happy") setState("idle"); }, 2600);
+    });
+  }, 1700);
+}
+
+choices.addEventListener("click", (e) => {
+  const chip = e.target.closest(".chip");
+  if (chip) respond(chip.textContent);
+});
+document.getElementById("form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const q = ask.value.trim();
+  if (!q) return;
+  ask.value = "";
+  ask.blur();
+  respond(q);
+});
+segButtons.forEach((b) => b.addEventListener("click", () => setState(b.dataset.set)));
+</script>

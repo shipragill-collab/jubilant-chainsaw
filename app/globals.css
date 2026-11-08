@@ -171,3 +171,103 @@ body {
   clip-path: inset(0 -100vmax);
   background: var(--panel);
 }
+
+/* ---------------------------------------------------------------
+   Raj, the AI companion (components/raj-companion.tsx)
+   A living flashcard in forest green and mustard.
+   --------------------------------------------------------------- */
+:root {
+  --raj-forest: #1e6b47;
+  --raj-forest-deep: #134a31;
+  --raj-mustard: #e8b23a;
+  --raj-face: #fff8e6;
+  --raj-tint: #edf4ee;
+  --raj-ink: #1d2620;
+  --raj-font: "Plus Jakarta Sans", ui-rounded, "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --raj-forest: #2f8a5e;
+    --raj-forest-deep: #1d5e3f;
+    --raj-mustard: #f0c255;
+    --raj-tint: #1f2c24;
+    --raj-ink: #eef2ec;
+  }
+}
+.raj { overflow: visible; display: block; }
+.raj * { transform-box: fill-box; }
+.raj .raj-body { fill: var(--raj-forest); }
+.raj .raj-fold { fill: var(--raj-forest-deep); transform-origin: 0% 0%; }
+.raj .raj-ribbon { fill: var(--raj-mustard); transform-origin: 50% 0%; }
+.raj .raj-feature { fill: var(--raj-face); }
+.raj .raj-stroke { fill: none; stroke: var(--raj-face); stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round; }
+.raj .raj-shadow { fill: var(--raj-ink); opacity: 0.08; transform-origin: 50% 50%; }
+.raj .raj-spark { stroke: var(--raj-mustard); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 24; stroke-dashoffset: 24; }
+.raj .raj-dot { fill: var(--raj-mustard); opacity: 0; }
+.raj .raj-float, .raj .raj-tilt, .raj .raj-pupils { transform-origin: 50% 100%; transition: transform 0.45s cubic-bezier(0.3, 1.4, 0.5, 1); }
+.raj .raj-eyes { transform-origin: 50% 50%; transition: transform 0.45s cubic-bezier(0.3, 1.4, 0.5, 1); }
+.raj .raj-happy-eyes, .raj .raj-mouth-open, .raj .raj-mouth-flat { opacity: 0; transition: opacity 0.15s; }
+.raj .raj-dot-eyes, .raj .raj-mouth-smile { transition: opacity 0.15s; }
+
+.raj[data-state="idle"] .raj-float { animation: raj-float 4.2s ease-in-out infinite; }
+.raj[data-state="idle"] .raj-blink { animation: raj-blink 4.8s infinite; transform-origin: 50% 50%; }
+.raj[data-state="idle"] .raj-ribbon { animation: raj-sway 4.2s ease-in-out infinite; }
+.raj[data-state="idle"][data-listening="true"] .raj-tilt { transform: rotate(-6deg); }
+.raj[data-state="idle"][data-listening="true"] .raj-eyes { transform: translate(-2px, 3px); }
+
+.raj[data-state="thinking"] .raj-tilt { animation: raj-ponder 1.5s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate; }
+.raj[data-state="thinking"] .raj-fold { animation: raj-flap 0.75s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate; }
+.raj[data-state="thinking"] .raj-eyes { transform: translate(3px, -4px); }
+.raj[data-state="thinking"] .raj-pupils { animation: raj-scan 1.5s ease-in-out infinite alternate; }
+.raj[data-state="thinking"] .raj-mouth-smile { opacity: 0; }
+.raj[data-state="thinking"] .raj-mouth-flat { opacity: 1; }
+.raj[data-state="thinking"] .raj-ribbon { animation: raj-tug 0.75s ease-in-out infinite alternate; }
+.raj[data-state="thinking"] .raj-dot { animation: raj-hop 1.2s ease-in-out infinite; }
+.raj[data-state="thinking"] .raj-dot:nth-of-type(2) { animation-delay: 0.15s; }
+.raj[data-state="thinking"] .raj-dot:nth-of-type(3) { animation-delay: 0.3s; }
+
+.raj[data-state="happy"] .raj-float { animation: raj-jump 0.9s cubic-bezier(0.3, 0, 0.3, 1) 2, raj-settle 3s ease-in-out 1.8s infinite; }
+.raj[data-state="happy"] .raj-shadow { animation: raj-squish 0.9s cubic-bezier(0.3, 0, 0.3, 1) 2; }
+.raj[data-state="happy"] .raj-dot-eyes, .raj[data-state="happy"] .raj-mouth-smile { opacity: 0; }
+.raj[data-state="happy"] .raj-happy-eyes, .raj[data-state="happy"] .raj-mouth-open { opacity: 1; }
+.raj[data-state="happy"] .raj-ribbon { animation: raj-flick 0.9s cubic-bezier(0.3, 1.6, 0.5, 1) 2; }
+.raj[data-state="happy"] .raj-spark { animation: raj-draw 0.5s ease-out 0.15s forwards, raj-fade 0.4s ease-in 1.6s forwards; }
+.raj[data-state="happy"] .raj-spark:nth-of-type(2) { animation-delay: 0.22s, 1.65s; }
+.raj[data-state="happy"] .raj-spark:nth-of-type(3) { animation-delay: 0.29s, 1.7s; }
+
+@keyframes raj-float { 50% { transform: translateY(-4px); } }
+@keyframes raj-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+@keyframes raj-sway { 50% { transform: rotate(4deg); } }
+@keyframes raj-ponder { from { transform: rotate(-7deg); } to { transform: rotate(5deg); } }
+@keyframes raj-flap { from { transform: scale(1); } to { transform: scale(0.55); } }
+@keyframes raj-scan { from { transform: translateX(-3px); } to { transform: translateX(3px); } }
+@keyframes raj-tug { from { transform: rotate(-6deg) scaleY(1); } to { transform: rotate(6deg) scaleY(0.9); } }
+@keyframes raj-hop { 0%, 60%, 100% { opacity: 0.25; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-6px); } }
+@keyframes raj-jump {
+  0% { transform: translateY(0) scale(1, 1); }
+  18% { transform: translateY(0) scale(1.08, 0.9); }
+  45% { transform: translateY(-14px) scale(0.96, 1.05); }
+  75% { transform: translateY(0) scale(1.06, 0.94); }
+  100% { transform: translateY(0) scale(1, 1); }
+}
+@keyframes raj-squish { 45% { transform: scale(0.7); opacity: 0.04; } }
+@keyframes raj-settle { 50% { transform: translateY(-3px) rotate(2deg); } }
+@keyframes raj-flick { 40% { transform: rotate(-24deg); } }
+@keyframes raj-draw { to { stroke-dashoffset: 0; } }
+@keyframes raj-fade { to { opacity: 0; } }
+@keyframes raj-status-spin { to { transform: rotate(180deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .raj *, .raj-status i { animation: none !important; transition: none !important; }
+  .raj[data-state="happy"] .raj-spark { stroke-dashoffset: 0; }
+}
+
+/* The chat that hosts Raj takes the companion's own type and accents. */
+.raj-room { font-family: var(--raj-font); }
+.raj-status {
+  display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 4px 11px;
+  font-size: 12px; font-weight: 600; background: var(--raj-tint); color: var(--foreground); white-space: nowrap;
+}
+.raj-status i { width: 7px; height: 7px; border-radius: 2px; background: var(--raj-forest); }
+.raj-status[data-state="thinking"] i { background: var(--raj-mustard); animation: raj-status-spin 1.2s cubic-bezier(0.6, 0, 0.4, 1) infinite; }
+.raj-status[data-state="happy"] i { border-radius: 50%; background: var(--raj-mustard); }

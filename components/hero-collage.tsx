@@ -84,9 +84,9 @@ export function HeroCollage({ photos = {} }: { photos?: Record<number, string> }
         {/* Right, lower: Raj */}
         <Tile
           src={photos[4]}
-          className="top-[182px] left-[449px] z-20 h-[172px] w-[173px] bg-[#e8743b]"
+          className="top-[182px] left-[449px] z-20 h-[172px] w-[173px] bg-[#fbecc4]"
           fallback={
-            <div className="flex h-full flex-col justify-between p-4 text-white">
+            <div className="flex h-full flex-col justify-between p-4 text-[#2d2205]">
               <RajAvatar />
               <span className="text-body leading-snug font-medium">
                 <strong>Raj:</strong> Nice! Why do C4 plants split the steps up?
