@@ -85,12 +85,22 @@ export default function ShopPage() {
   const monthly = proSkinFor(currentMonth());
 
   const items = useMemo(() => {
-    const list = ITEMS.filter((i) => i.slot === slot);
+    // The Skins tab also shows the Mythic app skins, so the rarest skins sit at the top.
+    const list = ITEMS.filter((i) => i.slot === slot || (slot === "skin" && i.slot === "theme"));
     const ofFilter = (i: ShopItem) =>
       filter === "all" ||
       (filter === "festive" ? Boolean(i.season) : filter === "paid" ? howToGet(i) === "money" : filter === "exclusive" ? Boolean(i.passTier || i.proMonth) : i.rarity === filter);
     return list.filter(ofFilter);
   }, [slot, filter]);
+  // Rarest first: Mythic, Legendary, Epic, Rare, then Common.
+  const groups = useMemo(
+    () =>
+      [...RARITIES]
+        .reverse()
+        .map((r) => ({ rarity: r, items: items.filter((i) => i.rarity === r) }))
+        .filter((g) => g.items.length > 0),
+    [items],
+  );
   const skinCount = ITEMS.filter((i) => i.slot === "skin" || i.slot === "theme").length;
 
   async function act(path: string, body: Record<string, unknown>, done: string) {
@@ -247,7 +257,7 @@ export default function ShopPage() {
 
         {/* Right: tabbed catalogue */}
         <div className="min-w-0 space-y-6">
-          {slot !== "theme" && (
+          {slot !== "theme" && slot !== "skin" && (
             <button type="button" onClick={() => setSlot("theme")} className="sk-midnight-folio mf-card flex w-full items-center gap-4 p-4 text-left sm:p-5">
               <span className="mf-art grid size-16 shrink-0 place-items-center rounded-2xl">
                 <RajCompanion size={54} feeling="proud" />
@@ -279,7 +289,7 @@ export default function ShopPage() {
 
           {slot !== "theme" && (
             <div className="flex flex-wrap gap-2" role="group" aria-label="Filter">
-              {(["all", ...RARITIES.filter((r) => r !== "mythic"), "festive", "paid", "exclusive"] as Filter[]).map((f) => (
+              {(["all", ...[...RARITIES].reverse(), "festive", "paid", "exclusive"] as Filter[]).map((f) => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
@@ -326,37 +336,75 @@ export default function ShopPage() {
           ) : items.length === 0 ? (
             <p className="text-body-lg text-muted-foreground">Nothing here with that filter.</p>
           ) : (
-            <div className="grid grid-cols-1 gap-x-8 gap-y-10 sm:grid-cols-2 xl:grid-cols-3">
-              {items.map((item) => (
-                <div key={item.id} className="min-w-0">
-                  <button
-                    onClick={() => setTryOn(tryOn?.id === item.id ? null : item)}
-                    className={`block w-full rounded-md p-6 transition hover:brightness-[0.98] ${tryOn?.id === item.id ? "ring-2 ring-foreground" : ""} ${
-                      item.rarity === "legendary" ? "legendary-frame" : item.rarity === "epic" ? "epic-frame" : ""
-                    }`}
-                    style={{ background: "var(--panel)" }}
-                    aria-label={`Try on ${item.name}`}
-                  >
-                    <div className="grid aspect-[4/3] place-items-center rounded-[3px]" style={{ background: FRAME_BG[item.slot] }}>
-                      <Avatar equipped={{ ...equipped, [item.slot]: item.id }} size={112} />
+            <div className="grid gap-12">
+              {groups.map((g) => (
+                <section key={g.rarity} aria-labelledby={`rarity-${g.rarity}`} className="grid gap-5">
+                  <div className="flex items-center gap-3 border-b border-surface-border pb-3">
+                    <h2 id={`rarity-${g.rarity}`} className="text-title-lg font-semibold tracking-tight">
+                      {RARITY_LABEL[g.rarity]}
+                    </h2>
+                    <span className={`rarity rarity-${g.rarity}`}>{g.items.length}</span>
+                  </div>
+                  {g.rarity === "mythic" ? (
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {g.items.map((item) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => setSlot("theme")}
+                          className={`sk-${THEME_SKINS[item.id]} mf-card flex items-center gap-4 p-4 text-left`}
+                          aria-label={`${item.name}, Mythic app skin. View details`}
+                        >
+                          <span className="mf-art grid size-20 shrink-0 place-items-center rounded-2xl">
+                            <RajCompanion size={66} feeling="proud" />
+                          </span>
+                          <span className="relative min-w-0 flex-1">
+                            <span className="mf-accent block text-caption font-semibold tracking-[0.16em] uppercase">Mythic app skin</span>
+                            <span className="mf-foil-text block text-title-lg font-extrabold">{item.name}</span>
+                            <span className="mf-muted block text-body">
+                              {owned(item.id) ? "Owned" : howToGet(item) === "money" ? formatPrice(item.pricePence!) : `${item.price.toLocaleString()} coins`} · View
+                            </span>
+                          </span>
+                          <span className="mf-seal relative hidden shrink-0 sm:inline-grid" style={{ width: 52, height: 52, fontSize: 8 }}>Mythic</span>
+                        </button>
+                      ))}
                     </div>
-                  </button>
-                  <div className="mt-3 flex items-center gap-2 text-body-lg">
-                    <span className="truncate">{item.name}</span>
-                    <span className="shrink-0 text-muted-foreground">
-                      <PriceLabel item={item} />
-                    </span>
-                    {item.proOnly && <span aria-label="Pro only" title="Pro only" className="ml-auto size-2.5 shrink-0 rounded-full bg-brand" />}
-                  </div>
-                  <div className="mt-1.5 flex flex-wrap gap-1.5">
-                    <RarityBadge item={item} />
-                    <SourceTag item={item} />
-                  </div>
-                  <p className="mt-1.5 text-body text-muted-foreground">{item.description}</p>
-                  <div className="mt-3">
-                    <BuyButton item={item} />
-                  </div>
-                </div>
+                  ) : (
+                    <div className="grid grid-cols-1 gap-x-8 gap-y-10 sm:grid-cols-2 xl:grid-cols-3">
+                      {g.items.map((item) => (
+                    <div key={item.id} className="min-w-0">
+                      <button
+                        onClick={() => setTryOn(tryOn?.id === item.id ? null : item)}
+                        className={`block w-full rounded-md p-6 transition hover:brightness-[0.98] ${tryOn?.id === item.id ? "ring-2 ring-foreground" : ""} ${
+                          item.rarity === "legendary" ? "legendary-frame" : item.rarity === "epic" ? "epic-frame" : ""
+                        }`}
+                        style={{ background: "var(--panel)" }}
+                        aria-label={`Try on ${item.name}`}
+                      >
+                        <div className="grid aspect-[4/3] place-items-center rounded-[3px]" style={{ background: FRAME_BG[item.slot] }}>
+                          <Avatar equipped={{ ...equipped, [item.slot]: item.id }} size={112} />
+                        </div>
+                      </button>
+                      <div className="mt-3 flex items-center gap-2 text-body-lg">
+                        <span className="truncate">{item.name}</span>
+                        <span className="shrink-0 text-muted-foreground">
+                          <PriceLabel item={item} />
+                        </span>
+                        {item.proOnly && <span aria-label="Pro only" title="Pro only" className="ml-auto size-2.5 shrink-0 rounded-full bg-brand" />}
+                      </div>
+                      <div className="mt-1.5 flex flex-wrap gap-1.5">
+                        <RarityBadge item={item} />
+                        <SourceTag item={item} />
+                      </div>
+                      <p className="mt-1.5 text-body text-muted-foreground">{item.description}</p>
+                      <div className="mt-3">
+                        <BuyButton item={item} />
+                      </div>
+                    </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
               ))}
             </div>
           )}
