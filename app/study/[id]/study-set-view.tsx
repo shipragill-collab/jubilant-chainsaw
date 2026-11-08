@@ -1,10 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { RajChat } from "@/components/raj-chat";
 import { Badge, Button, Card, Section } from "@/components/ui";
 import { api, getPlayerId } from "@/lib/player";
+import { refreshProfiles } from "@/lib/use-profile";
 import type { Flashcard, StudyNotes, StudySet } from "@/lib/types";
 
 type PublicSet = Omit<StudySet, "ownerId" | "material">;
@@ -240,9 +241,15 @@ function FlashcardsView({ setId, cards }: { setId: string; cards: Flashcard[] })
     [deck.length],
   );
 
+  const recorded = useRef(false);
   const mark = useCallback(
     (value: "known" | "learning") => {
       if (cardIndex === undefined) return;
+      if (!recorded.current) {
+        recorded.current = true;
+        // Reviewing flashcards counts toward the study streak.
+        void api("/api/activity", { body: { playerId: getPlayerId() } }).then(refreshProfiles).catch(() => undefined);
+      }
       setProgress((prev) => {
         const next = { ...prev, [cardIndex]: value };
         saveProgress(setId, next);

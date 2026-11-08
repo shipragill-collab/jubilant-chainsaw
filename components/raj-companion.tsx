@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import type { RajFeeling } from "@/lib/raj-mood";
 
 /**
  * Raj, Quiz Duel's AI study companion: a living flashcard.
@@ -17,6 +18,7 @@ export type RajState = "idle" | "thinking" | "happy";
 
 export function RajCompanion({
   state = "idle",
+  feeling = "happy",
   listening = false,
   size = 40,
   followPointer = false,
@@ -24,6 +26,8 @@ export function RajCompanion({
   className = "",
 }: {
   state?: RajState;
+  /** How Raj feels about the player's study habit; shows while idle. */
+  feeling?: RajFeeling;
   listening?: boolean;
   size?: number;
   /** Let the eyes follow the pointer while idle (use on large, featured Rajes). */
@@ -55,12 +59,13 @@ export function RajCompanion({
     <svg
       ref={svg}
       // Re-key on state so one-shot animations (the hop, the sparks) replay each time.
-      key={state}
+      key={`${state}-${feeling}`}
       className={`raj shrink-0 ${className}`}
       viewBox="-14 -14 148 150"
       width={size}
       height={size}
       data-state={state}
+      data-feeling={feeling}
       data-listening={listening ? "true" : "false"}
       role={label ? "img" : undefined}
       aria-label={label}
@@ -76,6 +81,11 @@ export function RajCompanion({
         <rect className="raj-dot" x="104" y="10" width="7" height="7" rx="2" />
         <rect className="raj-dot" x="114" y="2" width="7" height="7" rx="2" />
         <rect className="raj-dot" x="124" y="-6" width="7" height="7" rx="2" />
+      </g>
+      <g className="raj-zzz">
+        <path d="M100 4 h9 l-9 10 h9" />
+        <path d="M113 -10 h7 l-7 8 h7" />
+        <path d="M123 -22 h5 l-5 6 h5" />
       </g>
       <g className="raj-float">
         <g className="raj-tilt">
@@ -96,7 +106,26 @@ export function RajCompanion({
               </g>
             </g>
           </g>
+          <g className="raj-lids">
+            <rect x="40" y="52" width="14" height="7.5" rx="1" />
+            <rect x="66" y="52" width="14" height="7.5" rx="1" />
+          </g>
+          <g className="raj-closed-eyes">
+            <path className="raj-stroke" d="M41 60 Q47 65 53 60" />
+            <path className="raj-stroke" d="M67 60 Q73 65 79 60" />
+          </g>
+          <g className="raj-brows-up">
+            <path className="raj-stroke" d="M40 47 Q47 42 54 47" />
+            <path className="raj-stroke" d="M66 47 Q73 42 80 47" />
+          </g>
+          <g className="raj-brows-worry">
+            <path className="raj-stroke" d="M40 50 L53 45" />
+            <path className="raj-stroke" d="M80 50 L67 45" />
+          </g>
           <path className="raj-stroke raj-mouth-smile" d="M53 78 Q60 84 67 78" />
+          <path className="raj-stroke raj-mouth-frown" d="M53 82 Q60 76 67 82" />
+          <path className="raj-stroke raj-mouth-wobble" d="M51 80 Q55.5 76 60 80 T69 80" />
+          <circle className="raj-feature raj-mouth-o" cx="60" cy="80" r="3.5" />
           <path className="raj-stroke raj-mouth-flat" d="M55 80 H65" />
           <path className="raj-feature raj-mouth-open" d="M51 76 Q60 90 69 76 Z" />
         </g>

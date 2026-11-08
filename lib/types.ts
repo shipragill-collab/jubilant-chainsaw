@@ -103,6 +103,8 @@ export interface Profile {
   owned: string[];
   equipped: Partial<Record<"skin" | "hat" | "eyes" | "neck", string>>;
   usage: { day: string; aiGenerations: number; rajMessages: number };
+  /** When the player studied (ms timestamps, at most one per 20 minutes, last ~120). */
+  activity?: number[];
   /** Stripe ids, when real payments are connected. */
   stripeCustomerId?: string;
   stripeSubscriptionId?: string;

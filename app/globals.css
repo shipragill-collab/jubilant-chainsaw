@@ -271,3 +271,74 @@ body {
 .raj-status i { width: 7px; height: 7px; border-radius: 2px; background: var(--raj-forest); }
 .raj-status[data-state="thinking"] i { background: var(--raj-mustard); animation: raj-status-spin 1.2s cubic-bezier(0.6, 0, 0.4, 1) infinite; }
 .raj-status[data-state="happy"] i { border-radius: 50%; background: var(--raj-mustard); }
+
+/* Raj's feelings (lib/raj-mood.ts): shown while idle, driven by the study streak. */
+.raj .raj-zzz { fill: none; stroke: var(--raj-forest); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; opacity: 0; }
+.raj .raj-lids rect { fill: var(--raj-forest); }
+.raj .raj-lids, .raj .raj-closed-eyes, .raj .raj-brows-up, .raj .raj-brows-worry,
+.raj .raj-mouth-frown, .raj .raj-mouth-wobble, .raj .raj-mouth-o { opacity: 0; transition: opacity 0.2s; }
+.raj .raj-body, .raj .raj-lids rect { transition: fill 0.4s; }
+
+/* proud: beaming, ribbon perked, sparks twinkle now and then */
+.raj[data-state="idle"][data-feeling="proud"] .raj-dot-eyes,
+.raj[data-state="idle"][data-feeling="proud"] .raj-mouth-smile { opacity: 0; }
+.raj[data-state="idle"][data-feeling="proud"] .raj-happy-eyes,
+.raj[data-state="idle"][data-feeling="proud"] .raj-mouth-open { opacity: 1; }
+.raj[data-state="idle"][data-feeling="proud"] .raj-ribbon { animation: raj-perk 2.4s ease-in-out infinite; }
+.raj[data-state="idle"][data-feeling="proud"] .raj-spark { animation: raj-twinkle 3.2s ease-in-out infinite; }
+.raj[data-state="idle"][data-feeling="proud"] .raj-spark:nth-of-type(2) { animation-delay: 0.2s; }
+.raj[data-state="idle"][data-feeling="proud"] .raj-spark:nth-of-type(3) { animation-delay: 0.4s; }
+.raj[data-state="idle"][data-feeling="proud"] .raj-float { animation: raj-bounce 2.4s cubic-bezier(0.3, 0, 0.3, 1) infinite; }
+
+/* new: curious head tilt */
+.raj[data-state="idle"][data-feeling="new"] .raj-tilt { transform: rotate(-5deg); }
+.raj[data-state="idle"][data-feeling="new"] .raj-brows-up { opacity: 1; }
+
+/* eager: wide eyes, raised brows, little hops */
+.raj[data-state="idle"][data-feeling="eager"] .raj-brows-up { opacity: 1; }
+.raj[data-state="idle"][data-feeling="eager"] .raj-dot-eyes { transform: scale(1.18); transform-origin: 50% 50%; }
+.raj[data-state="idle"][data-feeling="eager"] .raj-float { animation: raj-bounce 1.6s cubic-bezier(0.3, 0, 0.3, 1) infinite; }
+
+/* worried: slanted brows, wobbly mouth, an occasional nervous shuffle */
+.raj[data-state="idle"][data-feeling="worried"] .raj-brows-worry,
+.raj[data-state="idle"][data-feeling="worried"] .raj-mouth-wobble { opacity: 1; }
+.raj[data-state="idle"][data-feeling="worried"] .raj-mouth-smile { opacity: 0; }
+.raj[data-state="idle"][data-feeling="worried"] .raj-tilt { animation: raj-fidget 3.5s ease-in-out infinite; }
+
+/* sad: heavy lids, frown, droopy ribbon, faded colour, sunk a little */
+.raj[data-state="idle"][data-feeling="sad"] .raj-body { fill: #5d8a72; }
+.raj[data-state="idle"][data-feeling="sad"] .raj-lids rect { fill: #5d8a72; }
+.raj[data-state="idle"][data-feeling="sad"] .raj-lids,
+.raj[data-state="idle"][data-feeling="sad"] .raj-brows-worry,
+.raj[data-state="idle"][data-feeling="sad"] .raj-mouth-frown { opacity: 1; }
+.raj[data-state="idle"][data-feeling="sad"] .raj-mouth-smile { opacity: 0; }
+.raj[data-state="idle"][data-feeling="sad"] .raj-ribbon { transform: rotate(22deg); animation: none; }
+.raj[data-state="idle"][data-feeling="sad"] .raj-float { animation: raj-sigh 5s ease-in-out infinite; }
+
+/* sleepy: eyes shut, little snore, z's drift up, slumped */
+.raj[data-state="idle"][data-feeling="sleepy"] .raj-body { fill: #7a9486; }
+.raj[data-state="idle"][data-feeling="sleepy"] .raj-dot-eyes,
+.raj[data-state="idle"][data-feeling="sleepy"] .raj-mouth-smile { opacity: 0; }
+.raj[data-state="idle"][data-feeling="sleepy"] .raj-closed-eyes,
+.raj[data-state="idle"][data-feeling="sleepy"] .raj-mouth-o { opacity: 1; }
+.raj[data-state="idle"][data-feeling="sleepy"] .raj-tilt { transform: rotate(-10deg) translateY(3px); }
+.raj[data-state="idle"][data-feeling="sleepy"] .raj-ribbon { transform: rotate(30deg); animation: none; }
+.raj[data-state="idle"][data-feeling="sleepy"] .raj-float { animation: raj-breathe 4s ease-in-out infinite; }
+.raj[data-state="idle"][data-feeling="sleepy"] .raj-mouth-o { animation: raj-snore 4s ease-in-out infinite; transform-origin: 50% 50%; }
+.raj[data-state="idle"][data-feeling="sleepy"] .raj-zzz { opacity: 1; }
+.raj[data-state="idle"][data-feeling="sleepy"] .raj-zzz path { animation: raj-z 3s ease-in-out infinite; opacity: 0; }
+.raj[data-state="idle"][data-feeling="sleepy"] .raj-zzz path:nth-child(2) { animation-delay: 1s; }
+.raj[data-state="idle"][data-feeling="sleepy"] .raj-zzz path:nth-child(3) { animation-delay: 2s; }
+
+@keyframes raj-perk { 50% { transform: rotate(-10deg) translateY(-2px); } }
+@keyframes raj-twinkle { 0%, 70%, 100% { stroke-dashoffset: 24; } 80%, 90% { stroke-dashoffset: 0; } }
+@keyframes raj-bounce { 0%, 60%, 100% { transform: translateY(0) scale(1, 1); } 15% { transform: translateY(0) scale(1.05, 0.94); } 35% { transform: translateY(-7px) scale(0.98, 1.03); } }
+@keyframes raj-fidget { 0%, 80%, 100% { transform: rotate(0); } 85% { transform: rotate(-4deg); } 90% { transform: rotate(3deg); } 95% { transform: rotate(-2deg); } }
+@keyframes raj-sigh { 0%, 100% { transform: translateY(3px) scale(1, 0.97); } 50% { transform: translateY(5px) scale(1.02, 0.95); } }
+@keyframes raj-breathe { 50% { transform: translateY(2px) scale(1.03, 0.97); } }
+@keyframes raj-snore { 50% { transform: scale(1.5); } }
+@keyframes raj-z { 0% { opacity: 0; transform: translate(-6px, 8px) scale(0.6); } 30% { opacity: 1; } 100% { opacity: 0; transform: translate(4px, -10px) scale(1.1); } }
+@media (prefers-reduced-motion: reduce) {
+  .raj[data-state="idle"][data-feeling="proud"] .raj-spark { stroke-dashoffset: 0; }
+  .raj[data-state="idle"][data-feeling="sleepy"] .raj-zzz path { opacity: 1; }
+}

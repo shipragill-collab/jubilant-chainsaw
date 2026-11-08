@@ -60,6 +60,19 @@ Raj is available on the **Ask Raj** page, and as a tab in every study set.
 - **Without a key:** an offline mode finds the most relevant sentences in your notes, summarizes them, and runs flashcard quizzes with answer checking.
 - `/api/tutor` is rate-limited per IP (40 messages per 10 minutes), so a public deployment can't run up your API bill.
 
+### Raj's mood and your streak
+
+Raj reacts to how regularly you study, a bit like Duo in Duolingo:
+
+- **Studied today:** happy. With a 7-day streak or longer, proud: beaming arc eyes and twinkling sparks.
+- **Missed yesterday:** eager, with wide eyes and little hops, while your streak is still alive.
+- **Away 2–3 days:** worried, with slanted brows and a wobbly mouth.
+- **Away 4–13 days:** sad, with heavy eyelids, a frown, a droopy ribbon and faded colour.
+- **Away 2 weeks or more:** asleep, with closed eyes and floating "z"s.
+- **New player:** curious.
+
+Creating a duel or study set, answering duel questions, joining a duel, practising with Raj and reviewing flashcards all count as studying. Days follow your local time zone. Raj's mood card (on the home page and the Ask Raj page) shows the streak, the last 7 days and one next step, and a small Raj in the header shows today's mood. The rules live in `lib/raj-mood.ts`.
+
 ### Question generation
 
 - **With `ANTHROPIC_API_KEY` set:** Claude (`claude-opus-5-5`) writes the quiz using structured outputs, so the response is always valid JSON. Server-side refusal fallback is on (`fallbacks: "default"`).

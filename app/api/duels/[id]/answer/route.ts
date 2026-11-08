@@ -1,6 +1,6 @@
 import { getDuel } from "@/lib/duels";
 import { duelOutcome, submitAnswer, toView } from "@/lib/game";
-import { rewardDuel } from "@/lib/profile";
+import { recordActivity, rewardDuel } from "@/lib/profile";
 import { body, handle, playerIdFrom } from "@/lib/http";
 import { update } from "@/lib/store";
 
@@ -14,6 +14,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     return update((db) => {
       const { duel, quiz } = getDuel(db, id);
       const answer = submitAnswer(duel, quiz, playerId, index, choice);
+      recordActivity(db, playerId);
       const outcome = duelOutcome(duel);
       if (outcome.status === "finished") rewardDuel(db, duel, outcome.winnerId);
       const q = quiz.questions[index];

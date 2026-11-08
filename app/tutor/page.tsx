@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { RajChat } from "@/components/raj-chat";
+import { RajMoodCard } from "@/components/raj-mood-card";
 import { Section } from "@/components/ui";
 import { api, getPlayerId } from "@/lib/player";
 import type { StudySetSummary } from "@/lib/types";
@@ -29,7 +30,8 @@ export default function TutorPage() {
       intro="Raj is your AI study tutor: clear explanations, answers about your notes, and quizzes until it sticks."
       aside={
         <div className="space-y-4 pt-4">
-          <p className="text-label font-medium tracking-wide text-muted-foreground uppercase">Study with</p>
+          <RajMoodCard compact href="/study" />
+          <p className="pt-2 text-label font-medium tracking-wide text-muted-foreground uppercase">Study with</p>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setSetId(null)}

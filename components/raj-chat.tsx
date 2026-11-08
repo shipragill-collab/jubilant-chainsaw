@@ -2,6 +2,9 @@
 
 import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import { getPlayerId } from "@/lib/player";
+import type { RajFeeling } from "@/lib/raj-mood";
+import { refreshProfiles } from "@/lib/use-profile";
+import { useRajActivity } from "@/lib/use-raj";
 import { RAJ_STATUS, RajCompanion, type RajState } from "./raj-companion";
 import { Button, ErrorText } from "./ui";
 
@@ -60,10 +63,21 @@ export type RajMood = "happy" | "thinking" | "celebrate" | "encourage";
 const MOOD_STATE: Record<RajMood, RajState> = { happy: "idle", encourage: "idle", thinking: "thinking", celebrate: "happy" };
 
 /** Raj's face in chat: the living-flashcard companion, sized for avatars. */
-export function RajAvatar({ size = "md", mood = "happy", listening = false }: { size?: "md" | "lg"; mood?: RajMood; listening?: boolean }) {
+export function RajAvatar({
+  size = "md",
+  mood = "happy",
+  listening = false,
+  feeling,
+}: {
+  size?: "md" | "lg";
+  mood?: RajMood;
+  listening?: boolean;
+  feeling?: RajFeeling;
+}) {
   return (
     <RajCompanion
       state={MOOD_STATE[mood]}
+      feeling={feeling}
       listening={listening}
       size={size === "lg" ? 120 : 40}
       followPointer={size === "lg"}
@@ -122,6 +136,9 @@ export function RajChat({ setId, setTitle }: { setId: string | null; setTitle?: 
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<string | null>(null);
   const [typing, setTyping] = useState(false);
+  const activity = useRajActivity();
+  // Once you're chatting, you're studying today, so Raj cheers up.
+  const feeling: RajFeeling | undefined = activity ? (messages.length ? (activity.streak >= 7 ? "proud" : "happy") : activity.feeling) : undefined;
   const scroller = useRef<HTMLDivElement>(null);
   const abort = useRef<AbortController | null>(null);
 
@@ -181,6 +198,7 @@ export function RajChat({ setId, setTitle }: { setId: string | null; setTitle?: 
         setMessages([...history, { role: "assistant", content: reply }]);
       }
       if (!reply.trim()) throw new Error("Raj didn't say anything. Try again?");
+      refreshProfiles();
     } catch (err) {
       if ((err as Error).name === "AbortError") return;
       setError((err as Error).message);
@@ -213,7 +231,7 @@ export function RajChat({ setId, setTitle }: { setId: string | null; setTitle?: 
   return (
     <div className="surface raj-room flex h-[min(680px,75dvh)] flex-col overflow-hidden">
       <div className="flex items-center gap-3 border-b border-surface-border px-5 py-3">
-        <RajAvatar mood={mood} listening={typing && !busy} />
+        <RajAvatar mood={mood} listening={typing && !busy} feeling={feeling} />
         <div className="min-w-0 flex-1">
           <p className="flex items-center gap-2 text-body font-semibold">
             Raj
@@ -245,7 +263,7 @@ export function RajChat({ setId, setTitle }: { setId: string | null; setTitle?: 
       <div ref={scroller} className="flex-1 space-y-5 overflow-y-auto px-5 py-6" aria-live="polite">
         {messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center gap-5 text-center">
-            <RajAvatar size="lg" listening={typing} />
+            <RajAvatar size="lg" listening={typing} feeling={feeling} />
             <div className="space-y-1">
               <p className="text-title-lg font-semibold">Hi, I&apos;m Raj</p>
               <p className="mx-auto max-w-sm text-body text-muted-foreground">
@@ -272,7 +290,7 @@ export function RajChat({ setId, setTitle }: { setId: string | null; setTitle?: 
               </div>
             ) : (
               <div key={i} className="flex gap-3">
-                <RajAvatar mood={i === messages.length - 1 ? mood : "happy"} />
+                <RajAvatar mood={i === messages.length - 1 ? mood : "happy"} feeling={feeling} />
                 <div className="max-w-[85%] pt-1.5 text-body-lg leading-relaxed">
                   {m.content ? (
                     (() => {

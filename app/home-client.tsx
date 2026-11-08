@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { PreviewCard, SetThumbnail } from "@/components/gallery";
+import { RajMoodCard } from "@/components/raj-mood-card";
 import { Button, Panel, Spinner, buttonClass, inputClass, ErrorText } from "@/components/ui";
 import { api, getPlayerId, getSavedName, saveName } from "@/lib/player";
 import { SAMPLES } from "@/lib/samples";
@@ -25,6 +26,9 @@ export function HomeClient({ collage }: { collage: ReactNode }) {
   return (
     <>
       <Hero collage={collage} />
+      <section className="pb-12 sm:pb-16">
+        <RajMoodCard />
+      </section>
       <CategoryBand sets={sets ?? []} />
       <Gallery sets={sets} />
       <StartDuel />

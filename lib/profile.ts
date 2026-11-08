@@ -38,6 +38,14 @@ export function peekProfile(db: Db, playerId: string, now = Date.now()) {
   return { equipped: p?.equipped ?? DEFAULT_EQUIPPED, pro };
 }
 
+/** Note that the player studied just now (drives Raj's mood and streak). */
+export function recordActivity(db: Db, playerId: string, now = Date.now()) {
+  const p = profileOf(db, playerId, now);
+  const list = (p.activity ??= []);
+  if (!list.length || now - list[list.length - 1] > 20 * 60_000) list.push(now);
+  if (list.length > 120) list.splice(0, list.length - 120);
+}
+
 export const isPro = (p: Profile, now = Date.now()) => p.plan === "pro" && (p.proUntil === null || p.proUntil > now);
 
 /** Count one use of a metered feature, or refuse if today's free allowance is used up. */
@@ -49,6 +57,7 @@ export function consume(db: Db, playerId: string, kind: "aiGenerations" | "rajMe
     throw new GameError(`You've used today's ${what} on the Free plan. Upgrade to Pro for unlimited, or come back tomorrow.`, 402);
   }
   p.usage[kind] += 1;
+  recordActivity(db, playerId, now);
 }
 
 export function buyItem(db: Db, playerId: string, itemId: string) {
@@ -107,6 +116,7 @@ export function profileView(p: Profile, now = Date.now()) {
     owned: p.owned,
     equipped: p.equipped,
     usage: p.usage,
+    activity: p.activity ?? [],
     limits: plan.limits,
     hasSubscription: Boolean(p.stripeSubscriptionId),
   };
