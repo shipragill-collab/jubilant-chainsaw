@@ -10,7 +10,7 @@ import { api, getPlayerId } from "@/lib/player";
 import { refreshProfiles } from "@/lib/use-profile";
 
 interface Summary {
-  order: { id: string; kind: "pro" | "coins"; status: string; name: string; detail: string; pricePence: number; coins: number };
+  order: { id: string; kind: "pro" | "coins" | "gems" | "pass" | "item"; status: string; name: string; detail: string; pricePence: number; coins: number; gems: number; recurring: boolean };
   live: boolean;
 }
 
@@ -35,9 +35,10 @@ export default function DemoCheckout() {
     if (!summary) return;
     setBusy(true);
     try {
-      await api("/api/billing/demo", { body: { order: summary.order.id, playerId: getPlayerId() } });
+      const r = await api<{ itemId: string | null }>("/api/billing/demo", { body: { order: summary.order.id, playerId: getPlayerId() } });
       refreshProfiles();
-      router.push(`/shop?purchased=${summary.order.kind}`);
+      const k = summary.order.kind;
+      router.push(k === "pass" ? "/pass?purchased=pass" : k === "pro" ? "/pricing?purchased=pro" : `/shop?purchased=${k}${r.itemId ? `&item=${r.itemId}` : ""}`);
     } catch (err) {
       setError((err as Error).message);
       setBusy(false);
@@ -74,7 +75,7 @@ export default function DemoCheckout() {
             </div>
             <p className="text-title-lg font-semibold tabular-nums">
               {formatPrice(summary.order.pricePence)}
-              {summary.order.kind === "pro" && <span className="text-body font-normal text-muted-foreground"> / month</span>}
+              {summary.order.recurring && <span className="text-body font-normal text-muted-foreground"> / month</span>}
             </p>
           </div>
           <div className="rounded-2xl border border-dashed border-input px-4 py-3 text-body text-muted-foreground">

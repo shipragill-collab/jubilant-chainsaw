@@ -38,18 +38,19 @@ Each study set has its own shareable link. "Your study sets" lists the sets crea
 
 ## Plans, coins and the shop
 
-- **Free:** 5 AI quizzes or study sets a day, and 25 messages with Raj a day.
-- **Pro (£1.99/month):** unlimited AI, 1,000 bonus coins every month, Pro-only items, and a Pro badge on the leaderboard.
-- **Coins:** you earn 20 for finishing a duel (plus 30 for a win, or 15 for a tie), or buy coin packs (£0.99, £2.49, £4.99).
-- **Shop:** coins buy skins and accessories (hats, eyewear and neckwear) for your avatar. You can try items on before buying. Your avatar appears in the header, on duel scoreboards and on the leaderboard.
-- **Leaderboard:** custom rosette badges mark the top three, and every row shows the player's avatar.
-- **Payments:** with `STRIPE_SECRET_KEY` set, purchases go through Stripe Checkout. That's Stripe's hosted page, so this app never sees card details. Monthly renewals come in through the webhook at `/api/billing/webhook`, and "Manage subscription" opens Stripe's billing portal.
-- **Demo mode:** without Stripe keys, the app runs a clearly labelled demo checkout. It grants purchases for £0.00 and never asks for payment details.
-- **Account security:** players are anonymous browser IDs. The real ID is never shown to other players; duel views and the leaderboard use a one-way hash of it instead.
+- **Free:** 5 AI quizzes or study sets a day, and 25 Raj messages a day.
+- **Pro (£1.99/month):** unlimited AI, 1,000 bonus coins each month, a free exclusive skin every month (claimed on the Plans page or in the shop), Pro-only items, and a Pro badge.
+- **Duel Pass (£1.99/month):** a monthly season of 30 tiers. You earn XP from studying (10 per action) and duels (25, plus 25 for a win). The free track rewards every third tier; the pass track rewards every tier with coins, gems, 4 pass-only skins (up to Season Champion) and bling (Prism Shades, Champion Chain).
+- **Currencies:** coins are earned from duels or bought in packs. Gems come from the Duel Pass or gem packs, and buy bling and gemstone skins. A few items are bought directly with money.
+- **The shop:** 50 skins (48 avatar skins and 2 Mythic app skins), each tagged Common, Rare, Epic, Legendary or Mythic, plus hats, eyewear, neckwear and bling. You can filter by rarity, festive, "Buy with £" and "Pass & Pro".
+- **Festive skins:** two each for Christmas, Halloween, Diwali and Easter, on sale only during their festival (Diwali and Easter dates are listed per year in `lib/catalog.ts`). Owners keep them all year.
+- **Payments:** with `STRIPE_SECRET_KEY` set, everything goes through Stripe Checkout, with subscription renewals handled by the webhook. Without it, a clearly labelled demo checkout grants purchases for £0.00 and never asks for card details.
 
-### Midnight Folio, a Mythic app skin
+### Mythic app skins
 
-Midnight Folio costs 3,000 coins. It re-skins the whole app in obsidian and gold leaf:
+**Moonlit Porcelain** (£2.99) re-skins the app in glazed porcelain, cobalt ink and silver, with drifting cobalt petals and soft porcelain sounds. Both Mythic skins share one system of materials and components in `app/globals.css` (`--sk-*` variables per skin).
+
+**Midnight Folio** costs 3,000 coins. It re-skins the whole app in obsidian and gold leaf:
 
 - **Look:** gold-foil buttons, frames with gilt corner brackets, and gold headlines. Raj becomes gilded.
 - **Living parts:** drifting gold dust, frames whose gilt border light circles the edge, and a streak flame that pulses like a heartbeat.

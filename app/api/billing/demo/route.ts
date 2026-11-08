@@ -20,6 +20,6 @@ export async function POST(req: Request) {
   return handle(async () => {
     const b = await body(req);
     const order = await confirmDemo(String(b.order), playerIdFrom(b.playerId));
-    return { ok: true, kind: order.kind };
+    return { ok: true, kind: order.kind, itemId: order.itemId ?? null };
   });
 }

@@ -1,7 +1,8 @@
 import Stripe from "stripe";
-import { COIN_PACKS, PLANS } from "./catalog";
+import { COIN_PACKS, GEM_PACKS, PLANS, itemById } from "./catalog";
+import { PASS } from "./pass";
 import { GameError } from "./game";
-import { grantPro, profileOf } from "./profile";
+import { giveItem, grantPass, grantPro, profileOf } from "./profile";
 import { newId, read, update } from "./store";
 import type { Db, Order } from "./types";
 
@@ -24,23 +25,41 @@ export function appOrigin(req: Request): string {
   return `${proto}://${host}`;
 }
 
-export function describeOrder(o: Pick<Order, "kind" | "packId">) {
+export function describeOrder(o: Pick<Order, "kind" | "packId" | "itemId">) {
   if (o.kind === "pro") {
-    return { name: "Quiz Duel Pro", detail: "Monthly subscription", pricePence: PLANS.pro.pricePence, coins: PLANS.pro.monthlyCoins };
+    return { name: "Quiz Duel Pro", detail: "Monthly subscription", pricePence: PLANS.pro.pricePence, coins: PLANS.pro.monthlyCoins, gems: 0, recurring: true };
+  }
+  if (o.kind === "pass") {
+    return { name: PASS.name, detail: "Monthly subscription · 30 reward tiers", pricePence: PASS.pricePence, coins: 0, gems: 0, recurring: true };
+  }
+  if (o.kind === "item") {
+    const item = itemById(o.itemId);
+    if (!item?.pricePence) throw new GameError("That item isn't sold for money.", 404);
+    return { name: item.name, detail: `${item.rarity[0].toUpperCase()}${item.rarity.slice(1)} ${item.slot === "theme" ? "app skin" : "skin"}`, pricePence: item.pricePence, coins: 0, gems: 0, recurring: false };
+  }
+  if (o.kind === "gems") {
+    const pack = GEM_PACKS.find((p) => p.id === o.packId);
+    if (!pack) throw new GameError("Unknown gem pack.", 404);
+    return { name: `${pack.gems} gems`, detail: `${pack.label} pack`, pricePence: pack.pricePence, coins: 0, gems: pack.gems, recurring: false };
   }
   const pack = COIN_PACKS.find((p) => p.id === o.packId);
   if (!pack) throw new GameError("Unknown coin pack.", 404);
-  return { name: `${pack.coins.toLocaleString()} coins`, detail: `${pack.label} pack`, pricePence: pack.pricePence, coins: pack.coins };
+  return { name: `${pack.coins.toLocaleString()} coins`, detail: `${pack.label} pack`, pricePence: pack.pricePence, coins: pack.coins, gems: 0, recurring: false };
 }
 
 /** Start a purchase. Returns where to send the browser. */
-export async function startCheckout(req: Request, playerId: string, kind: unknown, packId: unknown): Promise<string> {
-  if (kind !== "pro" && kind !== "coins") throw new GameError("Unknown purchase.");
+export async function startCheckout(req: Request, playerId: string, kind: unknown, packId: unknown, itemId?: unknown): Promise<string> {
+  if (kind !== "pro" && kind !== "coins" && kind !== "gems" && kind !== "pass" && kind !== "item") throw new GameError("Unknown purchase.");
+  if (kind === "item") {
+    const db = await read();
+    if (db.profiles[playerId]?.owned.includes(String(itemId))) throw new GameError("You already own this.", 409);
+  }
   const order: Order = {
     id: newId(16),
     playerId,
     kind,
-    packId: kind === "coins" ? String(packId) : undefined,
+    packId: kind === "coins" || kind === "gems" ? String(packId) : undefined,
+    itemId: kind === "item" ? String(itemId) : undefined,
     createdAt: Date.now(),
     status: "pending",
   };
@@ -53,7 +72,7 @@ export async function startCheckout(req: Request, playerId: string, kind: unknow
 
   const origin = appOrigin(req);
   const session = await stripe().checkout.sessions.create({
-    mode: kind === "pro" ? "subscription" : "payment",
+    mode: item.recurring ? "subscription" : "payment",
     line_items: [
       {
         quantity: 1,
@@ -61,12 +80,12 @@ export async function startCheckout(req: Request, playerId: string, kind: unknow
           currency: "gbp",
           unit_amount: item.pricePence,
           product_data: { name: item.name, description: item.detail },
-          ...(kind === "pro" ? { recurring: { interval: "month" as const } } : {}),
+          ...(item.recurring ? { recurring: { interval: "month" as const } } : {}),
         },
       },
     ],
     metadata: { orderId: order.id },
-    ...(kind === "pro" ? { subscription_data: { metadata: { orderId: order.id } } } : {}),
+    ...(item.recurring ? { subscription_data: { metadata: { orderId: order.id } } } : {}),
     success_url: `${origin}/api/billing/return?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/shop?checkout=cancelled`,
   });
@@ -80,12 +99,19 @@ export function fulfil(db: Db, orderId: string, stripeIds?: { customer?: string 
   if (!order) throw new GameError("Order not found.", 404);
   if (order.status === "paid") return order;
   const p = profileOf(db, order.playerId);
+  if (stripeIds?.customer) p.stripeCustomerId = stripeIds.customer;
   if (order.kind === "pro") {
     grantPro(p);
-    if (stripeIds?.customer) p.stripeCustomerId = stripeIds.customer;
     if (stripeIds?.subscription) p.stripeSubscriptionId = stripeIds.subscription;
+  } else if (order.kind === "pass") {
+    grantPass(p);
+    if (stripeIds?.subscription) p.stripePassSubscriptionId = stripeIds.subscription;
+  } else if (order.kind === "item") {
+    giveItem(p, order.itemId!);
   } else {
-    p.coins += describeOrder(order).coins;
+    const d = describeOrder(order);
+    p.coins += d.coins;
+    p.gems = (p.gems ?? 0) + d.gems;
   }
   order.status = "paid";
   p.credited.push(order.id);
@@ -127,27 +153,35 @@ export async function handleWebhook(rawBody: string, signature: string | null) {
       (invoice as unknown as { parent?: { subscription_details?: { subscription?: string } } }).parent?.subscription_details?.subscription;
     if (!sub) return;
     await update((db) => {
-      const entry = Object.entries(db.profiles).find(([, p]) => p.stripeSubscriptionId === sub);
-      if (entry) grantPro(profileOf(db, entry[0]));
+      for (const [id, p] of Object.entries(db.profiles)) {
+        if (p.stripeSubscriptionId === sub) grantPro(profileOf(db, id));
+        if (p.stripePassSubscriptionId === sub) grantPass(profileOf(db, id));
+      }
     });
   } else if (event.type === "customer.subscription.deleted") {
     const sub = event.data.object as Stripe.Subscription;
     await update((db) => {
-      const entry = Object.entries(db.profiles).find(([, p]) => p.stripeSubscriptionId === sub.id);
-      if (entry) delete entry[1].stripeSubscriptionId; // Pro runs to the end of the paid period
+      // The subscription runs to the end of the paid period.
+      for (const p of Object.values(db.profiles)) {
+        if (p.stripeSubscriptionId === sub.id) delete p.stripeSubscriptionId;
+        if (p.stripePassSubscriptionId === sub.id) delete p.stripePassSubscriptionId;
+      }
     });
   }
 }
 
 /** Manage or cancel Pro. Stripe: the billing portal. Demo: cancel immediately. */
-export async function manageSubscription(req: Request, playerId: string): Promise<string> {
+export async function manageSubscription(req: Request, playerId: string, which: "pro" | "pass" = "pro"): Promise<string> {
   if (!paymentsLive()) {
     await update((db) => {
       const p = profileOf(db, playerId);
-      p.plan = "free";
-      p.proUntil = null;
+      if (which === "pass") p.passUntil = null;
+      else {
+        p.plan = "free";
+        p.proUntil = null;
+      }
     });
-    return "/pricing?cancelled=1";
+    return `/pricing?cancelled=${which}`;
   }
   const db = await read();
   const customer = db.profiles[playerId]?.stripeCustomerId;

@@ -105,9 +105,16 @@ export interface Profile {
   usage: { day: string; aiGenerations: number; rajMessages: number };
   /** When the player studied (ms timestamps, at most one a minute, last ~600). */
   activity?: number[];
+  /** Premium currency: earned on the Duel Pass or bought in packs; buys bling. */
+  gems?: number;
+  /** Duel Pass access lasts until this time (ms). */
+  passUntil?: number | null;
+  /** This season's Duel Pass progress. */
+  pass?: { season: string; xp: number; claimed: string[] };
   /** Stripe ids, when real payments are connected. */
   stripeCustomerId?: string;
   stripeSubscriptionId?: string;
+  stripePassSubscriptionId?: string;
   /** Checkout sessions already credited (idempotency). */
   credited: string[];
 }
@@ -115,8 +122,9 @@ export interface Profile {
 export interface Order {
   id: string;
   playerId: string;
-  kind: "pro" | "coins";
+  kind: "pro" | "coins" | "gems" | "pass" | "item";
   packId?: string;
+  itemId?: string;
   createdAt: number;
   status: "pending" | "paid";
 }

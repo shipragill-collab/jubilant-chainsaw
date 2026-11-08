@@ -7,7 +7,9 @@ import { useProfile } from "@/lib/use-profile";
 import { useRajActivity } from "@/lib/use-raj";
 
 /** Slow gold dust drifting up the page (Midnight Folio). Static under reduced motion. */
-function GoldDust() {
+const PARTICLE_RGB: Record<string, string> = { "midnight-folio": "242, 217, 138", "moonlit-porcelain": "47, 84, 200" };
+
+function GoldDust({ petals = false, rgb = PARTICLE_RGB["midnight-folio"] }: { petals?: boolean; rgb?: string }) {
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     const canvas = ref.current;
@@ -35,10 +37,15 @@ function GoldDust() {
         const x = (s.x + Math.sin(t / 4000 + s.sway) * 0.006) * w;
         const a = 0.25 + 0.35 * (0.5 + 0.5 * Math.sin(t / 900 + s.tw));
         g.beginPath();
-        g.fillStyle = `rgba(242, 217, 138, ${a})`;
-        g.shadowColor = "rgba(226, 182, 92, 0.6)";
-        g.shadowBlur = 6;
-        g.arc(x, s.y * h, s.r, 0, Math.PI * 2);
+        g.fillStyle = `rgba(${rgb}, ${petals ? a * 0.7 : a})`;
+        g.shadowColor = `rgba(${rgb}, 0.5)`;
+        g.shadowBlur = petals ? 0 : 6;
+        if (petals) {
+          // a small cobalt petal, turning slowly as it drifts
+          g.ellipse(x, s.y * h, s.r * 2.2, s.r * 1.1, t / 3000 + s.sway, 0, Math.PI * 2);
+        } else {
+          g.arc(x, s.y * h, s.r, 0, Math.PI * 2);
+        }
         g.fill();
       }
       if (!reduce && !document.hidden) raf = requestAnimationFrame(draw);
@@ -49,7 +56,7 @@ function GoldDust() {
     window.addEventListener("resize", resize);
     document.addEventListener("visibilitychange", onVis);
     return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); document.removeEventListener("visibilitychange", onVis); };
-  }, []);
+  }, [petals, rgb]);
   return <canvas ref={ref} aria-hidden className="mf-dust" />;
 }
 
@@ -92,7 +99,7 @@ export function SkinProvider() {
     studiedBefore.current = activity.studiedToday;
   }, [activity, skin]);
 
-  return skin === "midnight-folio" ? <GoldDust /> : null;
+  return skin ? <GoldDust key={skin} petals={skin === "moonlit-porcelain"} rgb={PARTICLE_RGB[skin]} /> : null;
 }
 
 /** Header toggle for the skin's sounds; only shown while the skin is on. */

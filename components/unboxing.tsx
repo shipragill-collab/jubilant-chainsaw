@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { ShopItem } from "@/lib/catalog";
+import { THEME_SKINS, type ShopItem } from "@/lib/catalog";
 import { sfx } from "@/lib/sfx";
 import { RajCompanion } from "./raj-companion";
 
@@ -17,6 +17,7 @@ type Phase = "drop" | "shake" | "reveal" | "done";
  * Under reduced motion it goes straight to the reveal.
  */
 export function Unboxing({ item, onEquip, onClose }: { item: ShopItem; onEquip: () => void; onClose: () => void }) {
+  const scope = `sk-${THEME_SKINS[item.id] ?? "midnight-folio"}`;
   const [phase, setPhase] = useState<Phase>("drop");
   const equipBtn = useRef<HTMLButtonElement>(null);
 
@@ -58,13 +59,13 @@ export function Unboxing({ item, onEquip, onClose }: { item: ShopItem; onEquip: 
   });
 
   return (
-    <div className="mf-unbox" role="dialog" aria-modal="true" aria-label={`${item.name} unlocked`}>
+    <div className={`mf-unbox ${scope}`} role="dialog" aria-modal="true" aria-label={`${item.name} unlocked`}>
       <div className="mf-stage">
         <div className="mf-flip" data-phase={phase}>
           <div className="mf-face mf-filigree">
             <span className="mf-seal" style={{ width: 72, height: 72 }}>?</span>
           </div>
-          <div className="mf-face front mf-scope">
+          <div className="mf-face front">
             <div className="relative grid justify-items-center gap-3">
               <RajCompanion state={phase === "done" || phase === "reveal" ? "happy" : "idle"} size={150} />
               {(phase === "reveal" || phase === "done") && (
@@ -91,8 +92,7 @@ export function Unboxing({ item, onEquip, onClose }: { item: ShopItem; onEquip: 
                 ref={equipBtn}
                 type="button"
                 onClick={onEquip}
-                className="h-12 rounded-full px-6 text-body-lg font-bold text-[#1a1408] shadow-[0_3px_0_#7a5418,0_0_24px_rgba(226,182,92,0.35)] transition active:translate-y-[3px] active:shadow-none"
-                style={{ background: "var(--mf-foil)" }}
+                className="mf-btn h-12 rounded-full px-6 text-body-lg font-bold transition active:translate-y-[3px] active:shadow-none"
               >
                 Equip now
               </button>

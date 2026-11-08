@@ -345,220 +345,236 @@ body {
 }
 
 /* ===============================================================
-   MIDNIGHT FOLIO: Mythic app skin (html[data-skin="midnight-folio"])
-   Obsidian, gold leaf and candlelight. A deliberately dark world, so
-   it applies the same in light and dark mode.
+   MYTHIC APP SKINS (html[data-skin="…"])
+   Each skin defines its materials as --sk-* variables, on the page
+   (:root[data-skin]) and on preview scopes (.sk-<id>, used by shop cards
+   and the unboxing). The shared rules below turn those into buttons,
+   frames, gilt borders, seals and particles.
    =============================================================== */
 @property --gilt-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
 
-:root {
-  --mf-obsidian: #0e1116;
-  --mf-obsidian-raised: #161b23;
-  --mf-obsidian-edge: #232a35;
-  --mf-gold-pale: #f7e7b4;
-  --mf-gold: #e2b65c;
-  --mf-gold-deep: #b07d2b;
-  --mf-gold-shadow: #7a5418;
-  --mf-parchment: #f3ebdd;
-  --mf-parchment-muted: #a9a08f;
-  --mf-ember: #ff8a3d;
-  --mf-ember-glow: #ffc46b;
-  --mf-verdigris: #3fa88a;
-  --mf-foil: linear-gradient(115deg, #f7e7b4 0%, #e2b65c 26%, #b07d2b 50%, #f2d98a 70%, #c8963e 100%);
-  --mf-glow: 0 0 18px rgba(226, 182, 92, 0.28);
-}
-
-/* Raj in Midnight Folio colours, anywhere it's previewed (shop card, unboxing). */
-.mf-scope {
+/* Midnight Folio: obsidian, gold leaf, candlelight. */
+:root[data-skin="midnight-folio"], .sk-midnight-folio {
+  --sk-page: #0e1116;
+  --sk-page-glow: #1d2430;
+  --sk-brush: rgba(255, 255, 255, 0.012);
+  --sk-frame-top: #1a202a;
+  --sk-frame-bottom: #141922;
+  --sk-raised: #161b23;
+  --sk-art: #222b39;
+  --sk-art-deep: #0b0e13;
+  --sk-accent-rgb: 226, 182, 92;
+  --sk-accent: #e2b65c;
+  --sk-accent-pale: #f7e7b4;
+  --sk-edge: #7a5418;
+  --sk-on-accent: #1a1408;
+  --sk-seal-ink: #4a3200;
+  --sk-text: #f3ebdd;
+  --sk-muted: #a9a08f;
+  --sk-lore: #d9cfbd;
+  --sk-base-shadow: #07090c;
+  --sk-particle: 242, 217, 138;
+  --sk-foil: linear-gradient(115deg, #f7e7b4 0%, #e2b65c 26%, #b07d2b 50%, #f2d98a 70%, #c8963e 100%);
   --raj-forest: #1b2433;
   --raj-forest-deep: #0b0e13;
   --raj-mustard: #e2b65c;
   --raj-face: #f3ebdd;
   --raj-ink: #000;
 }
-.mf-scope .raj .raj-body,
-:root[data-skin="midnight-folio"] .raj .raj-body { stroke: var(--mf-gold); stroke-width: 2.5; }
-.mf-scope .raj .raj-ribbon,
-:root[data-skin="midnight-folio"] .raj .raj-ribbon { fill: var(--mf-gold); }
-
-:root[data-skin="midnight-folio"] {
-  color-scheme: dark;
-  --app-shell: var(--mf-obsidian);
-  --background: var(--mf-obsidian);
-  --foreground: var(--mf-parchment);
-  --surface: var(--mf-obsidian-raised);
-  --surface-hover: #1c222c;
-  --surface-selected: #222a36;
-  --surface-border: rgba(226, 182, 92, 0.2);
-  --panel: #141922;
-  --primary: var(--mf-obsidian-raised);
-  --primary-foreground: #f2d98a;
-  --secondary: #1c222c;
-  --secondary-foreground: var(--mf-parchment);
-  --muted: #1c222c;
-  --muted-foreground: var(--mf-parchment-muted);
-  --faint-foreground: #7c7466;
-  --border: rgba(226, 182, 92, 0.16);
-  --input: rgba(226, 182, 92, 0.28);
-  --ring: var(--mf-gold);
-  --brand: var(--mf-gold);
-  --brand-foreground: #1a1408;
-  --brand-soft: rgba(226, 182, 92, 0.12);
-  --success: #6fd3a8;
-  --success-soft: rgba(63, 168, 138, 0.16);
-  --destructive: #ff8f80;
-  --destructive-soft: rgba(255, 143, 128, 0.12);
-  --raj-forest: #1b2433;
-  --raj-forest-deep: #0b0e13;
-  --raj-mustard: var(--mf-gold);
-  --raj-face: var(--mf-parchment);
-  --raj-tint: rgba(226, 182, 92, 0.08);
-  --raj-ink: #000;
-  --heat: var(--mf-gold);
+/* Moonlit Porcelain: glazed white porcelain, cobalt ink, silver leaf. */
+:root[data-skin="moonlit-porcelain"], .sk-moonlit-porcelain {
+  --sk-page: #f4f6fb;
+  --sk-page-glow: #ffffff;
+  --sk-brush: rgba(30, 58, 138, 0.025);
+  --sk-frame-top: #ffffff;
+  --sk-frame-bottom: #eef2fa;
+  --sk-raised: #ffffff;
+  --sk-art: #ffffff;
+  --sk-art-deep: #dfe6f5;
+  --sk-accent-rgb: 30, 64, 175;
+  --sk-accent: #1e40af;
+  --sk-accent-pale: #dbe4ff;
+  --sk-edge: #142c78;
+  --sk-on-accent: #ffffff;
+  --sk-seal-ink: #0f1f56;
+  --sk-text: #14213d;
+  --sk-muted: #5b6785;
+  --sk-lore: #34405e;
+  --sk-base-shadow: #c9d3ea;
+  --sk-particle: 47, 84, 200;
+  --sk-foil: linear-gradient(115deg, #ffffff 0%, #c9d4ee 22%, #8e9bbd 45%, #f4f7ff 62%, #aab6d6 100%);
+  --raj-forest: #fbfcff;
+  --raj-forest-deep: #c9d4ee;
+  --raj-mustard: #1e40af;
+  --raj-face: #1e3a8a;
+  --raj-ink: #1e3a8a;
 }
 
-/* Brushed obsidian: a soft candlelit vignette over hairline brushing. */
-:root[data-skin="midnight-folio"] body {
+/* Page tokens per skin */
+:root[data-skin="midnight-folio"] {
+  color-scheme: dark;
+  --app-shell: var(--sk-page); --background: var(--sk-page); --foreground: var(--sk-text);
+  --surface: var(--sk-raised); --surface-hover: #1c222c; --surface-selected: #222a36; --surface-border: rgba(226, 182, 92, 0.2);
+  --panel: #141922; --primary: var(--sk-raised); --primary-foreground: #f2d98a; --secondary: #1c222c; --secondary-foreground: var(--sk-text);
+  --muted: #1c222c; --muted-foreground: var(--sk-muted); --faint-foreground: #7c7466; --border: rgba(226, 182, 92, 0.16);
+  --input: rgba(226, 182, 92, 0.28); --ring: var(--sk-accent); --brand: var(--sk-accent); --brand-foreground: var(--sk-on-accent);
+  --brand-soft: rgba(226, 182, 92, 0.12); --success: #6fd3a8; --success-soft: rgba(63, 168, 138, 0.16);
+  --destructive: #ff8f80; --destructive-soft: rgba(255, 143, 128, 0.12);
+  --raj-tint: rgba(226, 182, 92, 0.08); --heat: var(--sk-accent);
+}
+:root[data-skin="moonlit-porcelain"] {
+  color-scheme: light;
+  --app-shell: var(--sk-page); --background: var(--sk-page); --foreground: var(--sk-text);
+  --surface: #ffffff; --surface-hover: #eef2fa; --surface-selected: #e3e9f7; --surface-border: rgba(30, 64, 175, 0.16);
+  --panel: #eaeff9; --primary: #ffffff; --primary-foreground: #1e3a8a; --secondary: #eef2fa; --secondary-foreground: var(--sk-text);
+  --muted: #e8edf8; --muted-foreground: var(--sk-muted); --faint-foreground: #8c96b0; --border: rgba(30, 64, 175, 0.12);
+  --input: rgba(30, 64, 175, 0.25); --ring: var(--sk-accent); --brand: var(--sk-accent); --brand-foreground: #ffffff;
+  --brand-soft: rgba(30, 64, 175, 0.08); --success: #1f8a5b; --success-soft: rgba(31, 138, 91, 0.12);
+  --destructive: #c2410c; --destructive-soft: rgba(194, 65, 12, 0.08);
+  --raj-tint: rgba(30, 64, 175, 0.06); --heat: var(--sk-accent);
+}
+
+/* Raj in a skin: rimmed in the skin's metal */
+:root[data-skin] .raj .raj-body, .sk-midnight-folio .raj .raj-body, .sk-moonlit-porcelain .raj .raj-body { stroke: var(--sk-accent); stroke-width: 2.5; }
+:root[data-skin] .raj .raj-ribbon, .sk-midnight-folio .raj .raj-ribbon, .sk-moonlit-porcelain .raj .raj-ribbon { fill: var(--sk-accent); }
+
+/* Page material: a soft glow over fine brushing */
+:root[data-skin] body {
   background:
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.012) 0 1px, transparent 1px 3px),
-    radial-gradient(1200px 640px at 50% -12%, #1d2430 0%, var(--mf-obsidian) 62%);
+    repeating-linear-gradient(90deg, var(--sk-brush) 0 1px, transparent 1px 3px),
+    radial-gradient(1200px 640px at 50% -12%, var(--sk-page-glow) 0%, var(--sk-page) 62%);
+  background-attachment: fixed;
+}
+:root[data-skin="moonlit-porcelain"] body {
+  /* blue-and-white glaze: a faint cobalt scallop pattern */
+  background:
+    radial-gradient(circle at 50% 100%, transparent 18px, rgba(30, 64, 175, 0.035) 19px 20px, transparent 21px) 0 0 / 40px 20px,
+    radial-gradient(1200px 640px at 50% -12%, #ffffff 0%, var(--sk-page) 62%);
   background-attachment: fixed;
 }
 .mf-dust { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 0; }
-:root[data-skin="midnight-folio"] body > header,
-:root[data-skin="midnight-folio"] body > main,
-:root[data-skin="midnight-folio"] body > footer { position: relative; z-index: 1; }
+:root[data-skin] body > header, :root[data-skin] body > main, :root[data-skin] body > footer { position: relative; z-index: 1; }
 
-/* Header: obsidian bar with a gilt hairline that catches the light. */
-:root[data-skin="midnight-folio"] body > header {
+/* Header: a metal hairline that catches the light */
+:root[data-skin] body > header {
   border-bottom-color: transparent;
-  background: linear-gradient(180deg, rgba(14, 17, 22, 0.92), rgba(14, 17, 22, 0.7));
-  box-shadow: inset 0 -1px 0 rgba(226, 182, 92, 0.35);
+  background: color-mix(in oklab, var(--sk-page) 88%, transparent);
+  box-shadow: inset 0 -1px 0 rgba(var(--sk-accent-rgb), 0.35);
 }
-:root[data-skin="midnight-folio"] body > header::after {
+:root[data-skin] body > header::after {
   content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; pointer-events: none;
-  background: linear-gradient(90deg, transparent, var(--mf-gold-pale), transparent);
-  background-size: 40% 100%; background-repeat: no-repeat;
-  animation: mf-hairline 7s ease-in-out infinite;
+  background: linear-gradient(90deg, transparent, var(--sk-accent-pale), transparent);
+  background-size: 40% 100%; background-repeat: no-repeat; animation: mf-hairline 7s ease-in-out infinite;
 }
 @keyframes mf-hairline { 0% { background-position: -40% 0; } 60%, 100% { background-position: 140% 0; } }
 
-/* Headlines are stamped in gold foil. */
-:root[data-skin="midnight-folio"] .display {
-  background: var(--mf-foil); background-size: 200% 100%;
-  -webkit-background-clip: text; background-clip: text; color: transparent;
-  animation: mf-sheen 9s ease-in-out infinite;
+/* Headlines stamped in the skin's foil */
+:root[data-skin] .display {
+  background: var(--sk-foil); background-size: 200% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent; animation: mf-sheen 9s ease-in-out infinite;
 }
+:root[data-skin="moonlit-porcelain"] .display { background: linear-gradient(115deg, #1e3a8a, #2f54c8 45%, #14213d 80%); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; }
 @keyframes mf-sheen { 50% { background-position: 100% 0; } }
 
-/* Buttons. Primary actions are minted gold coins; secondary ones are
-   obsidian with a gold hairline. Both sink into their edge when pressed. */
-:root[data-skin="midnight-folio"] .bg-brand {
-  background: var(--mf-foil); background-size: 220% 100%; background-position: 0 0;
-  color: #1a1408;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 3px 0 var(--mf-gold-shadow), var(--mf-glow);
+/* Buttons: primary actions are minted in the skin's metal; secondary are hairlined */
+:root[data-skin] .bg-brand {
+  background: var(--sk-foil); background-size: 220% 100%; background-position: 0 0; color: var(--sk-on-accent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 3px 0 var(--sk-edge), 0 0 18px rgba(var(--sk-accent-rgb), 0.28);
   transition: background-position 0.6s ease, transform 0.1s, box-shadow 0.1s;
 }
-:root[data-skin="midnight-folio"] .bg-brand:hover { background-position: 100% 0; filter: none; }
-:root[data-skin="midnight-folio"] button.bg-brand:active,
-:root[data-skin="midnight-folio"] a.bg-brand:active { transform: translateY(3px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 0 0 var(--mf-gold-shadow); }
-:root[data-skin="midnight-folio"] .bg-primary { box-shadow: inset 0 0 0 1px rgba(226, 182, 92, 0.45); }
-:root[data-skin="midnight-folio"] .bg-secondary { box-shadow: inset 0 0 0 1px rgba(226, 182, 92, 0.22); }
-:root[data-skin="midnight-folio"] .bg-\[var\(--raj-forest\)\] {
-  background: var(--mf-foil) !important; color: #1a1408 !important; box-shadow: 0 3px 0 var(--mf-gold-shadow), var(--mf-glow) !important;
+:root[data-skin="moonlit-porcelain"] .bg-brand { background: linear-gradient(180deg, #2f54c8, #1e40af); color: #fff; }
+:root[data-skin] .bg-brand:hover { background-position: 100% 0; filter: none; }
+:root[data-skin] button.bg-brand:active, :root[data-skin] a.bg-brand:active { transform: translateY(3px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 0 0 var(--sk-edge); }
+:root[data-skin] .bg-primary { box-shadow: inset 0 0 0 1px rgba(var(--sk-accent-rgb), 0.45); }
+:root[data-skin] .bg-secondary { box-shadow: inset 0 0 0 1px rgba(var(--sk-accent-rgb), 0.22); }
+:root[data-skin] .bg-\[var\(--raj-forest\)\] {
+  background: var(--sk-foil) !important; color: var(--sk-on-accent) !important; box-shadow: 0 3px 0 var(--sk-edge), 0 0 18px rgba(var(--sk-accent-rgb), 0.28) !important;
 }
+:root[data-skin="moonlit-porcelain"] .bg-\[var\(--raj-forest\)\] { background: linear-gradient(180deg, #2f54c8, #1e40af) !important; color: #fff !important; }
 
-/* Frames: raised obsidian with gilt corner brackets, like a bound folio. */
-:root[data-skin="midnight-folio"] .surface,
-:root[data-skin="midnight-folio"] .panel {
-  position: relative;
-  background: linear-gradient(180deg, #1a202a 0%, #141922 100%);
-  border-color: rgba(226, 182, 92, 0.2);
+/* Frames: raised panels with corner brackets, like a bound folio or a framed plate */
+:root[data-skin] .surface, :root[data-skin] .panel {
+  position: relative; background: linear-gradient(180deg, var(--sk-frame-top) 0%, var(--sk-frame-bottom) 100%);
+  border-color: rgba(var(--sk-accent-rgb), 0.2);
 }
-:root[data-skin="midnight-folio"] .panel { border: 1px solid rgba(226, 182, 92, 0.14); }
-:root[data-skin="midnight-folio"] .surface::after,
-:root[data-skin="midnight-folio"] .panel::after {
+:root[data-skin] .panel { border: 1px solid rgba(var(--sk-accent-rgb), 0.14); }
+:root[data-skin] .surface::after, :root[data-skin] .panel::after {
   content: ""; position: absolute; inset: 7px; pointer-events: none; border-radius: inherit; opacity: 0.75;
-  --c: rgba(226, 182, 92, 0.7);
+  --c: rgba(var(--sk-accent-rgb), 0.7);
   background:
-    linear-gradient(var(--c), var(--c)) top left / 14px 1.5px no-repeat,
-    linear-gradient(var(--c), var(--c)) top left / 1.5px 14px no-repeat,
-    linear-gradient(var(--c), var(--c)) top right / 14px 1.5px no-repeat,
-    linear-gradient(var(--c), var(--c)) top right / 1.5px 14px no-repeat,
-    linear-gradient(var(--c), var(--c)) bottom left / 14px 1.5px no-repeat,
-    linear-gradient(var(--c), var(--c)) bottom left / 1.5px 14px no-repeat,
-    linear-gradient(var(--c), var(--c)) bottom right / 14px 1.5px no-repeat,
-    linear-gradient(var(--c), var(--c)) bottom right / 1.5px 14px no-repeat;
+    linear-gradient(var(--c), var(--c)) top left / 14px 1.5px no-repeat, linear-gradient(var(--c), var(--c)) top left / 1.5px 14px no-repeat,
+    linear-gradient(var(--c), var(--c)) top right / 14px 1.5px no-repeat, linear-gradient(var(--c), var(--c)) top right / 1.5px 14px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom left / 14px 1.5px no-repeat, linear-gradient(var(--c), var(--c)) bottom left / 1.5px 14px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom right / 14px 1.5px no-repeat, linear-gradient(var(--c), var(--c)) bottom right / 1.5px 14px no-repeat;
 }
 
-/* Featured frames (Raj's chat and mood card, streak widgets) get a gilt
-   border whose light slowly circles the edge. */
-:root[data-skin="midnight-folio"] .raj-room,
-:root[data-skin="midnight-folio"] .mf-gilt {
+/* Featured frames: a metal border whose light circles the edge */
+:root[data-skin] .raj-room, :root[data-skin] .mf-gilt {
   border: 1.5px solid transparent !important;
   background:
-    linear-gradient(180deg, #1a202a, #141922) padding-box,
-    conic-gradient(from var(--gilt-angle), rgba(226, 182, 92, 0.18), #f7e7b4 8%, rgba(226, 182, 92, 0.18) 20%, rgba(226, 182, 92, 0.18) 55%, #e2b65c 63%, rgba(226, 182, 92, 0.18) 75%) border-box !important;
-  box-shadow: 0 3px 0 #07090c, var(--mf-glow) !important;
+    linear-gradient(180deg, var(--sk-frame-top), var(--sk-frame-bottom)) padding-box,
+    conic-gradient(from var(--gilt-angle), rgba(var(--sk-accent-rgb), 0.18), var(--sk-accent-pale) 8%, rgba(var(--sk-accent-rgb), 0.18) 20%, rgba(var(--sk-accent-rgb), 0.18) 55%, var(--sk-accent) 63%, rgba(var(--sk-accent-rgb), 0.18) 75%) border-box !important;
+  box-shadow: 0 3px 0 var(--sk-base-shadow), 0 0 18px rgba(var(--sk-accent-rgb), 0.22) !important;
   animation: mf-gilt-spin 9s linear infinite;
 }
 @keyframes mf-gilt-spin { to { --gilt-angle: 360deg; } }
 
-/* Streak counter: a slow heartbeat glow (72 bpm), quickening when the streak grows. */
-:root[data-skin="midnight-folio"] .streak-flame {
-  filter: drop-shadow(0 0 6px rgba(255, 138, 61, 0.55));
-  animation: mf-heartbeat 0.83s ease-in-out infinite;
-  transform-origin: 50% 80%;
-}
-:root[data-skin="midnight-folio"][data-streak-pulse] .streak-flame { animation-duration: 0.42s; filter: drop-shadow(0 0 12px rgba(255, 196, 107, 0.9)); }
+/* Streak counter: a heartbeat glow at 72 bpm, quickening when the streak grows */
+:root[data-skin] .streak-flame { filter: drop-shadow(0 0 6px rgba(255, 138, 61, 0.55)); animation: mf-heartbeat 0.83s ease-in-out infinite; transform-origin: 50% 80%; }
+:root[data-skin][data-streak-pulse] .streak-flame { animation-duration: 0.42s; filter: drop-shadow(0 0 12px rgba(255, 196, 107, 0.9)); }
 @keyframes mf-heartbeat { 0%, 100% { transform: scale(1); } 14% { transform: scale(1.14); } 28% { transform: scale(1); } 42% { transform: scale(1.08); } 70% { transform: scale(1); } }
-
-:root[data-skin="midnight-folio"] .mf-sound { color: var(--mf-gold); }
+:root[data-skin] .mf-sound { color: var(--sk-accent); }
 
 @media (prefers-reduced-motion: reduce) {
-  :root[data-skin="midnight-folio"] .display,
-  :root[data-skin="midnight-folio"] body > header::after,
-  :root[data-skin="midnight-folio"] .raj-room,
-  :root[data-skin="midnight-folio"] .mf-gilt,
-  :root[data-skin="midnight-folio"] .streak-flame { animation: none !important; }
+  :root[data-skin] .display, :root[data-skin] body > header::after, :root[data-skin] .raj-room, :root[data-skin] .mf-gilt, :root[data-skin] .streak-flame { animation: none !important; }
 }
 
-/* ---------- Mythic shop card, seal and unboxing ---------- */
+/* ---------- Mythic shop card, seal and unboxing (inside a .sk-<id> scope) ---------- */
 .mf-card {
-  position: relative; overflow: hidden; color: #f3ebdd; border-radius: 26px; border: 1.5px solid transparent;
+  position: relative; overflow: hidden; color: var(--sk-text); border-radius: 26px; border: 1.5px solid transparent;
   background:
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.014) 0 1px, transparent 1px 3px) padding-box,
-    radial-gradient(600px 300px at 30% 0%, #1f2734, #0e1116 70%) padding-box,
-    conic-gradient(from var(--gilt-angle), rgba(226, 182, 92, 0.25), #f7e7b4 8%, rgba(226, 182, 92, 0.25) 20%, rgba(226, 182, 92, 0.25) 55%, #e2b65c 63%, rgba(226, 182, 92, 0.25) 75%) border-box;
-  box-shadow: 0 4px 0 #05070a, 0 18px 40px rgba(14, 17, 22, 0.25);
+    repeating-linear-gradient(90deg, var(--sk-brush) 0 1px, transparent 1px 3px) padding-box,
+    radial-gradient(600px 300px at 30% 0%, var(--sk-art), var(--sk-page) 70%) padding-box,
+    conic-gradient(from var(--gilt-angle), rgba(var(--sk-accent-rgb), 0.25), var(--sk-accent-pale) 8%, rgba(var(--sk-accent-rgb), 0.25) 20%, rgba(var(--sk-accent-rgb), 0.25) 55%, var(--sk-accent) 63%, rgba(var(--sk-accent-rgb), 0.25) 75%) border-box;
+  box-shadow: 0 4px 0 var(--sk-base-shadow), 0 18px 40px rgba(14, 17, 22, 0.18);
   animation: mf-gilt-spin 9s linear infinite;
 }
 .mf-card::before {
-  /* the holographic sweep that crosses the card every few seconds */
   content: ""; position: absolute; inset: -40%; pointer-events: none;
-  background: linear-gradient(105deg, transparent 42%, rgba(247, 231, 180, 0.16) 48%, rgba(170, 220, 255, 0.08) 51%, transparent 57%);
+  background: linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, 0.16) 48%, rgba(170, 220, 255, 0.08) 51%, transparent 57%);
   animation: mf-holo 5s ease-in-out infinite;
 }
 @keyframes mf-holo { 0% { transform: translateX(-60%); } 55%, 100% { transform: translateX(60%); } }
-.mf-foil-text { background: var(--mf-foil); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: mf-sheen 6s ease-in-out infinite; }
+.mf-art { background: radial-gradient(260px 220px at 50% 35%, var(--sk-art), var(--sk-art-deep) 75%); box-shadow: inset 0 0 0 1px rgba(var(--sk-accent-rgb), 0.35); }
+.mf-foil-text { background: var(--sk-foil); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: mf-sheen 6s ease-in-out infinite; }
+.sk-moonlit-porcelain .mf-foil-text { background: linear-gradient(115deg, #1e3a8a, #3b63d6 45%, #14213d 80%); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; }
+.mf-accent { color: var(--sk-accent); }
+.mf-muted { color: var(--sk-muted); }
+.mf-lore { color: var(--sk-lore); }
+.mf-btn {
+  background: var(--sk-foil); color: var(--sk-on-accent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 3px 0 var(--sk-edge), 0 0 20px rgba(var(--sk-accent-rgb), 0.3);
+}
+.sk-moonlit-porcelain .mf-btn { background: linear-gradient(180deg, #2f54c8, #1e40af); color: #fff; }
+.mf-btn-ghost { color: var(--sk-text); box-shadow: inset 0 0 0 1px rgba(var(--sk-accent-rgb), 0.5); }
 .mf-seal {
   position: relative; display: inline-grid; place-items: center; width: 64px; height: 64px;
   clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%);
-  background: var(--mf-foil); background-size: 220% 220%; animation: mf-sheen 4s ease-in-out infinite;
-  color: #4a3200; font-size: 10px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+  background: var(--sk-foil, linear-gradient(115deg, #f7e7b4, #e2b65c 26%, #b07d2b 50%, #f2d98a 70%, #c8963e)); background-size: 220% 220%; animation: mf-sheen 4s ease-in-out infinite;
+  color: var(--sk-seal-ink, #4a3200); font-size: 10px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
   box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35);
 }
 .mf-seal::after {
-  content: ""; position: absolute; inset: 5px; clip-path: inherit; border: 1px solid rgba(74, 50, 0, 0.35);
+  content: ""; position: absolute; inset: 5px; clip-path: inherit; border: 1px solid rgba(0, 0, 0, 0.2);
   background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.55) 50%, transparent 60%);
   background-size: 300% 100%; animation: mf-seal-shine 4s ease-in-out infinite;
 }
 @keyframes mf-seal-shine { 0% { background-position: 150% 0; } 50%, 100% { background-position: -50% 0; } }
 .mf-filigree {
   background:
-    radial-gradient(circle at 50% 50%, transparent 0 22px, rgba(226, 182, 92, 0.5) 23px 24px, transparent 25px) 0 0 / 48px 48px,
-    radial-gradient(circle at 0 0, transparent 0 22px, rgba(226, 182, 92, 0.35) 23px 24px, transparent 25px) 0 0 / 48px 48px,
-    radial-gradient(500px 300px at 50% 40%, #1f2734, #0b0e13 75%);
+    radial-gradient(circle at 50% 50%, transparent 0 22px, rgba(var(--sk-accent-rgb), 0.5) 23px 24px, transparent 25px) 0 0 / 48px 48px,
+    radial-gradient(circle at 0 0, transparent 0 22px, rgba(var(--sk-accent-rgb), 0.35) 23px 24px, transparent 25px) 0 0 / 48px 48px,
+    radial-gradient(500px 300px at 50% 40%, var(--sk-art), var(--sk-art-deep) 75%);
 }
 
 .mf-unbox { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 24px; background: rgba(6, 8, 11, 0.86); animation: mf-fade-in 0.3s ease-out; }
@@ -568,9 +584,9 @@ body {
 .mf-flip[data-phase="drop"] { animation: mf-drop 0.6s cubic-bezier(0.3, 1.4, 0.5, 1) both; }
 .mf-flip[data-phase="shake"] { animation: mf-shake 0.7s ease-in-out both; }
 .mf-flip[data-phase="reveal"], .mf-flip[data-phase="done"] { transform: rotateY(180deg); }
-.mf-face { position: absolute; inset: 0; border-radius: 22px; backface-visibility: hidden; overflow: hidden; display: grid; place-items: center; border: 1.5px solid rgba(226, 182, 92, 0.6); box-shadow: 0 0 40px rgba(226, 182, 92, 0.25); }
-.mf-face.front { transform: rotateY(180deg); background: radial-gradient(300px 260px at 50% 30%, #222b39, #0e1116 75%); }
-.mf-face.front::before { content: ""; position: absolute; inset: -40%; background: linear-gradient(105deg, transparent 42%, rgba(247, 231, 180, 0.22) 49%, transparent 56%); animation: mf-holo 2.6s ease-in-out infinite; }
+.mf-face { position: absolute; inset: 0; border-radius: 22px; backface-visibility: hidden; overflow: hidden; display: grid; place-items: center; border: 1.5px solid rgba(var(--sk-accent-rgb), 0.6); box-shadow: 0 0 40px rgba(var(--sk-accent-rgb), 0.25); }
+.mf-face.front { transform: rotateY(180deg); background: radial-gradient(300px 260px at 50% 30%, var(--sk-art), var(--sk-art-deep) 75%); }
+.mf-face.front::before { content: ""; position: absolute; inset: -40%; background: linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, 0.22) 49%, transparent 56%); animation: mf-holo 2.6s ease-in-out infinite; }
 @keyframes mf-drop { from { transform: translateY(-60vh) rotate(-8deg); } }
 @keyframes mf-shake {
   0%, 100% { transform: rotate(0) scale(1); }
@@ -580,10 +596,30 @@ body {
 .mf-stamp { animation: mf-stamp 0.45s cubic-bezier(0.2, 1.6, 0.4, 1) 0.55s both; }
 @keyframes mf-stamp { from { transform: scale(2.2) rotate(-18deg); opacity: 0; } }
 .mf-burst { position: absolute; left: 50%; top: 45%; width: 0; height: 0; pointer-events: none; }
-.mf-burst i { position: absolute; width: 7px; height: 7px; border-radius: 2px; background: var(--mf-foil); opacity: 0; animation: mf-burst 1.1s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; }
+.mf-burst i { position: absolute; width: 7px; height: 7px; border-radius: 2px; background: var(--sk-foil); opacity: 0; animation: mf-burst 1.1s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; }
 @keyframes mf-burst { 0% { opacity: 1; transform: translate(0, 0) rotate(0) scale(1); } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(260deg) scale(0.4); } }
-.mf-reveal-text { animation: mf-rise 0.5s ease-out 0.6s both; }
+.mf-reveal-text { animation: mf-rise 0.5s ease-out both; }
 @keyframes mf-rise { from { opacity: 0; transform: translateY(10px); } }
+
+/* Rarity badges for every shop item */
+.rarity { display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; padding: 2px 9px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
+.rarity::before { content: ""; width: 7px; height: 7px; transform: rotate(45deg); background: currentColor; border-radius: 1px; }
+.rarity-common { color: #6b7280; background: rgba(107, 114, 128, 0.12); }
+.rarity-rare { color: #2563eb; background: rgba(37, 99, 235, 0.1); }
+.rarity-epic { color: #9333ea; background: rgba(147, 51, 234, 0.1); }
+.rarity-legendary { color: #c2410c; background: linear-gradient(90deg, rgba(251, 146, 60, 0.18), rgba(250, 204, 21, 0.2)); }
+.rarity-mythic { color: #7a5418; background: linear-gradient(90deg, #f7e7b4, #e2b65c); }
+.rarity-festive { color: #be123c; background: rgba(190, 18, 60, 0.1); }
+:root[data-skin="midnight-folio"] .rarity-common { color: #c7cbd3; }
+:root[data-skin="midnight-folio"] .rarity-rare { color: #8fb4ff; }
+:root[data-skin="midnight-folio"] .rarity-epic { color: #d6a8ff; }
+:root[data-skin="midnight-folio"] .rarity-legendary { color: #ffb37a; }
+:root[data-skin="midnight-folio"] .rarity-festive { color: #ff8fab; }
+.legendary-frame { box-shadow: inset 0 0 0 2px rgba(251, 146, 60, 0.55), 0 0 22px rgba(251, 146, 60, 0.18); }
+.epic-frame { box-shadow: inset 0 0 0 2px rgba(147, 51, 234, 0.35); }
+
 @media (prefers-reduced-motion: reduce) {
   .mf-card, .mf-card::before, .mf-seal, .mf-seal::after, .mf-foil-text, .mf-face.front::before, .mf-flip, .mf-stamp, .mf-reveal-text, .mf-burst i { animation: none !important; transition: none !important; }
 }
+/* Porcelain on the dark unboxing backdrop: switch to its silver foil for contrast. */
+.mf-unbox.sk-moonlit-porcelain .mf-foil-text { background: var(--sk-foil); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; }

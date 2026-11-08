@@ -1,67 +1,187 @@
-import type { Equipped } from "@/lib/catalog";
+import type { ReactNode } from "react";
+import { itemById, type Equipped, type SkinLook } from "@/lib/catalog";
 
 /**
  * Player avatar: a round character drawn in SVG, with a skin and up to three
  * accessories layered on top. Everything is vector, so it's crisp at any size.
  */
 
-const SKINS: Record<string, { fill: string; defs?: React.ReactNode; face?: string }> = {
-  "skin-classic": { fill: "#e1342f" },
-  "skin-ocean": { fill: "#2f7de1" },
-  "skin-lime": { fill: "#b6dc3c", face: "#1d2a00" },
-  "skin-midnight": { fill: "#1f2937" },
-  "skin-peach": { fill: "#f4a988", face: "#3b1d0e" },
-  "skin-candy": {
-    fill: "url(#av-candy)",
-    defs: (
-      <pattern id="av-candy" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(35)">
-        <rect width="12" height="12" fill="#ff7eb6" />
-        <rect width="6" height="12" fill="#ffd1e6" />
-      </pattern>
-    ),
-    face: "#5a1235",
-  },
-  "skin-sunset": {
-    fill: "url(#av-sunset)",
-    defs: (
-      <linearGradient id="av-sunset" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stopColor="#ffb347" />
-        <stop offset="0.55" stopColor="#ff5f6d" />
-        <stop offset="1" stopColor="#8e44ad" />
-      </linearGradient>
-    ),
-  },
-  "skin-dots": {
-    fill: "url(#av-dots)",
-    defs: (
-      <pattern id="av-dots" width="14" height="14" patternUnits="userSpaceOnUse">
-        <rect width="14" height="14" fill="#13a89e" />
-        <circle cx="7" cy="7" r="2.6" fill="#c9f5ef" />
-      </pattern>
-    ),
-  },
-  "skin-galaxy": {
-    fill: "url(#av-galaxy)",
-    defs: (
-      <radialGradient id="av-galaxy" cx="0.35" cy="0.3" r="0.9">
-        <stop offset="0" stopColor="#8a5cff" />
-        <stop offset="0.5" stopColor="#3b1f8f" />
-        <stop offset="1" stopColor="#0b0b2a" />
-      </radialGradient>
-    ),
-  },
-  "skin-gold": {
-    fill: "url(#av-gold)",
-    defs: (
-      <linearGradient id="av-gold" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stopColor="#fff1a8" />
-        <stop offset="0.45" stopColor="#f2c230" />
-        <stop offset="1" stopColor="#b8860b" />
-      </linearGradient>
-    ),
-    face: "#4a3200",
-  },
-};
+/** Paint a skin from its catalogue look: a fill, optional defs, and decorations clipped to the body. */
+function paint(itemId: string, look: SkinLook): { fill: string; defs: ReactNode; overlay: ReactNode; under: ReactNode; top: ReactNode; face?: string } {
+  const [c0, c1 = c0, c2 = c1, c3 = c2] = look.colors;
+  const id = `av-${itemId}`;
+  const radial = (stops: string[]) => (
+    <radialGradient id={id} cx="0.35" cy="0.3" r="0.9">
+      {stops.map((c, i) => <stop key={i} offset={i / Math.max(1, stops.length - 1)} stopColor={c} />)}
+    </radialGradient>
+  );
+  const out = { fill: c0, defs: null as ReactNode, overlay: null as ReactNode, under: null as ReactNode, top: null as ReactNode, face: look.face };
+  switch (look.kind) {
+    case "solid":
+      break;
+    case "gradient":
+      out.fill = `url(#${id})`;
+      out.defs = (
+        <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+          {look.colors.map((c, i) => <stop key={i} offset={i / Math.max(1, look.colors.length - 1)} stopColor={c} />)}
+        </linearGradient>
+      );
+      break;
+    case "radial":
+      out.fill = `url(#${id})`;
+      out.defs = radial(look.colors);
+      break;
+    case "split":
+      out.fill = `url(#${id})`;
+      out.defs = (
+        <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0.5" stopColor={c0} />
+          <stop offset="0.5" stopColor={c1} />
+        </linearGradient>
+      );
+      break;
+    case "dots":
+      out.fill = `url(#${id})`;
+      out.defs = (
+        <pattern id={id} width="14" height="14" patternUnits="userSpaceOnUse">
+          <rect width="14" height="14" fill={c0} />
+          <circle cx="7" cy="7" r="2.6" fill={c1} />
+        </pattern>
+      );
+      break;
+    case "speckle":
+      out.fill = `url(#${id})`;
+      out.defs = (
+        <pattern id={id} width="20" height="20" patternUnits="userSpaceOnUse">
+          <rect width="20" height="20" fill={c0} />
+          <circle cx="4" cy="5" r="1.4" fill={c1} />
+          <circle cx="14" cy="9" r="1" fill={c1} />
+          <circle cx="9" cy="16" r="1.6" fill={c1} />
+        </pattern>
+      );
+      break;
+    case "facet":
+      out.fill = `url(#${id})`;
+      out.defs = radial([c0, c1, c2]);
+      out.overlay = (
+        <g opacity="0.55">
+          <path d="M50 24 L70 44 L50 58 L30 44 Z" fill={c0} opacity="0.7" />
+          <path d="M30 44 L50 58 L36 84 L18 62 Z" fill={c2} opacity="0.45" />
+          <path d="M70 44 L84 62 L66 84 L50 58 Z" fill={c1} opacity="0.6" />
+          <path d="M36 84 L50 58 L66 84 L50 94 Z" fill={c2} opacity="0.35" />
+        </g>
+      );
+      break;
+    case "stars":
+      out.fill = `url(#${id})`;
+      out.defs = radial([c0, c1, c2]);
+      out.overlay = (
+        <g fill="#fff">
+          {[[30, 40, 1.2], [68, 34, 1.6], [76, 70, 1.1], [26, 72, 1.4], [56, 86, 1], [40, 30, 0.9], [82, 52, 0.9]].map(([x, y, r], i) => (
+            <circle key={i} cx={x} cy={y} r={r} opacity="0.85" />
+          ))}
+          <path d="M64 78 l1.2 3 3 1.2 -3 1.2 -1.2 3 -1.2 -3 -3 -1.2 3 -1.2 Z" opacity="0.9" />
+        </g>
+      );
+      break;
+    case "glow":
+      out.fill = `url(#${id})`;
+      out.defs = radial([c0, c1, c2]);
+      out.under = <circle cx="50" cy="58" r="42" fill={c1} opacity="0.22" />;
+      break;
+    case "xmas-snow":
+      out.overlay = (
+        <g fill={c1}>
+          {[[28, 46, 2], [72, 40, 1.6], [64, 86, 2.2], [30, 80, 1.5], [80, 66, 1.8], [44, 92, 1.3]].map(([x, y, r], i) => <circle key={i} cx={x} cy={y} r={r} opacity="0.9" />)}
+        </g>
+      );
+      out.top = (
+        <g>
+          <path d="M22 44 Q50 18 78 44 Q70 36 62 40 Q56 32 50 38 Q42 31 36 39 Q28 36 22 44 Z" fill={c1} />
+          <circle cx="76" cy="44" r="4" fill={c2} />
+          <circle cx="70" cy="46" r="3" fill="#1f6f4a" />
+        </g>
+      );
+      break;
+    case "xmas-ginger":
+      out.overlay = (
+        <g>
+          <circle cx="50" cy="58" r="29" fill="none" stroke={c1} strokeWidth="2.5" strokeDasharray="5 4" strokeLinecap="round" />
+          <circle cx="50" cy="84" r="2.6" fill={c2} />
+          <circle cx="50" cy="92" r="2.2" fill={c2} opacity="0" />
+        </g>
+      );
+      break;
+    case "halloween-pumpkin":
+      out.fill = `url(#${id})`;
+      out.defs = radial(["#ffb15c", c0, "#c2410c"]);
+      out.overlay = (
+        <g fill="none" stroke="#b4410c" strokeWidth="2" opacity="0.55">
+          <path d="M50 24 Q38 58 50 92" />
+          <path d="M50 24 Q62 58 50 92" />
+          <path d="M34 28 Q18 58 34 88" />
+          <path d="M66 28 Q82 58 66 88" />
+        </g>
+      );
+      out.top = <path d="M48 24 Q46 16 52 12 Q54 18 54 24 Z" fill="#4d7c0f" />;
+      break;
+    case "halloween-ghost":
+      out.overlay = <ellipse cx="50" cy="84" rx="26" ry="8" fill={c1} opacity="0.08" />;
+      out.under = (
+        <g fill={c0}>
+          <circle cx="30" cy="88" r="7" />
+          <circle cx="44" cy="92" r="7" />
+          <circle cx="58" cy="92" r="7" />
+          <circle cx="72" cy="88" r="7" />
+        </g>
+      );
+      break;
+    case "diwali-diya":
+      out.fill = `url(#${id})`;
+      out.defs = radial([c1, c0, "#c2410c"]);
+      out.overlay = (
+        <g>
+          <path d="M34 86 Q50 98 66 86 Q60 80 50 81 Q40 80 34 86 Z" fill={c2} />
+          <path d="M50 80 Q46 74 50 68 Q54 74 50 80 Z" fill={c1} />
+          {[[28, 44], [72, 44], [24, 62], [76, 62]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r="1.8" fill={c1} />)}
+        </g>
+      );
+      break;
+    case "diwali-rangoli":
+      out.fill = `url(#${id})`;
+      out.defs = radial(["#fff7ed", c0]);
+      out.overlay = (
+        <g>
+          {Array.from({ length: 12 }, (_, i) => {
+            const a = (i / 12) * Math.PI * 2;
+            return <ellipse key={i} cx={50 + Math.cos(a) * 28} cy={58 + Math.sin(a) * 28} rx="4.5" ry="2.6" transform={`rotate(${(a * 180) / Math.PI} ${50 + Math.cos(a) * 28} ${58 + Math.sin(a) * 28})`} fill={[c1, c2, c3][i % 3]} />;
+          })}
+        </g>
+      );
+      break;
+    case "easter-egg":
+      out.overlay = (
+        <g>
+          {[[30, 44, 5, c1], [70, 40, 4, c2], [26, 70, 4.5, c3], [74, 72, 5, c1], [48, 90, 4, c2], [62, 30, 3, c3]].map(([x, y, r, c], i) => (
+            <circle key={i} cx={x as number} cy={y as number} r={r as number} fill={c as string} />
+          ))}
+        </g>
+      );
+      break;
+    case "easter-bunny":
+      out.top = (
+        <g>
+          <ellipse cx="38" cy="22" rx="7" ry="18" fill={c0} transform="rotate(-12 38 22)" />
+          <ellipse cx="62" cy="22" rx="7" ry="18" fill={c0} transform="rotate(12 62 22)" />
+          <ellipse cx="38" cy="23" rx="3.5" ry="12" fill="#f9a8d4" transform="rotate(-12 38 23)" />
+          <ellipse cx="62" cy="23" rx="3.5" ry="12" fill="#f9a8d4" transform="rotate(12 62 23)" />
+        </g>
+      );
+      out.overlay = <ellipse cx="50" cy="74" rx="12" ry="7" fill={c1} opacity="0.7" />;
+      break;
+  }
+  return out;
+}
 
 function Hat({ id }: { id?: string }) {
   switch (id) {
@@ -115,6 +235,16 @@ function Hat({ id }: { id?: string }) {
           <circle cx="50" cy="24" r="3.5" fill="#e1342f" />
           <circle cx="34" cy="30" r="2.5" fill="#2f7de1" />
           <circle cx="66" cy="30" r="2.5" fill="#2f7de1" />
+        </g>
+      );
+    case "hat-jewel-crown":
+      return (
+        <g>
+          <path d="M22 40 L26 12 L38 26 L50 4 L62 26 L74 12 L78 40 Z" fill="#f2c230" stroke="#8a6400" strokeWidth="2" />
+          <path d="M50 14 l5 7 -5 7 -5 -7 Z" fill="#e11d48" />
+          <path d="M33 28 l3.5 5 -3.5 5 -3.5 -5 Z" fill="#22d3ee" />
+          <path d="M67 28 l3.5 5 -3.5 5 -3.5 -5 Z" fill="#22d3ee" />
+          <rect x="22" y="36" width="56" height="5" rx="2" fill="#fff3b0" opacity="0.9" />
         </g>
       );
     default:
@@ -176,6 +306,28 @@ function Eyes({ id, face }: { id?: string; face: string }) {
           <rect x="47" y="52" width="6" height="2.5" fill="#fff" />
         </g>
       );
+    case "eyes-diamond-shades":
+      return (
+        <g>
+          <path d="M24 49 L36 45 L48 49 L44 63 L28 63 Z" fill="#a5f3fc" stroke="#e0f2fe" strokeWidth="1.5" />
+          <path d="M52 49 L64 45 L76 49 L72 63 L56 63 Z" fill="#a5f3fc" stroke="#e0f2fe" strokeWidth="1.5" />
+          <path d="M30 50 L36 47 L42 50" stroke="#fff" strokeWidth="1.5" fill="none" />
+          <rect x="47" y="50" width="6" height="2.5" fill="#e0f2fe" />
+        </g>
+      );
+    case "eyes-prism-shades":
+      return (
+        <g>
+          <defs>
+            <linearGradient id="av-prism" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stopColor="#f472b6" /><stop offset="0.5" stopColor="#facc15" /><stop offset="1" stopColor="#22d3ee" />
+            </linearGradient>
+          </defs>
+          <rect x="24" y="48" width="24" height="14" rx="5" fill="url(#av-prism)" opacity="0.9" />
+          <rect x="52" y="48" width="24" height="14" rx="5" fill="url(#av-prism)" opacity="0.9" />
+          <rect x="47" y="51" width="6" height="2.5" fill="#111" />
+        </g>
+      );
     default:
       return pupils;
   }
@@ -205,6 +357,28 @@ function Neck({ id }: { id?: string }) {
           <text x="50" y="97.5" textAnchor="middle" fontSize="9" fontWeight="800" fill="#7a5600">1</text>
         </g>
       );
+    case "neck-gold-chain":
+      return (
+        <g>
+          <path d="M30 76 Q50 98 70 76" fill="none" stroke="#f2c230" strokeWidth="4" strokeDasharray="4 2.5" strokeLinecap="round" />
+          <circle cx="50" cy="90" r="4" fill="#f2c230" stroke="#8a6400" strokeWidth="1.5" />
+        </g>
+      );
+    case "neck-diamond-pendant":
+      return (
+        <g>
+          <path d="M34 76 Q50 92 66 76" fill="none" stroke="#e5e7eb" strokeWidth="2" />
+          <path d="M50 86 l6 6 -6 9 -6 -9 Z" fill="#bae6fd" stroke="#fff" strokeWidth="1.5" />
+        </g>
+      );
+    case "neck-champion-chain":
+      return (
+        <g>
+          <path d="M28 76 Q50 100 72 76" fill="none" stroke="#f59e0b" strokeWidth="5" strokeDasharray="5 2" strokeLinecap="round" />
+          <circle cx="50" cy="94" r="8" fill="#fbbf24" stroke="#78350f" strokeWidth="2" />
+          <path d="M50 89 l1.6 3.4 3.7.4 -2.8 2.5 .8 3.7 -3.3 -1.9 -3.3 1.9 .8 -3.7 -2.8 -2.5 3.7 -.4 Z" fill="#78350f" />
+        </g>
+      );
     case "neck-cape":
       return <path d="M20 74 Q50 86 80 74 L92 104 Q50 96 8 104 Z" fill="#e1342f" opacity="0.95" />;
     default:
@@ -213,8 +387,9 @@ function Neck({ id }: { id?: string }) {
 }
 
 export function Avatar({ equipped, size = 40, className = "", title }: { equipped?: Equipped | null; size?: number; className?: string; title?: string }) {
-  const skin = SKINS[equipped?.skin ?? "skin-classic"] ?? SKINS["skin-classic"];
-  const face = skin.face ?? "#ffffff";
+  const item = itemById(equipped?.skin) ?? itemById("skin-classic")!;
+  const p = paint(item.id, item.look ?? { kind: "solid", colors: ["#e1342f"] });
+  const face = p.face ?? "#ffffff";
   const cape = equipped?.neck === "neck-cape";
   return (
     <svg
@@ -226,10 +401,18 @@ export function Avatar({ equipped, size = 40, className = "", title }: { equippe
       aria-label={title}
       aria-hidden={title ? undefined : true}
     >
-      <defs>{skin.defs}</defs>
+      <defs>
+        {p.defs}
+        <clipPath id="av-body-clip">
+          <circle cx="50" cy="58" r="34" />
+        </clipPath>
+      </defs>
       {cape && <Neck id="neck-cape" />}
-      <circle cx="50" cy="58" r="34" fill={skin.fill} />
+      {p.under}
+      <circle cx="50" cy="58" r="34" fill={p.fill} />
+      <g clipPath="url(#av-body-clip)">{p.overlay}</g>
       <ellipse cx="40" cy="40" rx="10" ry="6" fill="#fff" opacity="0.18" />
+      {p.top}
       <Eyes id={equipped?.eyes} face={face} />
       <path d="M41 70 Q50 77 59 70" fill="none" stroke={face} strokeWidth="3" strokeLinecap="round" />
       {!cape && <Neck id={equipped?.neck} />}

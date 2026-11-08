@@ -80,21 +80,33 @@ export function vibrate(pattern: number | number[]) {
   }
 }
 
+const porcelain = () => typeof document !== "undefined" && document.documentElement.dataset.skin === "moonlit-porcelain";
+
 export const sfx = {
-  /** Button press: a small gold coin tapped on glass. Two inharmonic partials, 120 ms. */
+  /** Button press: a gold coin tapped on glass (Midnight Folio) or a porcelain cup's rim (Moonlit Porcelain). */
   clink() {
     const ac = audio();
     if (ac) {
       const t = ac.currentTime;
-      tone(ac, 2480, t, 0.12, 0.08, "sine", 2300);
-      tone(ac, 3710, t, 0.08, 0.04, "sine");
+      if (porcelain()) {
+        tone(ac, 3150, t, 0.09, 0.05);
+        tone(ac, 4720, t, 0.06, 0.025);
+      } else {
+        tone(ac, 2480, t, 0.12, 0.08, "sine", 2300);
+        tone(ac, 3710, t, 0.08, 0.04, "sine");
+      }
     }
     vibrate(8);
   },
-  /** Correct answer: a soft two-note bell, C6 then G6. */
+  /** Correct answer: a soft two-note bell, C6 then G6 (a glassier E6 then B6 for Porcelain). */
   chime() {
     const ac = audio();
-    if (ac) {
+    if (ac && porcelain()) {
+      const t = ac.currentTime;
+      tone(ac, 1318.5, t, 0.9, 0.07);
+      tone(ac, 1975.5, t + 0.12, 1.1, 0.06);
+      tone(ac, 3951, t + 0.12, 0.5, 0.015);
+    } else if (ac) {
       const t = ac.currentTime;
       tone(ac, 1046.5, t, 0.7, 0.09, "triangle");
       tone(ac, 2093, t, 0.4, 0.025);

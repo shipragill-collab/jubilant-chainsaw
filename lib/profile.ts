@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
-import { DEFAULT_EQUIPPED, DUEL_REWARD, ITEMS, PLANS, STARTER_ITEMS, itemById, type Slot } from "./catalog";
+import { DEFAULT_EQUIPPED, DUEL_REWARD, ITEMS, PLANS, STARTER_ITEMS, currentMonth, howToGet, itemById, proSkinFor, seasonStatus, SEASON_LABEL, type Slot } from "./catalog";
+import { PASS, seasonOf, tierFor, tierRewards, type Track } from "./pass";
 import { GameError } from "./game";
 import { update } from "./store";
 import type { Db, Duel, Profile } from "./types";
@@ -26,6 +27,11 @@ export function profileOf(db: Db, playerId: string, now = Date.now()): Profile {
   const p = (db.profiles[playerId] ??= newProfile());
   p.owned ??= [...STARTER_ITEMS];
   p.credited ??= [];
+  p.gems ??= 0;
+  const season = seasonOf(now).id;
+  if (p.pass?.season !== season) p.pass = { season, xp: 0, claimed: [] };
+  // Skins that were retired from the shop fall back to the classic look.
+  if (p.equipped.skin && !itemById(p.equipped.skin)) p.equipped.skin = "skin-classic";
   if (p.plan === "pro" && p.proUntil !== null && p.proUntil < now) p.plan = "free";
   if (p.usage?.day !== today(now)) p.usage = { day: today(now), aiGenerations: 0, rajMessages: 0 };
   return p;
@@ -35,7 +41,9 @@ export function profileOf(db: Db, playerId: string, now = Date.now()): Profile {
 export function peekProfile(db: Db, playerId: string, now = Date.now()) {
   const p = db.profiles[playerId];
   const pro = Boolean(p && p.plan === "pro" && (p.proUntil === null || p.proUntil > now));
-  return { equipped: p?.equipped ?? DEFAULT_EQUIPPED, pro };
+  const equipped = { ...(p?.equipped ?? DEFAULT_EQUIPPED) };
+  if (equipped.skin && !itemById(equipped.skin)) equipped.skin = "skin-classic";
+  return { equipped, pro };
 }
 
 /** Note that the player studied just now (drives Raj's mood and streak). */
@@ -43,9 +51,18 @@ export function recordActivity(db: Db, playerId: string, now = Date.now()) {
   const p = profileOf(db, playerId, now);
   const list = (p.activity ??= []);
   // At most one entry a minute, so rapid clicks don't inflate the daily goal.
-  if (!list.length || now - list[list.length - 1] > 60_000) list.push(now);
+  if (!list.length || now - list[list.length - 1] > 60_000) {
+    list.push(now);
+    addXp(p, PASS.xp.activity);
+  }
   if (list.length > 600) list.splice(0, list.length - 600);
 }
+
+export const addXp = (p: Profile, xp: number) => {
+  if (p.pass) p.pass.xp += xp;
+};
+
+export const hasPass = (p: Profile, now = Date.now()) => Boolean(p.passUntil && p.passUntil > now);
 
 export const isPro = (p: Profile, now = Date.now()) => p.plan === "pro" && (p.proUntil === null || p.proUntil > now);
 
@@ -61,18 +78,71 @@ export function consume(db: Db, playerId: string, kind: "aiGenerations" | "rajMe
   recordActivity(db, playerId, now);
 }
 
-export function buyItem(db: Db, playerId: string, itemId: string) {
-  const p = profileOf(db, playerId);
+export function buyItem(db: Db, playerId: string, itemId: string, now = Date.now()) {
+  const p = profileOf(db, playerId, now);
   const item = itemById(itemId);
   if (!item) throw new GameError("That item doesn't exist.", 404);
   if (p.owned.includes(item.id)) throw new GameError("You already own this.", 409);
-  if (item.proOnly && !isPro(p)) throw new GameError("This item is for Pro members.", 402);
-  if (p.coins < item.price) throw new GameError(`You need ${item.price - p.coins} more coins.`, 402);
-  p.coins -= item.price;
-  p.owned.push(item.id);
-  // App skins are equipped from the unboxing screen; wearables go straight on.
-  if (item.slot !== "theme") p.equipped[item.slot] = item.id;
+  const how = howToGet(item);
+  if (how === "pass") throw new GameError(`This is a Duel Pass reward at tier ${item.passTier}.`, 403);
+  if (how === "pro-monthly") throw new GameError("This is a monthly Pro skin. Pro members can claim it free.", 403);
+  if (how === "money") throw new GameError("This item is bought with money at checkout.", 400);
+  if (item.season) {
+    const st = seasonStatus(item.season, now);
+    if (!st.active) throw new GameError(`${SEASON_LABEL[item.season]} skins are only on sale during ${SEASON_LABEL[item.season]}.`, 403);
+  }
+  if (item.proOnly && !isPro(p, now)) throw new GameError("This item is for Pro members.", 402);
+  if (how === "gems") {
+    if ((p.gems ?? 0) < item.gems!) throw new GameError(`You need ${item.gems! - (p.gems ?? 0)} more gems.`, 402);
+    p.gems = (p.gems ?? 0) - item.gems!;
+  } else {
+    if (p.coins < item.price) throw new GameError(`You need ${item.price - p.coins} more coins.`, 402);
+    p.coins -= item.price;
+  }
+  giveItem(p, item.id);
   return p;
+}
+
+/** Add an item to the collection; wearables go straight on, app skins wait for the unboxing. */
+export function giveItem(p: Profile, itemId: string) {
+  const item = itemById(itemId);
+  if (!item || p.owned.includes(item.id)) return;
+  p.owned.push(item.id);
+  if (item.slot !== "theme") p.equipped[item.slot] = item.id;
+}
+
+/** Pro members claim this month's exclusive skin for free. */
+export function claimProSkin(db: Db, playerId: string, now = Date.now()) {
+  const p = profileOf(db, playerId, now);
+  if (!isPro(p, now)) throw new GameError("Monthly skins are included with Pro. Upgrade to Pro to claim it.", 402);
+  const item = proSkinFor(currentMonth(now));
+  if (!item) throw new GameError("There's no Pro skin this month.", 404);
+  if (p.owned.includes(item.id)) throw new GameError("You've already claimed this month's skin.", 409);
+  giveItem(p, item.id);
+  return p;
+}
+
+/** Claim one Duel Pass tier reward. */
+export function claimTier(db: Db, playerId: string, tier: number, track: Track, now = Date.now()) {
+  const p = profileOf(db, playerId, now);
+  if (!Number.isInteger(tier) || tier < 1 || tier > PASS.tiers) throw new GameError("No such tier.");
+  if (track === "premium" && !hasPass(p, now)) throw new GameError("Get the Duel Pass to claim this reward.", 402);
+  if (tierFor(p.pass!.xp) < tier) throw new GameError(`Reach tier ${tier} first.`, 403);
+  const key = `${tier}:${track}`;
+  if (p.pass!.claimed.includes(key)) throw new GameError("Already claimed.", 409);
+  const reward = tierRewards(tier)[track];
+  if (!reward) throw new GameError("Nothing to claim here.", 404);
+  if (reward.kind === "coins") p.coins += reward.amount;
+  else if (reward.kind === "gems") p.gems = (p.gems ?? 0) + reward.amount;
+  else giveItem(p, reward.itemId);
+  p.pass!.claimed.push(key);
+  return p;
+}
+
+/** Grant the Duel Pass for a period (purchase or renewal). */
+export function grantPass(p: Profile, days = 31, now = Date.now()) {
+  const from = p.passUntil && p.passUntil > now ? p.passUntil : now;
+  p.passUntil = from + days * 24 * 3600 * 1000;
 }
 
 export function equipItem(db: Db, playerId: string, slot: Slot, itemId: string | null) {
@@ -104,6 +174,7 @@ export function rewardDuel(db: Db, duel: Duel, winnerId: string | null) {
   for (const pl of duel.players) {
     const p = profileOf(db, pl.id);
     p.coins += DUEL_REWARD.played + (winnerId === null ? DUEL_REWARD.tie : winnerId === pl.id ? DUEL_REWARD.win : 0);
+    addXp(p, PASS.xp.duel + (winnerId === pl.id ? PASS.xp.win : 0));
   }
   duel.rewarded = true;
 }
@@ -121,6 +192,11 @@ export function profileView(p: Profile, now = Date.now()) {
     activity: p.activity ?? [],
     limits: plan.limits,
     hasSubscription: Boolean(p.stripeSubscriptionId),
+    gems: p.gems ?? 0,
+    passActive: hasPass(p, now),
+    passUntil: hasPass(p, now) ? (p.passUntil ?? null) : null,
+    pass: p.pass ?? { season: seasonOf(now).id, xp: 0, claimed: [] },
+    hasPassSubscription: Boolean(p.stripePassSubscriptionId),
   };
 }
 
