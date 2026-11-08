@@ -27,6 +27,15 @@ function normalize(partial: Partial<Db>): Db {
 
 const databaseUrl = () => process.env.DATABASE_URL || process.env.POSTGRES_URL || "";
 
+/** Thrown when there's nowhere to keep data (e.g. on Vercel with no database connected). */
+export class StoreUnavailableError extends Error {
+  constructor(message = "No database connected. In Vercel, open the project's Storage tab, connect a Neon Postgres database, then redeploy.") {
+    super(message);
+    this.name = "StoreUnavailableError";
+  }
+}
+export const isStoreUnavailable = (err: unknown) => err instanceof Error && err.name === "StoreUnavailableError";
+
 // ---------------------------------------------------------------------------
 // Postgres
 // ---------------------------------------------------------------------------
@@ -95,9 +104,7 @@ const dbFile = () => path.join(dataDir(), "db.json");
 let queue: Promise<unknown> = Promise.resolve();
 
 async function fileLoad(): Promise<Db> {
-  if (process.env.VERCEL) {
-    throw new Error("No database connected. In Vercel, open the project's Storage tab and connect a Neon Postgres database.");
-  }
+  if (process.env.VERCEL) throw new StoreUnavailableError();
   try {
     return normalize(JSON.parse(await fs.readFile(dbFile(), "utf8")) as Partial<Db>);
   } catch (err) {

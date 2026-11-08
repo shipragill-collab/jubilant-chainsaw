@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { GameError } from "./game";
+import { isStoreUnavailable } from "./store";
 
 export function playerIdFrom(value: unknown): string {
   if (typeof value !== "string" || !/^[a-z0-9-]{8,64}$/i.test(value)) {
@@ -13,6 +14,9 @@ export async function handle(fn: () => Promise<unknown>) {
     return NextResponse.json(await fn());
   } catch (err) {
     if (err instanceof GameError) return NextResponse.json({ error: err.message }, { status: err.status });
+    if (isStoreUnavailable(err)) {
+      return NextResponse.json({ error: "This site's database isn't connected yet, so nothing can be saved. (Site owner: see DEPLOY.md, step 2.)" }, { status: 503 });
+    }
     console.error(err);
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }

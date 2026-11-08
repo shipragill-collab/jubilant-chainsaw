@@ -1,14 +1,21 @@
 import { createHash } from "node:crypto";
 import Link from "next/link";
 import { Card } from "@/components/ui";
-import { read } from "@/lib/store";
+import { SetupNotice } from "@/components/setup-notice";
+import { isStoreUnavailable, read } from "@/lib/store";
 import { StudySetView } from "./study-set-view";
 
 export const dynamic = "force-dynamic";
 
 export default async function StudySetPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const set = (await read()).studySets[id];
+  let set;
+  try {
+    set = (await read()).studySets[id];
+  } catch (err) {
+    if (isStoreUnavailable(err)) return <SetupNotice what="study set" />;
+    throw err;
+  }
   if (!set) {
     return (
       <Card className="text-center">

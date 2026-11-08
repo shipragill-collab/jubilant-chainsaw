@@ -3,12 +3,19 @@ import { Avatar } from "@/components/avatar";
 import { RankBadge } from "@/components/rank-badge";
 import { Badge, Panel, Section } from "@/components/ui";
 import { leaderboard } from "@/lib/game";
-import { read } from "@/lib/store";
+import { SetupNotice } from "@/components/setup-notice";
+import { isStoreUnavailable, read } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
 export default async function LeaderboardPage() {
-  const rows = leaderboard(await read());
+  let rows;
+  try {
+    rows = leaderboard(await read());
+  } catch (err) {
+    if (isStoreUnavailable(err)) return <SetupNotice what="leaderboard" />;
+    throw err;
+  }
   return (
     <Section title="Leaderboard" intro="Every finished duel counts. Ranked by wins, then total points.">
 
