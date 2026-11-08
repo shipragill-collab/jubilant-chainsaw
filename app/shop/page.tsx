@@ -6,6 +6,8 @@ import { Avatar } from "@/components/avatar";
 import { Coin, Coins } from "@/components/coin";
 import { Gem, Gems } from "@/components/gem";
 import { RajCompanion } from "@/components/raj-companion";
+import { PackCard, bonusPercent } from "@/components/pack-card";
+import { Segmented } from "@/components/segmented";
 import { Badge, Button, Spinner } from "@/components/ui";
 import { Unboxing } from "@/components/unboxing";
 import {
@@ -31,7 +33,9 @@ import {
 import { api, getPlayerId } from "@/lib/player";
 import { refreshProfiles, useProfile, type ClientProfile } from "@/lib/use-profile";
 
-const FRAME_BG: Record<Slot, string> = { skin: "#f6efe6", hat: "#e8f0fb", eyes: "#eef7d9", neck: "#fbe9e4", theme: "#0e1116" };
+const CHIP_COLOR: Record<string, string> = {
+  all: "currentColor", mythic: "#c8963e", legendary: "#ea580c", epic: "#9333ea", rare: "#2563eb", common: "#6b7280", festive: "#be123c", paid: "#12805a", exclusive: "#7c5cff",
+};
 const DATE = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
 type Filter = "all" | Rarity | "festive" | "paid" | "exclusive";
 
@@ -104,6 +108,12 @@ export default function ShopPage() {
     return [{ key: "festive" as const, label: "Festive", items: festive }, ...byRarity].filter((g) => g.items.length > 0);
   }, [items]);
   const festiveNow = ITEMS.filter((i) => i.season && seasonStatus(i.season).active);
+  const filterCount = (f: Filter) =>
+    ITEMS.filter((i) => i.slot === slot || (slot === "skin" && i.slot === "theme")).filter(
+      (i) =>
+        f === "all" ||
+        (f === "festive" ? Boolean(i.season) : f === "paid" ? howToGet(i) === "money" : f === "exclusive" ? Boolean(i.passTier || i.proMonth) : i.rarity === f),
+    ).length;
   const skinCount = ITEMS.filter((i) => i.slot === "skin" || i.slot === "theme").length;
 
   async function act(path: string, body: Record<string, unknown>, done: string) {
@@ -216,39 +226,63 @@ export default function ShopPage() {
 
   return (
     <>
-      <section id="wallet" className="bleed grid scroll-mt-6 gap-6 py-8 sm:py-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-16">
-        <div className="space-y-3">
-          <h1 className="text-[32px] leading-[1.15] tracking-tight sm:text-[40px]">Shop</h1>
-          <h2 className="text-title-lg font-semibold">Top up</h2>
-          <p className="text-body-lg text-muted-foreground">Coins buy skins and accessories. Gems buy bling and gemstone skins.</p>
-          {profile && !profile.paymentsLive && <p className="text-body text-muted-foreground">Demo mode: payments aren&apos;t connected yet, so nothing is charged.</p>}
+      <section id="wallet" className="grid scroll-mt-24 gap-8 pt-8 pb-4 sm:pt-12 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,2.15fr)] lg:gap-12">
+        <div className="space-y-5 lg:pt-2">
+          <div className="space-y-2">
+            <p className="text-caption font-bold tracking-[0.18em] text-brand uppercase">Quiz Duel store</p>
+            <h1 className="text-[52px] leading-[0.95] sm:text-[68px]">Shop</h1>
+            <p className="max-w-[34ch] text-body-lg text-muted-foreground">Top up, then dress your duellist in anything from Common to Mythic.</p>
+          </div>
+          <div className="grid max-w-sm grid-cols-2 gap-3">
+            <div className="pack pack-coins min-h-0 rounded-[20px] p-4">
+              <span className="pack-sub text-caption font-semibold uppercase">Coins</span>
+              <Coins amount={profile?.coins ?? 0} className="mt-1 font-display text-[26px] font-extrabold" />
+            </div>
+            <div className="pack pack-gems min-h-0 translate-y-3 rounded-[20px] p-4">
+              <span className="pack-sub text-caption font-semibold uppercase">Gems</span>
+              <Gems amount={profile?.gems ?? 0} className="mt-1 font-display text-[26px] font-extrabold" />
+            </div>
+          </div>
+          {profile && !profile.paymentsLive && <p className="pt-3 text-label text-muted-foreground">Demo mode: payments aren&apos;t connected yet, so nothing is charged.</p>}
         </div>
-        <div className="grid gap-4">
-          <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-5">
+          {/* Coins: two compact packs, then the hero on the right */}
+          <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] sm:grid-rows-2">
             {COIN_PACKS.map((pack, i) => (
-              <div key={pack.id} className="flex flex-col rounded-[24px] bg-surface p-5">
-                <div className="flex -space-x-2">
-                  {Array.from({ length: i + 2 }).map((_, k) => <Coin key={k} size={30} />)}
-                </div>
-                <p className="mt-4 text-title-lg font-semibold tabular-nums">{pack.coins.toLocaleString()} coins</p>
-                <p className="text-body text-muted-foreground">{pack.label}</p>
-                <Button variant="brand" className="mt-4" disabled={busy !== null} onClick={() => checkout("coins", pack.id)}>
-                  {busy === pack.id ? <Spinner /> : null} {formatPrice(pack.pricePence)}
-                </Button>
+              <div key={pack.id} className={i === 2 ? "order-first sm:order-none sm:col-start-2 sm:row-span-2 sm:row-start-1" : "sm:col-start-1"}>
+                <PackCard
+                  kind="coins"
+                  name={pack.label}
+                  amount={pack.coins}
+                  pricePence={pack.pricePence}
+                  bonus={bonusPercent(pack.coins, pack.pricePence, COIN_PACKS[0].coins, COIN_PACKS[0].pricePence)}
+                  badge={i === 2 ? "Best value" : i === 1 ? "Most popular" : undefined}
+                  tier={i}
+                  hero={i === 2}
+                  busy={busy === pack.id}
+                  disabled={busy !== null}
+                  onBuy={() => checkout("coins", pack.id)}
+                />
               </div>
             ))}
           </div>
-          <div className="grid gap-4 sm:grid-cols-3">
+          {/* Gems: mirrored, hero on the left */}
+          <div className="grid gap-4 sm:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] sm:grid-rows-2">
             {GEM_PACKS.map((pack, i) => (
-              <div key={pack.id} className="flex flex-col rounded-[24px] bg-surface p-5">
-                <div className="flex -space-x-1.5">
-                  {Array.from({ length: i + 2 }).map((_, k) => <Gem key={k} size={28} />)}
-                </div>
-                <p className="mt-4 text-title-lg font-semibold tabular-nums">{pack.gems} gems</p>
-                <p className="text-body text-muted-foreground">{pack.label}</p>
-                <Button variant="primary" className="mt-4" disabled={busy !== null} onClick={() => checkout("gems", pack.id)}>
-                  {busy === pack.id ? <Spinner /> : null} {formatPrice(pack.pricePence)}
-                </Button>
+              <div key={pack.id} className={i === 2 ? "order-first sm:order-none sm:col-start-1 sm:row-span-2 sm:row-start-1" : "sm:col-start-2"}>
+                <PackCard
+                  kind="gems"
+                  name={pack.label}
+                  amount={pack.gems}
+                  pricePence={pack.pricePence}
+                  bonus={bonusPercent(pack.gems, pack.pricePence, GEM_PACKS[0].gems, GEM_PACKS[0].pricePence)}
+                  badge={i === 2 ? "Best value" : i === 1 ? "Most popular" : undefined}
+                  tier={i}
+                  hero={i === 2}
+                  busy={busy === pack.id}
+                  disabled={busy !== null}
+                  onBuy={() => checkout("gems", pack.id)}
+                />
               </div>
             ))}
           </div>
@@ -259,12 +293,12 @@ export default function ShopPage() {
         {/* Left: your character, wallet and plan */}
         <div className="space-y-6 lg:sticky lg:top-6 lg:self-start">
           <div className="space-y-3">
-            <h2 className="text-title-lg font-semibold">Your collection</h2>
+            <h2 className="text-[34px] leading-none sm:text-[40px]">Your collection</h2>
             <p className="text-body-lg text-muted-foreground">
               {skinCount} skins from Common to Mythic, festive specials, bling and accessories. Your look shows in duels and on the leaderboard.
             </p>
           </div>
-          <div className="panel grid place-items-center p-8">
+          <div className="mesh grid place-items-center rounded-[32px] p-8 sm:rounded-[40px_40px_40px_14px]">
             <Avatar equipped={preview} size={180} title="Your avatar" />
             <p className="mt-3 text-body text-muted-foreground">{tryOn ? `Trying on: ${tryOn.name}` : "Your look"}</p>
           </div>
@@ -313,34 +347,24 @@ export default function ShopPage() {
             </button>
           )}
 
-          <div className="flex items-center gap-1 overflow-x-auto rounded-full bg-panel p-1.5 sm:w-fit">
-            {SLOTS.map((s) => (
-              <button
-                key={s.id}
-                onClick={() => {
-                  setSlot(s.id);
-                  setTryOn(null);
-                  setFilter("all");
-                }}
-                className={`shrink-0 rounded-full px-5 py-2.5 text-body-lg transition ${slot === s.id ? "bg-surface text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-              >
-                {s.label}
-              </button>
-            ))}
-          </div>
+          <Segmented
+            label="Item type"
+            options={SLOTS}
+            value={slot}
+            onChange={(id) => {
+              setSlot(id);
+              setTryOn(null);
+              setFilter("all");
+            }}
+          />
 
           {slot !== "theme" && (
-            <div className="flex flex-wrap gap-2" role="group" aria-label="Filter">
-              {(["all", ...[...RARITIES].reverse(), "festive", "paid", "exclusive"] as Filter[]).map((f) => (
-                <button
-                  key={f}
-                  onClick={() => setFilter(f)}
-                  aria-pressed={filter === f}
-                  className={`rounded-full border px-3.5 py-1.5 text-label font-medium transition ${
-                    filter === f ? "border-foreground bg-foreground text-background" : "border-surface-border text-muted-foreground hover:text-foreground"
-                  }`}
-                >
+            <div className="flex flex-wrap gap-2.5" role="group" aria-label="Filter">
+              {(["all", ...[...RARITIES].reverse(), "festive", "paid", "exclusive"] as Filter[]).filter((f) => filterCount(f) > 0).map((f) => (
+                <button key={f} type="button" onClick={() => setFilter(f)} aria-pressed={filter === f} className="chip">
+                  <span aria-hidden className="chip-dot" style={{ color: CHIP_COLOR[f] }} />
                   {f === "all" ? "All" : f === "festive" ? "Festive" : f === "paid" ? "Buy with £" : f === "exclusive" ? "Pass & Pro" : RARITY_LABEL[f as Rarity]}
+                  <span className="tabular-nums opacity-60">{filterCount(f)}</span>
                 </button>
               ))}
             </div>
@@ -382,7 +406,7 @@ export default function ShopPage() {
               {groups.map((g) => (
                 <section key={g.key} aria-labelledby={`rarity-${g.key}`} className="grid gap-5">
                   <div className="flex flex-wrap items-center gap-3 border-b border-surface-border pb-3">
-                    <h2 id={`rarity-${g.key}`} className="text-title-lg font-semibold tracking-tight">
+                    <h2 id={`rarity-${g.key}`} className="text-[26px] leading-none">
                       {g.label}
                     </h2>
                     <span className={`rarity rarity-${g.key}`}>{g.items.length}</span>
@@ -422,13 +446,12 @@ export default function ShopPage() {
                     <div key={item.id} className="min-w-0">
                       <button
                         onClick={() => setTryOn(tryOn?.id === item.id ? null : item)}
-                        className={`block w-full rounded-md p-6 transition hover:brightness-[0.98] ${tryOn?.id === item.id ? "ring-2 ring-foreground" : ""} ${
+                        className={`item-tile block w-full ${tryOn?.id === item.id ? "is-trying" : ""} ${
                           item.rarity === "legendary" ? "legendary-frame" : item.rarity === "epic" ? "epic-frame" : ""
                         }`}
-                        style={{ background: "var(--panel)" }}
                         aria-label={`Try on ${item.name}`}
                       >
-                        <div className="grid aspect-[4/3] place-items-center rounded-[3px]" style={{ background: FRAME_BG[item.slot] }}>
+                        <div className={`item-art tint-${item.season ? "festive" : item.rarity}`}>
                           <Avatar equipped={{ ...equipped, [item.slot]: item.id }} size={112} />
                         </div>
                       </button>

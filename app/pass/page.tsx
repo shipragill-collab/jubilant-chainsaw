@@ -137,7 +137,7 @@ export default function PassPage() {
               return (
                 <div
                   className={`grid h-[132px] place-items-center gap-1 rounded-2xl border-[1.5px] p-2 text-center ${
-                    reward ? (big ? "border-amber-400/70 bg-amber-50/60 dark:bg-amber-500/10" : "border-surface-border bg-surface") : "border-dashed border-surface-border"
+                    reward ? (big ? "border-amber-400/70 bg-[color-mix(in_oklab,#f59e0b_10%,var(--surface))]" : "border-surface-border bg-surface") : "border-dashed border-surface-border"
                   } ${!reached || locked ? "opacity-60" : ""}`}
                 >
                   {reward ? (

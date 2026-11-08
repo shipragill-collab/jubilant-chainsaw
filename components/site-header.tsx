@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { refreshProfiles, useProfile } from "@/lib/use-profile";
 import { RajHeaderBuddy } from "./raj-mood-card";
 import { SkinSoundToggle } from "./skin-provider";
+import { ThemeToggle } from "./theme-toggle";
 import { Avatar } from "./avatar";
 import { Coins } from "./coin";
 import { Gems } from "./gem";
@@ -61,7 +62,7 @@ function WalletChip() {
     <Link
       href="/shop"
       aria-label="Your avatar and coins"
-      className="flex items-center gap-2 whitespace-nowrap rounded-full bg-panel py-1 pr-3.5 pl-1 text-body transition hover:bg-surface-selected"
+      className="flex items-center gap-2 whitespace-nowrap rounded-full bg-surface py-1 pr-3.5 pl-1 text-body font-semibold shadow-[inset_0_0_0_1px_var(--surface-border)] transition hover:-translate-y-px hover:shadow-[inset_0_0_0_1px_var(--input),var(--shadow-md)]"
     >
       <Avatar equipped={profile?.equipped} size={32} />
       <Coins amount={profile?.coins ?? 0} className="font-medium" />
@@ -78,54 +79,57 @@ export function SiteHeader() {
   useEffect(() => {
     refreshProfiles();
   }, [path]);
+  const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
+  const mobileNav = useRef<HTMLElement>(null);
+  // On phones, scroll the menu row so the current page is in view.
+  useEffect(() => {
+    mobileNav.current?.querySelector<HTMLElement>('[aria-current="page"]')?.scrollIntoView({ inline: "center", block: "nearest" });
+  }, [path]);
   return (
-    <header className="border-b border-surface-border">
-      <div className="mx-auto flex h-20 max-w-7xl items-center gap-4 px-4 sm:h-24 sm:px-8">
-        <Link href="/" className="mr-auto flex items-center gap-3" aria-label="Quiz Duel home">
-          <span aria-hidden className="size-9 rounded-full bg-brand sm:size-11" />
-          <span className="whitespace-nowrap text-[22px] tracking-tight sm:text-[26px]">Quiz Duel</span>
+    <header className="sticky top-0 z-40 px-3 pt-3 sm:px-6">
+      <div className="site-bar mx-auto flex h-16 max-w-7xl items-center gap-2 rounded-full pr-2 pl-2.5 sm:gap-3 sm:pl-3">
+        <Link href="/" className="mr-auto flex shrink-0 items-center gap-2.5 rounded-full pr-2" aria-label="Quiz Duel home">
+          <span aria-hidden className="btn-brand relative size-10 rounded-full bg-brand">
+            <span className="absolute inset-[9px] rounded-full border-2 border-white/80" />
+          </span>
+          <span className="font-display text-[21px] font-extrabold tracking-[-0.03em] whitespace-nowrap">Quiz Duel</span>
         </Link>
-        <nav className="hidden items-center gap-5 xl:flex">
-          {NAV.map((n) => {
-            const active = path === n.href || path.startsWith(`${n.href}/`);
-            return (
-              <Link
-                key={n.href}
-                href={n.href}
-                className={`whitespace-nowrap text-body transition hover:text-foreground ${active ? "text-foreground" : "text-muted-foreground"}`}
-              >
-                {n.label}
-              </Link>
-            );
-          })}
-          <HeaderSearch />
+        <nav className="hidden items-center gap-0.5 xl:flex" aria-label="Main">
+          {NAV.map((n) => (
+            <Link key={n.href} href={n.href} className="nav-link" aria-current={isActive(n.href) ? "page" : undefined}>
+              {n.label}
+            </Link>
+          ))}
+          <span className="ml-2">
+            <HeaderSearch />
+          </span>
         </nav>
-        <span className="flex items-center gap-2 xl:ml-4">
+        <span className="flex shrink-0 items-center gap-1.5 xl:ml-3">
           <span className="hidden sm:contents">
+            <ThemeToggle />
             <SkinSoundToggle />
           </span>
           <RajHeaderBuddy />
           <WalletChip />
         </span>
         <span className="hidden shrink-0 whitespace-nowrap sm:block">
-        <Link href="/#start" className={buttonClass({ variant: "primary" })}>
-          <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-            <path d="M12 5v14M5 12h14" strokeLinecap="round" />
-          </svg>
-          New duel
-        </Link>
+          <Link href="/#start" className={buttonClass({ variant: "brand" })}>
+            <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
+              <path d="M12 5v14M5 12h14" strokeLinecap="round" />
+            </svg>
+            New duel
+          </Link>
         </span>
       </div>
-      <nav className="flex gap-6 overflow-x-auto px-4 pb-3 sm:px-8 xl:hidden">
+      <nav ref={mobileNav} className="mx-auto mt-2 flex max-w-7xl items-center gap-1 overflow-x-auto pb-1 [scrollbar-width:none] xl:hidden" aria-label="Main">
         {[...NAV, { href: "/search", label: "Search" }].map((n) => (
-          <Link
-            key={n.href}
-            href={n.href}
-            className={`shrink-0 text-body ${path.startsWith(n.href) ? "text-foreground" : "text-muted-foreground"}`}
-          >
+          <Link key={n.href} href={n.href} className="nav-link shrink-0" aria-current={isActive(n.href) ? "page" : undefined}>
             {n.label}
           </Link>
         ))}
+        <span className="ml-auto sm:hidden">
+          <ThemeToggle />
+        </span>
       </nav>
     </header>
   );

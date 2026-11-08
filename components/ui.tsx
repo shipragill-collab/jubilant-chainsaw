@@ -3,10 +3,10 @@ import type { ButtonHTMLAttributes, ReactNode } from "react";
 type Variant = "primary" | "brand" | "secondary" | "ghost";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-primary text-primary-foreground hover:opacity-85",
-  brand: "bg-brand text-brand-foreground hover:brightness-95",
-  secondary: "bg-secondary text-secondary-foreground hover:bg-surface-selected",
-  ghost: "text-muted-foreground hover:bg-surface-hover hover:text-foreground",
+  primary: "btn btn-primary bg-primary text-primary-foreground",
+  brand: "btn btn-brand bg-brand text-brand-foreground",
+  secondary: "btn btn-secondary text-secondary-foreground",
+  ghost: "text-muted-foreground transition hover:bg-surface-hover hover:text-foreground",
 };
 
 export function buttonClass({ variant = "primary", size = "default" }: { variant?: Variant; size?: "sm" | "default" | "lg" } = {}) {
@@ -50,7 +50,7 @@ export function Section({ title, intro, children, aside }: { title: ReactNode; i
   return (
     <section className="grid gap-8 border-b border-surface-border py-10 last:border-0 sm:py-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-16">
       <div className="space-y-3">
-        <h1 className="text-[32px] leading-[1.15] font-normal tracking-tight sm:text-[40px]">{title}</h1>
+        <h1 className="text-[34px] leading-[1.05] sm:text-[46px]">{title}</h1>
         {intro && <div className="text-body-lg text-muted-foreground">{intro}</div>}
         {aside}
       </div>
