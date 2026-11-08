@@ -47,6 +47,21 @@ Each study set has its own shareable link. "Your study sets" lists the sets crea
 - **Demo mode:** without Stripe keys, the app runs a clearly labelled demo checkout. It grants purchases for £0.00 and never asks for payment details.
 - **Account security:** players are anonymous browser IDs. The real ID is never shown to other players; duel views and the leaderboard use a one-way hash of it instead.
 
+### Midnight Folio, a Mythic app skin
+
+Midnight Folio costs 3,000 coins. It re-skins the whole app in obsidian and gold leaf:
+
+- **Look:** gold-foil buttons, frames with gilt corner brackets, and gold headlines. Raj becomes gilded.
+- **Living parts:** drifting gold dust, frames whose gilt border light circles the edge, and a streak flame that pulses like a heartbeat.
+- **Sound and touch:** synthesized sounds (a coin clink on presses, a bell chime on correct answers, an ember swell when the streak grows) and vibration on supported phones. A mute button appears in the header while it's on.
+- **Unlocking:** buying it plays a 2.8-second unboxing.
+
+The full blueprint, with live demos, is in `design/midnight-folio-blueprint.html`. The skin applies through `html[data-skin="midnight-folio"]` (see `components/skin-provider.tsx`, `components/unboxing.tsx`, `lib/sfx.ts`).
+
+### Streak page
+
+`/streak` has six widgets: streak counter (with best streak), daily goal ring (5 study actions), this week, a 5-week calendar, next milestone (3, 7, 14, 30, 50, 100 days and on), and all-time totals.
+
 ## Raj, the AI tutor
 
 Raj is available on the **Ask Raj** page, and as a tab in every study set.

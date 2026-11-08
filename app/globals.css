@@ -184,6 +184,7 @@ body {
   --raj-tint: #edf4ee;
   --raj-ink: #1d2620;
   --raj-font: "Plus Jakarta Sans", ui-rounded, "Segoe UI", system-ui, sans-serif;
+  --heat: var(--raj-forest);
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -341,4 +342,248 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .raj[data-state="idle"][data-feeling="proud"] .raj-spark { stroke-dashoffset: 0; }
   .raj[data-state="idle"][data-feeling="sleepy"] .raj-zzz path { opacity: 1; }
+}
+
+/* ===============================================================
+   MIDNIGHT FOLIO: Mythic app skin (html[data-skin="midnight-folio"])
+   Obsidian, gold leaf and candlelight. A deliberately dark world, so
+   it applies the same in light and dark mode.
+   =============================================================== */
+@property --gilt-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+
+:root {
+  --mf-obsidian: #0e1116;
+  --mf-obsidian-raised: #161b23;
+  --mf-obsidian-edge: #232a35;
+  --mf-gold-pale: #f7e7b4;
+  --mf-gold: #e2b65c;
+  --mf-gold-deep: #b07d2b;
+  --mf-gold-shadow: #7a5418;
+  --mf-parchment: #f3ebdd;
+  --mf-parchment-muted: #a9a08f;
+  --mf-ember: #ff8a3d;
+  --mf-ember-glow: #ffc46b;
+  --mf-verdigris: #3fa88a;
+  --mf-foil: linear-gradient(115deg, #f7e7b4 0%, #e2b65c 26%, #b07d2b 50%, #f2d98a 70%, #c8963e 100%);
+  --mf-glow: 0 0 18px rgba(226, 182, 92, 0.28);
+}
+
+/* Raj in Midnight Folio colours, anywhere it's previewed (shop card, unboxing). */
+.mf-scope {
+  --raj-forest: #1b2433;
+  --raj-forest-deep: #0b0e13;
+  --raj-mustard: #e2b65c;
+  --raj-face: #f3ebdd;
+  --raj-ink: #000;
+}
+.mf-scope .raj .raj-body,
+:root[data-skin="midnight-folio"] .raj .raj-body { stroke: var(--mf-gold); stroke-width: 2.5; }
+.mf-scope .raj .raj-ribbon,
+:root[data-skin="midnight-folio"] .raj .raj-ribbon { fill: var(--mf-gold); }
+
+:root[data-skin="midnight-folio"] {
+  color-scheme: dark;
+  --app-shell: var(--mf-obsidian);
+  --background: var(--mf-obsidian);
+  --foreground: var(--mf-parchment);
+  --surface: var(--mf-obsidian-raised);
+  --surface-hover: #1c222c;
+  --surface-selected: #222a36;
+  --surface-border: rgba(226, 182, 92, 0.2);
+  --panel: #141922;
+  --primary: var(--mf-obsidian-raised);
+  --primary-foreground: #f2d98a;
+  --secondary: #1c222c;
+  --secondary-foreground: var(--mf-parchment);
+  --muted: #1c222c;
+  --muted-foreground: var(--mf-parchment-muted);
+  --faint-foreground: #7c7466;
+  --border: rgba(226, 182, 92, 0.16);
+  --input: rgba(226, 182, 92, 0.28);
+  --ring: var(--mf-gold);
+  --brand: var(--mf-gold);
+  --brand-foreground: #1a1408;
+  --brand-soft: rgba(226, 182, 92, 0.12);
+  --success: #6fd3a8;
+  --success-soft: rgba(63, 168, 138, 0.16);
+  --destructive: #ff8f80;
+  --destructive-soft: rgba(255, 143, 128, 0.12);
+  --raj-forest: #1b2433;
+  --raj-forest-deep: #0b0e13;
+  --raj-mustard: var(--mf-gold);
+  --raj-face: var(--mf-parchment);
+  --raj-tint: rgba(226, 182, 92, 0.08);
+  --raj-ink: #000;
+  --heat: var(--mf-gold);
+}
+
+/* Brushed obsidian: a soft candlelit vignette over hairline brushing. */
+:root[data-skin="midnight-folio"] body {
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.012) 0 1px, transparent 1px 3px),
+    radial-gradient(1200px 640px at 50% -12%, #1d2430 0%, var(--mf-obsidian) 62%);
+  background-attachment: fixed;
+}
+.mf-dust { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 0; }
+:root[data-skin="midnight-folio"] body > header,
+:root[data-skin="midnight-folio"] body > main,
+:root[data-skin="midnight-folio"] body > footer { position: relative; z-index: 1; }
+
+/* Header: obsidian bar with a gilt hairline that catches the light. */
+:root[data-skin="midnight-folio"] body > header {
+  border-bottom-color: transparent;
+  background: linear-gradient(180deg, rgba(14, 17, 22, 0.92), rgba(14, 17, 22, 0.7));
+  box-shadow: inset 0 -1px 0 rgba(226, 182, 92, 0.35);
+}
+:root[data-skin="midnight-folio"] body > header::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--mf-gold-pale), transparent);
+  background-size: 40% 100%; background-repeat: no-repeat;
+  animation: mf-hairline 7s ease-in-out infinite;
+}
+@keyframes mf-hairline { 0% { background-position: -40% 0; } 60%, 100% { background-position: 140% 0; } }
+
+/* Headlines are stamped in gold foil. */
+:root[data-skin="midnight-folio"] .display {
+  background: var(--mf-foil); background-size: 200% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: mf-sheen 9s ease-in-out infinite;
+}
+@keyframes mf-sheen { 50% { background-position: 100% 0; } }
+
+/* Buttons. Primary actions are minted gold coins; secondary ones are
+   obsidian with a gold hairline. Both sink into their edge when pressed. */
+:root[data-skin="midnight-folio"] .bg-brand {
+  background: var(--mf-foil); background-size: 220% 100%; background-position: 0 0;
+  color: #1a1408;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 3px 0 var(--mf-gold-shadow), var(--mf-glow);
+  transition: background-position 0.6s ease, transform 0.1s, box-shadow 0.1s;
+}
+:root[data-skin="midnight-folio"] .bg-brand:hover { background-position: 100% 0; filter: none; }
+:root[data-skin="midnight-folio"] button.bg-brand:active,
+:root[data-skin="midnight-folio"] a.bg-brand:active { transform: translateY(3px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 0 0 var(--mf-gold-shadow); }
+:root[data-skin="midnight-folio"] .bg-primary { box-shadow: inset 0 0 0 1px rgba(226, 182, 92, 0.45); }
+:root[data-skin="midnight-folio"] .bg-secondary { box-shadow: inset 0 0 0 1px rgba(226, 182, 92, 0.22); }
+:root[data-skin="midnight-folio"] .bg-\[var\(--raj-forest\)\] {
+  background: var(--mf-foil) !important; color: #1a1408 !important; box-shadow: 0 3px 0 var(--mf-gold-shadow), var(--mf-glow) !important;
+}
+
+/* Frames: raised obsidian with gilt corner brackets, like a bound folio. */
+:root[data-skin="midnight-folio"] .surface,
+:root[data-skin="midnight-folio"] .panel {
+  position: relative;
+  background: linear-gradient(180deg, #1a202a 0%, #141922 100%);
+  border-color: rgba(226, 182, 92, 0.2);
+}
+:root[data-skin="midnight-folio"] .panel { border: 1px solid rgba(226, 182, 92, 0.14); }
+:root[data-skin="midnight-folio"] .surface::after,
+:root[data-skin="midnight-folio"] .panel::after {
+  content: ""; position: absolute; inset: 7px; pointer-events: none; border-radius: inherit; opacity: 0.75;
+  --c: rgba(226, 182, 92, 0.7);
+  background:
+    linear-gradient(var(--c), var(--c)) top left / 14px 1.5px no-repeat,
+    linear-gradient(var(--c), var(--c)) top left / 1.5px 14px no-repeat,
+    linear-gradient(var(--c), var(--c)) top right / 14px 1.5px no-repeat,
+    linear-gradient(var(--c), var(--c)) top right / 1.5px 14px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom left / 14px 1.5px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom left / 1.5px 14px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom right / 14px 1.5px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom right / 1.5px 14px no-repeat;
+}
+
+/* Featured frames (Raj's chat and mood card, streak widgets) get a gilt
+   border whose light slowly circles the edge. */
+:root[data-skin="midnight-folio"] .raj-room,
+:root[data-skin="midnight-folio"] .mf-gilt {
+  border: 1.5px solid transparent !important;
+  background:
+    linear-gradient(180deg, #1a202a, #141922) padding-box,
+    conic-gradient(from var(--gilt-angle), rgba(226, 182, 92, 0.18), #f7e7b4 8%, rgba(226, 182, 92, 0.18) 20%, rgba(226, 182, 92, 0.18) 55%, #e2b65c 63%, rgba(226, 182, 92, 0.18) 75%) border-box !important;
+  box-shadow: 0 3px 0 #07090c, var(--mf-glow) !important;
+  animation: mf-gilt-spin 9s linear infinite;
+}
+@keyframes mf-gilt-spin { to { --gilt-angle: 360deg; } }
+
+/* Streak counter: a slow heartbeat glow (72 bpm), quickening when the streak grows. */
+:root[data-skin="midnight-folio"] .streak-flame {
+  filter: drop-shadow(0 0 6px rgba(255, 138, 61, 0.55));
+  animation: mf-heartbeat 0.83s ease-in-out infinite;
+  transform-origin: 50% 80%;
+}
+:root[data-skin="midnight-folio"][data-streak-pulse] .streak-flame { animation-duration: 0.42s; filter: drop-shadow(0 0 12px rgba(255, 196, 107, 0.9)); }
+@keyframes mf-heartbeat { 0%, 100% { transform: scale(1); } 14% { transform: scale(1.14); } 28% { transform: scale(1); } 42% { transform: scale(1.08); } 70% { transform: scale(1); } }
+
+:root[data-skin="midnight-folio"] .mf-sound { color: var(--mf-gold); }
+
+@media (prefers-reduced-motion: reduce) {
+  :root[data-skin="midnight-folio"] .display,
+  :root[data-skin="midnight-folio"] body > header::after,
+  :root[data-skin="midnight-folio"] .raj-room,
+  :root[data-skin="midnight-folio"] .mf-gilt,
+  :root[data-skin="midnight-folio"] .streak-flame { animation: none !important; }
+}
+
+/* ---------- Mythic shop card, seal and unboxing ---------- */
+.mf-card {
+  position: relative; overflow: hidden; color: #f3ebdd; border-radius: 26px; border: 1.5px solid transparent;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.014) 0 1px, transparent 1px 3px) padding-box,
+    radial-gradient(600px 300px at 30% 0%, #1f2734, #0e1116 70%) padding-box,
+    conic-gradient(from var(--gilt-angle), rgba(226, 182, 92, 0.25), #f7e7b4 8%, rgba(226, 182, 92, 0.25) 20%, rgba(226, 182, 92, 0.25) 55%, #e2b65c 63%, rgba(226, 182, 92, 0.25) 75%) border-box;
+  box-shadow: 0 4px 0 #05070a, 0 18px 40px rgba(14, 17, 22, 0.25);
+  animation: mf-gilt-spin 9s linear infinite;
+}
+.mf-card::before {
+  /* the holographic sweep that crosses the card every few seconds */
+  content: ""; position: absolute; inset: -40%; pointer-events: none;
+  background: linear-gradient(105deg, transparent 42%, rgba(247, 231, 180, 0.16) 48%, rgba(170, 220, 255, 0.08) 51%, transparent 57%);
+  animation: mf-holo 5s ease-in-out infinite;
+}
+@keyframes mf-holo { 0% { transform: translateX(-60%); } 55%, 100% { transform: translateX(60%); } }
+.mf-foil-text { background: var(--mf-foil); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: mf-sheen 6s ease-in-out infinite; }
+.mf-seal {
+  position: relative; display: inline-grid; place-items: center; width: 64px; height: 64px;
+  clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%);
+  background: var(--mf-foil); background-size: 220% 220%; animation: mf-sheen 4s ease-in-out infinite;
+  color: #4a3200; font-size: 10px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35);
+}
+.mf-seal::after {
+  content: ""; position: absolute; inset: 5px; clip-path: inherit; border: 1px solid rgba(74, 50, 0, 0.35);
+  background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.55) 50%, transparent 60%);
+  background-size: 300% 100%; animation: mf-seal-shine 4s ease-in-out infinite;
+}
+@keyframes mf-seal-shine { 0% { background-position: 150% 0; } 50%, 100% { background-position: -50% 0; } }
+.mf-filigree {
+  background:
+    radial-gradient(circle at 50% 50%, transparent 0 22px, rgba(226, 182, 92, 0.5) 23px 24px, transparent 25px) 0 0 / 48px 48px,
+    radial-gradient(circle at 0 0, transparent 0 22px, rgba(226, 182, 92, 0.35) 23px 24px, transparent 25px) 0 0 / 48px 48px,
+    radial-gradient(500px 300px at 50% 40%, #1f2734, #0b0e13 75%);
+}
+
+.mf-unbox { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 24px; background: rgba(6, 8, 11, 0.86); animation: mf-fade-in 0.3s ease-out; }
+@keyframes mf-fade-in { from { opacity: 0; } }
+.mf-stage { perspective: 1100px; display: grid; justify-items: center; gap: 26px; text-align: center; color: #f3ebdd; }
+.mf-flip { position: relative; width: min(260px, 70vw); aspect-ratio: 5 / 7; transform-style: preserve-3d; transition: transform 0.85s cubic-bezier(0.3, 1.25, 0.4, 1); }
+.mf-flip[data-phase="drop"] { animation: mf-drop 0.6s cubic-bezier(0.3, 1.4, 0.5, 1) both; }
+.mf-flip[data-phase="shake"] { animation: mf-shake 0.7s ease-in-out both; }
+.mf-flip[data-phase="reveal"], .mf-flip[data-phase="done"] { transform: rotateY(180deg); }
+.mf-face { position: absolute; inset: 0; border-radius: 22px; backface-visibility: hidden; overflow: hidden; display: grid; place-items: center; border: 1.5px solid rgba(226, 182, 92, 0.6); box-shadow: 0 0 40px rgba(226, 182, 92, 0.25); }
+.mf-face.front { transform: rotateY(180deg); background: radial-gradient(300px 260px at 50% 30%, #222b39, #0e1116 75%); }
+.mf-face.front::before { content: ""; position: absolute; inset: -40%; background: linear-gradient(105deg, transparent 42%, rgba(247, 231, 180, 0.22) 49%, transparent 56%); animation: mf-holo 2.6s ease-in-out infinite; }
+@keyframes mf-drop { from { transform: translateY(-60vh) rotate(-8deg); } }
+@keyframes mf-shake {
+  0%, 100% { transform: rotate(0) scale(1); }
+  15% { transform: rotate(-3deg) scale(1.01); } 30% { transform: rotate(3deg); }
+  50% { transform: rotate(-5deg) scale(1.03); } 70% { transform: rotate(6deg) scale(1.04); } 85% { transform: rotate(-4deg) scale(1.05); }
+}
+.mf-stamp { animation: mf-stamp 0.45s cubic-bezier(0.2, 1.6, 0.4, 1) 0.55s both; }
+@keyframes mf-stamp { from { transform: scale(2.2) rotate(-18deg); opacity: 0; } }
+.mf-burst { position: absolute; left: 50%; top: 45%; width: 0; height: 0; pointer-events: none; }
+.mf-burst i { position: absolute; width: 7px; height: 7px; border-radius: 2px; background: var(--mf-foil); opacity: 0; animation: mf-burst 1.1s cubic-bezier(0.1, 0.8, 0.3, 1) forwards; }
+@keyframes mf-burst { 0% { opacity: 1; transform: translate(0, 0) rotate(0) scale(1); } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(260deg) scale(0.4); } }
+.mf-reveal-text { animation: mf-rise 0.5s ease-out 0.6s both; }
+@keyframes mf-rise { from { opacity: 0; transform: translateY(10px); } }
+@media (prefers-reduced-motion: reduce) {
+  .mf-card, .mf-card::before, .mf-seal, .mf-seal::after, .mf-foil-text, .mf-face.front::before, .mf-flip, .mf-stamp, .mf-reveal-text, .mf-burst i { animation: none !important; transition: none !important; }
 }

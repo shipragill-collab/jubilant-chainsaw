@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { refreshProfiles, useProfile } from "@/lib/use-profile";
 import { RajHeaderBuddy } from "./raj-mood-card";
+import { SkinSoundToggle } from "./skin-provider";
 import { Avatar } from "./avatar";
 import { Coins } from "./coin";
 import { buttonClass } from "./ui";
@@ -12,6 +13,7 @@ import { buttonClass } from "./ui";
 const NAV = [
   { href: "/study", label: "Study" },
   { href: "/tutor", label: "Ask Raj" },
+  { href: "/streak", label: "Streak" },
   { href: "/leaderboard", label: "Leaderboard" },
   { href: "/shop", label: "Shop" },
   { href: "/pricing", label: "Plans" },
@@ -78,7 +80,7 @@ export function SiteHeader() {
           <span aria-hidden className="size-9 rounded-full bg-brand sm:size-11" />
           <span className="text-[22px] tracking-tight sm:text-[26px]">Quiz Duel</span>
         </Link>
-        <nav className="hidden items-center gap-8 lg:flex">
+        <nav className="hidden items-center gap-7 xl:flex">
           {NAV.map((n) => {
             const active = path === n.href || path.startsWith(`${n.href}/`);
             return (
@@ -93,10 +95,11 @@ export function SiteHeader() {
           })}
           <HeaderSearch />
         </nav>
-        <Link href="/search" aria-label="Search" className="grid size-10 place-items-center rounded-full text-muted-foreground hover:text-foreground lg:hidden">
+        <Link href="/search" aria-label="Search" className="grid size-10 place-items-center rounded-full text-muted-foreground hover:text-foreground xl:hidden">
           <SearchIcon className="size-5" />
         </Link>
-        <span className="flex items-center gap-2 lg:ml-4">
+        <span className="flex items-center gap-2 xl:ml-4">
+          <SkinSoundToggle />
           <RajHeaderBuddy />
           <WalletChip />
         </span>
@@ -109,7 +112,7 @@ export function SiteHeader() {
         </Link>
         </span>
       </div>
-      <nav className="flex gap-6 overflow-x-auto px-4 pb-3 sm:px-8 lg:hidden">
+      <nav className="flex gap-6 overflow-x-auto px-4 pb-3 sm:px-8 xl:hidden">
         {NAV.map((n) => (
           <Link
             key={n.href}

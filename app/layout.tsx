@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site-header";
+import { SkinProvider } from "@/components/skin-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="min-h-dvh">
+        <SkinProvider />
         <SiteHeader />
         <main className="mx-auto max-w-7xl px-4 sm:px-8">{children}</main>
         <footer className="mx-auto max-w-7xl border-t border-surface-border px-4 py-8 text-label text-muted-foreground sm:px-8">

@@ -4,7 +4,7 @@ import { body, handle, playerIdFrom } from "@/lib/http";
 import { equipItem, profileView } from "@/lib/profile";
 import { update } from "@/lib/store";
 
-const SLOT_IDS: Slot[] = ["skin", "hat", "eyes", "neck"];
+const SLOT_IDS: Slot[] = ["skin", "hat", "eyes", "neck", "theme"];
 
 export async function POST(req: Request) {
   return handle(async () => {

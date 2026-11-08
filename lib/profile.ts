@@ -42,8 +42,9 @@ export function peekProfile(db: Db, playerId: string, now = Date.now()) {
 export function recordActivity(db: Db, playerId: string, now = Date.now()) {
   const p = profileOf(db, playerId, now);
   const list = (p.activity ??= []);
-  if (!list.length || now - list[list.length - 1] > 20 * 60_000) list.push(now);
-  if (list.length > 120) list.splice(0, list.length - 120);
+  // At most one entry a minute, so rapid clicks don't inflate the daily goal.
+  if (!list.length || now - list[list.length - 1] > 60_000) list.push(now);
+  if (list.length > 600) list.splice(0, list.length - 600);
 }
 
 export const isPro = (p: Profile, now = Date.now()) => p.plan === "pro" && (p.proUntil === null || p.proUntil > now);
@@ -69,7 +70,8 @@ export function buyItem(db: Db, playerId: string, itemId: string) {
   if (p.coins < item.price) throw new GameError(`You need ${item.price - p.coins} more coins.`, 402);
   p.coins -= item.price;
   p.owned.push(item.id);
-  p.equipped[item.slot] = item.id;
+  // App skins are equipped from the unboxing screen; wearables go straight on.
+  if (item.slot !== "theme") p.equipped[item.slot] = item.id;
   return p;
 }
 

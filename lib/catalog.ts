@@ -60,13 +60,14 @@ export const COIN_PACKS: CoinPack[] = [
   { id: "coins-4000", coins: 4000, pricePence: 499, label: "Treasure chest" },
 ];
 
-export type Slot = "skin" | "hat" | "eyes" | "neck";
+export type Slot = "skin" | "hat" | "eyes" | "neck" | "theme";
 
 export const SLOTS: { id: Slot; label: string }[] = [
   { id: "skin", label: "Skins" },
   { id: "hat", label: "Hats" },
   { id: "eyes", label: "Eyewear" },
   { id: "neck", label: "Neckwear" },
+  { id: "theme", label: "App skins" },
 ];
 
 export interface ShopItem {
@@ -76,6 +77,9 @@ export interface ShopItem {
   price: number; // coins; 0 = free starter item
   proOnly?: boolean;
   description: string;
+  /** Premium items get a rarity seal and their own card in the shop. */
+  rarity?: "mythic";
+  lore?: string;
 }
 
 export const ITEMS: ShopItem[] = [
@@ -107,7 +111,20 @@ export const ITEMS: ShopItem[] = [
   { id: "neck-scarf", slot: "neck", name: "Scarf", price: 220, description: "Exam season is chilly." },
   { id: "neck-medal", slot: "neck", name: "Medal", price: 700, description: "Wear your wins." },
   { id: "neck-cape", slot: "neck", name: "Hero Cape", price: 1000, proOnly: true, description: "Saving grades since today." },
+  // App skins: re-skin the whole app, Raj included
+  {
+    id: "theme-midnight-folio",
+    slot: "theme",
+    name: "Midnight Folio",
+    price: 3000,
+    rarity: "mythic",
+    description: "Obsidian and gold leaf for the whole app, a gilded Raj, drifting gold dust, sounds and haptics.",
+    lore:
+      "Bound in obsidian and edged in gold leaf, this is the last page of the Library of Night, the card scholars studied by candlelight after every other lamp went out. Raj found it under a stack of unfinished revision and refused to give it back. Wear it, and every answer you earn is written in gold.",
+  },
 ];
+
+export const THEME_SKINS: Record<string, string> = { "theme-midnight-folio": "midnight-folio" };
 
 export const STARTER_ITEMS = ITEMS.filter((i) => i.price === 0).map((i) => i.id);
 

@@ -3,19 +3,22 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Avatar } from "@/components/avatar";
+import { RajCompanion } from "@/components/raj-companion";
+import { Unboxing } from "@/components/unboxing";
 import { Coin, Coins } from "@/components/coin";
 import { Badge, Button, Spinner } from "@/components/ui";
 import { COIN_PACKS, ITEMS, SLOTS, formatPrice, type Equipped, type ShopItem, type Slot } from "@/lib/catalog";
 import { api, getPlayerId } from "@/lib/player";
 import { refreshProfiles, useProfile, type ClientProfile } from "@/lib/use-profile";
 
-const FRAME_BG: Record<Slot, string> = { skin: "#f6efe6", hat: "#e8f0fb", eyes: "#eef7d9", neck: "#fbe9e4" };
+const FRAME_BG: Record<Slot, string> = { skin: "#f6efe6", hat: "#e8f0fb", eyes: "#eef7d9", neck: "#fbe9e4", theme: "#0e1116" };
 
 export default function ShopPage() {
   const { profile, setProfile } = useProfile();
   const [slot, setSlot] = useState<Slot>("skin");
   const [tryOn, setTryOn] = useState<ShopItem | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [unboxing, setUnboxing] = useState<ShopItem | null>(null);
   const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
 
   useEffect(() => {
@@ -40,6 +43,20 @@ export default function ShopPage() {
       setTryOn(null);
       setMessage({ tone: "ok", text: done });
       refreshProfiles();
+    } catch (err) {
+      setMessage({ tone: "error", text: (err as Error).message });
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function buyMythic(item: ShopItem) {
+    setBusy(item.id);
+    setMessage(null);
+    try {
+      const next = await api<ClientProfile>("/api/shop/buy", { body: { playerId: getPlayerId(), itemId: item.id } });
+      setProfile((p) => (p ? { ...p, ...next } : p));
+      setUnboxing(item);
     } catch (err) {
       setMessage({ tone: "error", text: (err as Error).message });
     } finally {
@@ -92,6 +109,23 @@ export default function ShopPage() {
 
         {/* Right: tabbed catalogue */}
         <div className="min-w-0 space-y-6">
+          {slot !== "theme" && (
+            <button
+              type="button"
+              onClick={() => setSlot("theme")}
+              className="mf-card flex w-full items-center gap-4 p-4 text-left sm:p-5"
+            >
+              <span className="mf-scope grid size-16 shrink-0 place-items-center rounded-2xl bg-[#0b0e13]">
+                <RajCompanion size={54} feeling="proud" />
+              </span>
+              <span className="relative min-w-0 flex-1">
+                <span className="block text-caption font-semibold tracking-[0.18em] text-[#e2b65c] uppercase">New · Mythic app skin</span>
+                <span className="mf-foil-text block text-title-lg font-extrabold">Midnight Folio</span>
+                <span className="block truncate text-body text-[#a9a08f]">Obsidian and gold leaf for the whole app, with its own sounds.</span>
+              </span>
+              <span className="mf-seal relative hidden shrink-0 sm:inline-grid">Mythic</span>
+            </button>
+          )}
           <div className="flex items-center gap-1 overflow-x-auto rounded-full bg-panel p-1.5 sm:w-fit">
             {SLOTS.map((s) => (
               <button
@@ -126,6 +160,22 @@ export default function ShopPage() {
             </p>
           )}
 
+          {slot === "theme" ? (
+            <div className="grid gap-8">
+              {items.map((item) => (
+                <MythicCard
+                  key={item.id}
+                  item={item}
+                  owned={profile?.owned.includes(item.id) ?? false}
+                  equipped={equipped.theme === item.id}
+                  coins={profile?.coins ?? 0}
+                  busy={busy !== null}
+                  onBuy={() => buyMythic(item)}
+                  onEquip={(on) => act("/api/shop/equip", { slot: "theme", itemId: on ? item.id : null }, on ? `${item.name} is on.` : `${item.name} is off.`)}
+                />
+              ))}
+            </div>
+          ) : (
           <div className="grid grid-cols-1 gap-x-8 gap-y-10 sm:grid-cols-2 xl:grid-cols-3">
             {items.map((item) => {
               const owned = profile?.owned.includes(item.id) ?? item.price === 0;
@@ -185,8 +235,21 @@ export default function ShopPage() {
               );
             })}
           </div>
+          )}
         </div>
       </section>
+
+      {unboxing && (
+        <Unboxing
+          item={unboxing}
+          onClose={() => setUnboxing(null)}
+          onEquip={() => {
+            const it = unboxing;
+            setUnboxing(null);
+            void act("/api/shop/equip", { slot: "theme", itemId: it.id }, `${it.name} is on. Welcome to the Library of Night.`);
+          }}
+        />
+      )}
 
       <section id="coins" className="bleed grid scroll-mt-6 gap-8 py-12 sm:py-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-16">
         <div className="space-y-3">
@@ -214,5 +277,82 @@ export default function ShopPage() {
         </div>
       </section>
     </>
+  );
+}
+
+/** The Mythic shop card: obsidian, a circling gilt border, a holographic sweep and a gold seal. */
+function MythicCard({
+  item,
+  owned,
+  equipped,
+  coins,
+  busy,
+  onBuy,
+  onEquip,
+}: {
+  item: ShopItem;
+  owned: boolean;
+  equipped: boolean;
+  coins: number;
+  busy: boolean;
+  onBuy: () => void;
+  onEquip: (on: boolean) => void;
+}) {
+  const short = Math.max(0, item.price - coins);
+  return (
+    <article className="mf-card grid gap-6 p-6 sm:grid-cols-[minmax(0,220px)_minmax(0,1fr)] sm:p-8">
+      <div className="mf-scope relative grid place-items-center rounded-[20px] bg-[radial-gradient(260px_220px_at_50%_35%,#222b39,#0b0e13_75%)] py-8 ring-1 ring-[rgba(226,182,92,0.35)]">
+        <RajCompanion state="idle" feeling="proud" size={150} followPointer label="Raj wearing Midnight Folio" />
+        <span className="mf-seal absolute -top-3 -right-3">Mythic</span>
+      </div>
+      <div className="relative grid min-w-0 content-start gap-4">
+        <div className="grid gap-1">
+          <p className="text-caption font-semibold tracking-[0.2em] text-[#e2b65c] uppercase">Mythic · App skin · Edition I</p>
+          <h2 className="mf-foil-text text-[34px] leading-tight font-extrabold tracking-tight">{item.name}</h2>
+        </div>
+        <p className="text-body-lg leading-relaxed text-[#d9cfbd] italic">{item.lore}</p>
+        <ul className="grid gap-2 text-body text-[#f3ebdd] sm:grid-cols-2">
+          {[
+            "Obsidian and gold leaf across the app",
+            "A gilded Raj with gold-rimmed edges",
+            "Drifting gold dust and circling gilt frames",
+            "A heartbeat glow on your streak",
+            "Coin clinks, bell chimes and an ember swell",
+            "Haptic taps on supported phones",
+          ].map((f) => (
+            <li key={f} className="flex gap-2.5">
+              <span aria-hidden className="mt-2 size-1.5 shrink-0 rotate-45 bg-[#e2b65c]" />
+              {f}
+            </li>
+          ))}
+        </ul>
+        <div className="flex flex-wrap items-center gap-3 pt-2">
+          {owned ? (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => onEquip(!equipped)}
+              className="h-12 rounded-full px-6 text-body-lg font-bold text-[#1a1408] shadow-[0_3px_0_#7a5418,0_0_20px_rgba(226,182,92,0.3)] transition active:translate-y-[3px] active:shadow-none disabled:opacity-60"
+              style={{ background: equipped ? "transparent" : "var(--mf-foil)", color: equipped ? "#f3ebdd" : undefined, boxShadow: equipped ? "inset 0 0 0 1px rgba(226,182,92,0.5)" : undefined }}
+            >
+              {equipped ? "Take it off" : "Equip Midnight Folio"}
+            </button>
+          ) : (
+            <button
+              type="button"
+              disabled={busy || short > 0}
+              onClick={onBuy}
+              className="inline-flex h-12 items-center gap-2 rounded-full px-6 text-body-lg font-bold text-[#1a1408] shadow-[0_3px_0_#7a5418,0_0_20px_rgba(226,182,92,0.3)] transition active:translate-y-[3px] active:shadow-none disabled:opacity-50"
+              style={{ background: "var(--mf-foil)" }}
+            >
+              <Coin size={18} /> Unlock for {item.price.toLocaleString()}
+            </button>
+          )}
+          <span className="text-body text-[#a9a08f]">
+            {owned ? (equipped ? "You're wearing it." : "In your collection.") : short > 0 ? `You need ${short.toLocaleString()} more coins.` : "You can afford it."}
+          </span>
+        </div>
+      </div>
+    </article>
   );
 }

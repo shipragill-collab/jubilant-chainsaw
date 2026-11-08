@@ -101,9 +101,9 @@ export interface Profile {
   proUntil: number | null;
   coins: number;
   owned: string[];
-  equipped: Partial<Record<"skin" | "hat" | "eyes" | "neck", string>>;
+  equipped: Partial<Record<"skin" | "hat" | "eyes" | "neck" | "theme", string>>;
   usage: { day: string; aiGenerations: number; rajMessages: number };
-  /** When the player studied (ms timestamps, at most one per 20 minutes, last ~120). */
+  /** When the player studied (ms timestamps, at most one a minute, last ~600). */
   activity?: number[];
   /** Stripe ids, when real payments are connected. */
   stripeCustomerId?: string;
@@ -138,7 +138,7 @@ export interface PublicQuestion {
 export interface PublicPlayer {
   /** A hash of the player's id: the real id is a secret that unlocks their coins. */
   id: string;
-  avatar: Partial<Record<"skin" | "hat" | "eyes" | "neck", string>>;
+  avatar: Partial<Record<"skin" | "hat" | "eyes" | "neck" | "theme", string>>;
   pro: boolean;
   name: string;
   score: number;
@@ -175,7 +175,7 @@ export interface DuelView {
 
 export interface LeaderboardRow {
   name: string;
-  avatar: Partial<Record<"skin" | "hat" | "eyes" | "neck", string>>;
+  avatar: Partial<Record<"skin" | "hat" | "eyes" | "neck" | "theme", string>>;
   pro: boolean;
   played: number;
   wins: number;

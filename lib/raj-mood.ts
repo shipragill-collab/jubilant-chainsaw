@@ -23,7 +23,20 @@ export interface Activity {
   daysAway: number | null;
   /** The last 7 days, oldest first: did the player study that day? */
   week: { day: number; active: boolean; isToday: boolean }[];
+  /** Longest run of consecutive study days ever recorded. */
+  bestStreak: number;
+  /** Number of distinct days studied. */
+  totalDays: number;
+  /** Study actions recorded today (for the daily goal). */
+  todayCount: number;
+  /** The last 5 weeks (35 days, oldest first) with study counts, for a calendar heatmap. */
+  month: { day: number; count: number; isToday: boolean }[];
+  /** The next streak milestone and how far along it is. */
+  milestone: { target: number; previous: number };
 }
+
+export const DAILY_GOAL = 5;
+export const MILESTONES = [3, 7, 14, 30, 50, 100, 200, 365];
 
 export function summarizeActivity(timestamps: number[], now = Date.now(), tz?: number): Activity {
   const day = (t: number) => (tz === undefined ? localDay(t) : localDay(t, tz));
@@ -51,7 +64,36 @@ export function summarizeActivity(timestamps: number[], now = Date.now(), tz?: n
     return { day: d, active: days.has(d), isToday: d === today };
   });
 
-  return { feeling, streak, studiedToday, daysAway, week };
+  const counts = new Map<number, number>();
+  for (const t of timestamps) if (t <= now) counts.set(day(t), (counts.get(day(t)) ?? 0) + 1);
+  const month = Array.from({ length: 35 }, (_, i) => {
+    const d = today - 34 + i;
+    return { day: d, count: counts.get(d) ?? 0, isToday: d === today };
+  });
+
+  let bestStreak = 0;
+  for (const d of days) {
+    if (days.has(d - 1)) continue; // only count from the start of each run
+    let run = 0;
+    while (days.has(d + run)) run++;
+    bestStreak = Math.max(bestStreak, run);
+  }
+
+  const target = MILESTONES.find((m) => m > streak) ?? Math.ceil((streak + 1) / 100) * 100;
+  const previous = [...MILESTONES].reverse().find((m) => m <= streak) ?? 0;
+
+  return {
+    feeling,
+    streak,
+    studiedToday,
+    daysAway,
+    week,
+    bestStreak,
+    totalDays: days.size,
+    todayCount: counts.get(today) ?? 0,
+    month,
+    milestone: { target, previous },
+  };
 }
 
 /** What Raj says for each feeling. Friendly nudges, never guilt trips. */

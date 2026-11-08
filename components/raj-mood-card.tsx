@@ -9,7 +9,7 @@ const WEEKDAY = new Intl.DateTimeFormat("en", { weekday: "narrow", timeZone: "UT
 
 function Flame({ lit }: { lit: boolean }) {
   return (
-    <svg viewBox="0 0 20 24" width="18" height="22" aria-hidden>
+    <svg viewBox="0 0 20 24" width="18" height="22" aria-hidden className={lit ? "streak-flame" : undefined}>
       <path d="M10 1 C12 6 18 9 18 15 A8 8 0 0 1 2 15 C2 11 5 9 6 6 C7 9 9 10 9 10 C9 6 8 4 10 1 Z" fill={lit ? "#ff7a1a" : "currentColor"} opacity={lit ? 1 : 0.25} />
       {lit && <path d="M10 11 C11 13 14 14 14 17 A4 4 0 0 1 6 17 C6 15 8 14 10 11 Z" fill="#ffd54f" />}
     </svg>
@@ -43,10 +43,10 @@ export function RajMoodCard({ href, compact = false }: { href?: string; compact?
           <p className="text-body-lg text-muted-foreground">{line.body}</p>
         </div>
         <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
-          <span className="flex items-center gap-1.5 text-body-lg font-bold tabular-nums" aria-label={`${activity.streak} day streak`}>
+          <Link href="/streak" className="flex items-center gap-1.5 text-body-lg font-bold tabular-nums hover:underline" aria-label={`${activity.streak} day streak. See streak details`}>
             <Flame lit={lit} /> {activity.streak}
             <span className="font-medium text-muted-foreground">day streak</span>
-          </span>
+          </Link>
           <ol className="flex gap-1.5" aria-label="Last 7 days">
             {activity.week.map((d) => (
               <li key={d.day} className="grid justify-items-center gap-1">

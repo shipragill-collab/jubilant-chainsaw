@@ -7,6 +7,7 @@ import { Avatar } from "@/components/avatar";
 import { Coins } from "@/components/coin";
 import { Badge, Button, Card, Spinner, inputClass } from "@/components/ui";
 import { DUEL_REWARD } from "@/lib/catalog";
+import { sfx, skinActive } from "@/lib/sfx";
 import { refreshProfiles } from "@/lib/use-profile";
 import { api, getPlayerId, getSavedName, saveName } from "@/lib/player";
 import type { DuelView, PlayerAnswer, PublicPlayer } from "@/lib/types";
@@ -224,6 +225,7 @@ function Play({ view, playerId, onView }: { view: DuelView; playerId: string; on
           body: { playerId, index, choice },
         });
         setResult(r);
+        if (r.answer.correct && skinActive()) sfx.chime();
       } catch {
         // Most likely answered in another tab; resync.
         onView(await api<DuelView>(`/api/duels/${view.id}?playerId=${playerId}`));

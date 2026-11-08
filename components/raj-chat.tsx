@@ -3,6 +3,7 @@
 import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import { getPlayerId } from "@/lib/player";
 import type { RajFeeling } from "@/lib/raj-mood";
+import { sfx, skinActive } from "@/lib/sfx";
 import { refreshProfiles } from "@/lib/use-profile";
 import { useRajActivity } from "@/lib/use-raj";
 import { RAJ_STATUS, RajCompanion, type RajState } from "./raj-companion";
@@ -199,6 +200,7 @@ export function RajChat({ setId, setTitle }: { setId: string | null; setTitle?: 
       }
       if (!reply.trim()) throw new Error("Raj didn't say anything. Try again?");
       refreshProfiles();
+      if (/^\s*\*\*Correct/.test(reply) && skinActive()) sfx.chime();
     } catch (err) {
       if ((err as Error).name === "AbortError") return;
       setError((err as Error).message);

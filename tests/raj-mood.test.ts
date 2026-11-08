@@ -56,3 +56,25 @@ describe("Raj's feelings", () => {
     }
   });
 });
+
+describe("streak widgets data", () => {
+  it("tracks best streak, totals, today's count and the next milestone", () => {
+    const ts = [
+      ...[10, 11, 12, 13].map((n) => daysAgo(n)), // an old 4-day run
+      daysAgo(1), daysAgo(0), daysAgo(0, 13), daysAgo(0, 14),
+    ];
+    const a = at(ts);
+    expect(a.bestStreak).toBe(4);
+    expect(a.streak).toBe(2);
+    expect(a.totalDays).toBe(6);
+    expect(a.todayCount).toBe(3);
+    expect(a.milestone).toEqual({ target: 3, previous: 0 });
+    expect(a.month).toHaveLength(35);
+    expect(a.month[34]).toMatchObject({ isToday: true, count: 3 });
+  });
+
+  it("moves to the next milestone once one is reached", () => {
+    const a = at(Array.from({ length: 7 }, (_, i) => daysAgo(i)));
+    expect(a.milestone).toEqual({ target: 14, previous: 7 });
+  });
+});
