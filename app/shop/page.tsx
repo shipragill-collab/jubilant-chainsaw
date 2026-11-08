@@ -93,14 +93,17 @@ export default function ShopPage() {
     return list.filter(ofFilter);
   }, [slot, filter]);
   // Rarest first: Mythic, Legendary, Epic, Rare, then Common.
-  const groups = useMemo(
-    () =>
-      [...RARITIES]
-        .reverse()
-        .map((r) => ({ rarity: r, items: items.filter((i) => i.rarity === r) }))
-        .filter((g) => g.items.length > 0),
-    [items],
-  );
+  const groups = useMemo(() => {
+    const festive = items
+      .filter((i) => i.season)
+      .sort((a, b) => Number(seasonStatus(b.season!).active) - Number(seasonStatus(a.season!).active));
+    const rest = items.filter((i) => !i.season);
+    const byRarity = [...RARITIES]
+      .reverse()
+      .map((r) => ({ key: r as Rarity | "festive", label: RARITY_LABEL[r], items: rest.filter((i) => i.rarity === r) }));
+    return [{ key: "festive" as const, label: "Festive", items: festive }, ...byRarity].filter((g) => g.items.length > 0);
+  }, [items]);
+  const festiveNow = ITEMS.filter((i) => i.season && seasonStatus(i.season).active);
   const skinCount = ITEMS.filter((i) => i.slot === "skin" || i.slot === "theme").length;
 
   async function act(path: string, body: Record<string, unknown>, done: string) {
@@ -213,11 +216,50 @@ export default function ShopPage() {
 
   return (
     <>
+      <section id="wallet" className="bleed grid scroll-mt-6 gap-6 py-8 sm:py-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-16">
+        <div className="space-y-3">
+          <h1 className="text-[32px] leading-[1.15] tracking-tight sm:text-[40px]">Shop</h1>
+          <h2 className="text-title-lg font-semibold">Top up</h2>
+          <p className="text-body-lg text-muted-foreground">Coins buy skins and accessories. Gems buy bling and gemstone skins.</p>
+          {profile && !profile.paymentsLive && <p className="text-body text-muted-foreground">Demo mode: payments aren&apos;t connected yet, so nothing is charged.</p>}
+        </div>
+        <div className="grid gap-4">
+          <div className="grid gap-4 sm:grid-cols-3">
+            {COIN_PACKS.map((pack, i) => (
+              <div key={pack.id} className="flex flex-col rounded-[24px] bg-surface p-5">
+                <div className="flex -space-x-2">
+                  {Array.from({ length: i + 2 }).map((_, k) => <Coin key={k} size={30} />)}
+                </div>
+                <p className="mt-4 text-title-lg font-semibold tabular-nums">{pack.coins.toLocaleString()} coins</p>
+                <p className="text-body text-muted-foreground">{pack.label}</p>
+                <Button variant="brand" className="mt-4" disabled={busy !== null} onClick={() => checkout("coins", pack.id)}>
+                  {busy === pack.id ? <Spinner /> : null} {formatPrice(pack.pricePence)}
+                </Button>
+              </div>
+            ))}
+          </div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {GEM_PACKS.map((pack, i) => (
+              <div key={pack.id} className="flex flex-col rounded-[24px] bg-surface p-5">
+                <div className="flex -space-x-1.5">
+                  {Array.from({ length: i + 2 }).map((_, k) => <Gem key={k} size={28} />)}
+                </div>
+                <p className="mt-4 text-title-lg font-semibold tabular-nums">{pack.gems} gems</p>
+                <p className="text-body text-muted-foreground">{pack.label}</p>
+                <Button variant="primary" className="mt-4" disabled={busy !== null} onClick={() => checkout("gems", pack.id)}>
+                  {busy === pack.id ? <Spinner /> : null} {formatPrice(pack.pricePence)}
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="grid gap-10 py-10 sm:py-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-16">
         {/* Left: your character, wallet and plan */}
         <div className="space-y-6 lg:sticky lg:top-6 lg:self-start">
           <div className="space-y-3">
-            <h1 className="text-[32px] leading-[1.15] tracking-tight sm:text-[40px]">Shop</h1>
+            <h2 className="text-title-lg font-semibold">Your collection</h2>
             <p className="text-body-lg text-muted-foreground">
               {skinCount} skins from Common to Mythic, festive specials, bling and accessories. Your look shows in duels and on the leaderboard.
             </p>
@@ -338,14 +380,19 @@ export default function ShopPage() {
           ) : (
             <div className="grid gap-12">
               {groups.map((g) => (
-                <section key={g.rarity} aria-labelledby={`rarity-${g.rarity}`} className="grid gap-5">
-                  <div className="flex items-center gap-3 border-b border-surface-border pb-3">
-                    <h2 id={`rarity-${g.rarity}`} className="text-title-lg font-semibold tracking-tight">
-                      {RARITY_LABEL[g.rarity]}
+                <section key={g.key} aria-labelledby={`rarity-${g.key}`} className="grid gap-5">
+                  <div className="flex flex-wrap items-center gap-3 border-b border-surface-border pb-3">
+                    <h2 id={`rarity-${g.key}`} className="text-title-lg font-semibold tracking-tight">
+                      {g.label}
                     </h2>
-                    <span className={`rarity rarity-${g.rarity}`}>{g.items.length}</span>
+                    <span className={`rarity rarity-${g.key}`}>{g.items.length}</span>
+                    {g.key === "festive" && festiveNow.length > 0 && (
+                      <span className="text-body text-muted-foreground">
+                        {SEASON_LABEL[festiveNow[0].season!]} skins are on sale now
+                      </span>
+                    )}
                   </div>
-                  {g.rarity === "mythic" ? (
+                  {g.key === "mythic" ? (
                     <div className="grid gap-4 sm:grid-cols-2">
                       {g.items.map((item) => (
                         <button
@@ -423,43 +470,6 @@ export default function ShopPage() {
         />
       )}
 
-      <section id="wallet" className="bleed grid scroll-mt-6 gap-8 py-12 sm:py-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-16">
-        <div className="space-y-3">
-          <h2 className="text-[30px] leading-[1.2] tracking-tight sm:text-[38px]">Top up</h2>
-          <p className="text-body-lg text-muted-foreground">Coins buy skins and accessories. Gems buy bling and gemstone skins.</p>
-          {profile && !profile.paymentsLive && <p className="text-body text-muted-foreground">Demo mode: payments aren&apos;t connected yet, so nothing is charged.</p>}
-        </div>
-        <div className="grid gap-4">
-          <div className="grid gap-4 sm:grid-cols-3">
-            {COIN_PACKS.map((pack, i) => (
-              <div key={pack.id} className="flex flex-col rounded-[24px] bg-surface p-6">
-                <div className="flex -space-x-2">
-                  {Array.from({ length: i + 2 }).map((_, k) => <Coin key={k} size={30} />)}
-                </div>
-                <p className="mt-5 text-title-lg font-semibold tabular-nums">{pack.coins.toLocaleString()} coins</p>
-                <p className="text-body text-muted-foreground">{pack.label}</p>
-                <Button variant="brand" className="mt-6" disabled={busy !== null} onClick={() => checkout("coins", pack.id)}>
-                  {busy === pack.id ? <Spinner /> : null} {formatPrice(pack.pricePence)}
-                </Button>
-              </div>
-            ))}
-          </div>
-          <div className="grid gap-4 sm:grid-cols-3">
-            {GEM_PACKS.map((pack, i) => (
-              <div key={pack.id} className="flex flex-col rounded-[24px] bg-surface p-6">
-                <div className="flex -space-x-1.5">
-                  {Array.from({ length: i + 2 }).map((_, k) => <Gem key={k} size={28} />)}
-                </div>
-                <p className="mt-5 text-title-lg font-semibold tabular-nums">{pack.gems} gems</p>
-                <p className="text-body text-muted-foreground">{pack.label}</p>
-                <Button variant="primary" className="mt-6" disabled={busy !== null} onClick={() => checkout("gems", pack.id)}>
-                  {busy === pack.id ? <Spinner /> : null} {formatPrice(pack.pricePence)}
-                </Button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
     </>
   );
 }
