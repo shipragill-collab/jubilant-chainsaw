@@ -33,7 +33,7 @@ export const PLANS: Record<PlanId, Plan> = {
   pro: {
     id: "pro",
     name: "Pro",
-    pricePence: 499,
+    pricePence: 199,
     tagline: "Unlimited AI, a bigger allowance of coins, and exclusive gear.",
     features: [
       "Unlimited AI quizzes and study sets",

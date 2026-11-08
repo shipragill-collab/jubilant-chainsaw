@@ -39,7 +39,7 @@ Each study set has its own shareable link. "Your study sets" lists the sets crea
 ## Plans, coins and the shop
 
 - **Free:** 5 AI quizzes or study sets a day, and 25 messages with Raj a day.
-- **Pro (£4.99/month):** unlimited AI, 1,000 bonus coins every month, Pro-only items, and a Pro badge on the leaderboard.
+- **Pro (£1.99/month):** unlimited AI, 1,000 bonus coins every month, Pro-only items, and a Pro badge on the leaderboard.
 - **Coins:** you earn 20 for finishing a duel (plus 30 for a win, or 15 for a tie), or buy coin packs (£0.99, £2.49, £4.99).
 - **Shop:** coins buy skins and accessories (hats, eyewear and neckwear) for your avatar. You can try items on before buying. Your avatar appears in the header, on duel scoreboards and on the leaderboard.
 - **Leaderboard:** custom rosette badges mark the top three, and every row shows the player's avatar.
