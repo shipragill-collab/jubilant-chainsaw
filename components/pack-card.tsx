@@ -68,7 +68,7 @@ export function PackCard({
         </p>
         {hero && (
           <p className="pack-sub mt-3 max-w-[30ch] text-body">
-            {kind === "coins" ? "Enough for a Mythic app skin, with plenty left over for accessories." : "Covers the Diamond skin and a Jewelled Crown, with gems to spare."}
+            {kind === "coins" ? "Enough for a Legendary skin, with plenty left over for accessories." : "Covers the Diamond skin and a Jewelled Crown, with gems to spare."}
           </p>
         )}
       </div>

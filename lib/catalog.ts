@@ -2,9 +2,9 @@
 
 export type PlanId = "free" | "pro";
 export const GEM_PACKS = [
-  { id: "gems-60", gems: 60, pricePence: 99, label: "Handful" },
-  { id: "gems-200", gems: 200, pricePence: 249, label: "Pouch" },
-  { id: "gems-500", gems: 500, pricePence: 499, label: "Vault" },
+  { id: "gems-60", gems: 60, pricePence: 20, label: "Handful" },
+  { id: "gems-200", gems: 200, pricePence: 50, label: "Pouch" },
+  { id: "gems-500", gems: 500, pricePence: 100, label: "Vault" },
 ];
 
 export interface Plan {
@@ -61,9 +61,9 @@ export interface CoinPack {
 }
 
 export const COIN_PACKS: CoinPack[] = [
-  { id: "coins-500", coins: 500, pricePence: 99, label: "Pocket" },
-  { id: "coins-1500", coins: 1500, pricePence: 249, label: "Satchel" },
-  { id: "coins-4000", coins: 4000, pricePence: 499, label: "Treasure chest" },
+  { id: "coins-500", coins: 500, pricePence: 20, label: "Pocket" },
+  { id: "coins-1500", coins: 1500, pricePence: 50, label: "Satchel" },
+  { id: "coins-4000", coins: 4000, pricePence: 100, label: "Treasure chest" },
 ];
 
 export type Slot = "skin" | "hat" | "eyes" | "neck" | "theme";
@@ -208,7 +208,8 @@ const APP_SKINS: ShopItem[] = [
     slot: "theme",
     name: "Midnight Folio",
     rarity: "mythic",
-    price: 3000,
+    price: 0,
+    pricePence: 50,
     description: "Obsidian and gold leaf for the whole app, a gilded Raj, drifting gold dust, sounds and haptics.",
     lore:
       "Bound in obsidian and edged in gold leaf, this is the last page of the Library of Night, the card scholars studied by candlelight after every other lamp went out. Raj found it under a stack of unfinished revision and refused to give it back. Wear it, and every answer you earn is written in gold.",
@@ -219,7 +220,7 @@ const APP_SKINS: ShopItem[] = [
     name: "Moonlit Porcelain",
     rarity: "mythic",
     price: 0,
-    pricePence: 299,
+    pricePence: 50,
     description: "Glazed porcelain, cobalt ink and silver leaf for the whole app, with a porcelain Raj and soft chime sounds.",
     lore:
       "Fired once a century in a kiln lit only by moonlight, Moonlit Porcelain is the teacup the old masters drank from while they marked their students' work. Every crack was mended with silver. Raj polished it until the cobalt shone, and now your answers ring like fine china.",
@@ -294,7 +295,7 @@ export function seasonStatus(season: Season, now = Date.now()): { active: boolea
 export const currentMonth = (now = Date.now()) => new Date(now).toISOString().slice(0, 7);
 export const proSkinFor = (month = currentMonth()) => ITEMS.find((i) => i.proMonth === month);
 
-export const formatPrice = (pence: number) => (pence === 0 ? "Free" : `£${(pence / 100).toFixed(2)}`);
+export const formatPrice = (pence: number) => (pence === 0 ? "Free" : pence < 100 ? `${pence}p` : `£${(pence / 100).toFixed(2)}`);
 
 /** Coins earned for finishing a duel. */
 export const DUEL_REWARD = { played: 20, win: 30, tie: 15 };
