@@ -2,6 +2,7 @@
 
 import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import { getPlayerId } from "@/lib/player";
+import { brainReply, type Knowledge } from "@/lib/raj-brain";
 import type { RajFeeling } from "@/lib/raj-mood";
 import { sfx, skinActive } from "@/lib/sfx";
 import { refreshProfiles } from "@/lib/use-profile";
@@ -14,7 +15,7 @@ interface Msg {
   content: string;
 }
 
-const SUGGESTIONS_WITH_SET = ["Start practice", "Explain the key ideas simply", "What should I focus on?"];
+const SUGGESTIONS_WITH_SET = ["Start practice", "Explain the key ideas simply", "Make a memory trick", "Make a study plan"];
 const SUGGESTIONS_NO_SET = ["How should I revise for an exam?", "Teach me active recall", "Help me make a revision plan"];
 
 /** Tiny, safe markdown: **bold**, _italic_, "- " bullets and paragraphs. No raw HTML. */
@@ -129,7 +130,48 @@ function Flame() {
   );
 }
 
+const setCacheKey = (id: string) => `quiz-duel:set:${id}`;
+
+/** The study set Raj teaches from, cached in the browser so Raj keeps working offline. */
+function useKnowledge(setId: string | null): Knowledge | null {
+  const [k, setK] = useState<Knowledge | null>(null);
+  useEffect(() => {
+    setK(null);
+    if (!setId) return;
+    try {
+      const cached = localStorage.getItem(setCacheKey(setId));
+      if (cached) setK(JSON.parse(cached) as Knowledge);
+    } catch {
+      /* ignore */
+    }
+    let live = true;
+    fetch(`/api/study/${encodeURIComponent(setId)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((set: (Knowledge & { id: string }) | null) => {
+        if (!live || !set?.flashcards) return;
+        const fresh: Knowledge = { title: set.title, material: set.material, notes: set.notes, flashcards: set.flashcards };
+        setK(fresh);
+        try {
+          localStorage.setItem(setCacheKey(setId), JSON.stringify(fresh));
+        } catch {
+          /* storage full: Raj still works while this page is open */
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, [setId]);
+  return k;
+}
+
+/** Thrown when the server can't help, so Raj answers on this device instead. */
+class GoLocal extends Error {}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 export function RajChat({ setId, setTitle }: { setId: string | null; setTitle?: string }) {
+  const knowledge = useKnowledge(setId);
   const storageKey = `quiz-duel:raj:${setId ?? "general"}`;
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
@@ -177,32 +219,55 @@ export function RajChat({ setId, setTitle }: { setId: string | null; setTitle?: 
     setError(null);
     const ctrl = new AbortController();
     abort.current = ctrl;
+    const show = (reply: string) => setMessages([...history, { role: "assistant", content: reply }]);
+    let reply = "";
     try {
-      const res = await fetch("/api/tutor", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ messages: history, setId, playerId: getPlayerId() }),
-        signal: ctrl.signal,
-      });
-      if (!res.ok || !res.body) {
-        const data = (await res.json().catch(() => ({}))) as { error?: string };
-        throw new Error(data.error ?? "Raj couldn't answer just now.");
+      try {
+        if (typeof navigator !== "undefined" && navigator.onLine === false) throw new GoLocal();
+        const res = await fetch("/api/tutor", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ messages: history, setId, set: knowledge, playerId: getPlayerId() }),
+          signal: ctrl.signal,
+        }).catch((err: Error) => {
+          if (err.name === "AbortError") throw err;
+          throw new GoLocal(); // network down
+        });
+        if (!res.ok || !res.body) {
+          if (res.status >= 500 || res.status === 429) throw new GoLocal(); // server or database down, or busy
+          const data = (await res.json().catch(() => ({}))) as { error?: string };
+          throw new Error(data.error ?? "Raj couldn't answer just now.");
+        }
+        setMode(res.headers.get("x-raj-mode"));
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          reply += decoder.decode(value, { stream: true });
+          show(reply);
+        }
+        if (!reply.trim()) throw new GoLocal();
+        refreshProfiles();
+      } catch (err) {
+        if (!(err instanceof GoLocal) && (err as Error).name !== "TypeError") throw err;
+        if (reply.trim()) throw new GoLocal(); // a half-streamed reply is still worth keeping
+        // Offline: Raj thinks on this device, from the cached study set.
+        setMode("device");
+        const local = brainReply(history, knowledge);
+        await sleep(350);
+        for (let i = 0; i < local.length; i += 6) {
+          if (ctrl.signal.aborted) return;
+          show(local.slice(0, i + 6));
+          await sleep(12);
+        }
+        reply = local;
+        show(reply);
       }
-      setMode(res.headers.get("x-raj-mode"));
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let reply = "";
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        reply += decoder.decode(value, { stream: true });
-        setMessages([...history, { role: "assistant", content: reply }]);
-      }
-      if (!reply.trim()) throw new Error("Raj didn't say anything. Try again?");
-      refreshProfiles();
       if (/^\s*\*\*Correct/.test(reply) && skinActive()) sfx.chime();
     } catch (err) {
       if ((err as Error).name === "AbortError") return;
+      if (err instanceof GoLocal) return; // kept the partial reply
       setError((err as Error).message);
       setMessages(history.slice(0, -1));
       setInput(content);
@@ -244,7 +309,11 @@ export function RajChat({ setId, setTitle }: { setId: string | null; setTitle?: 
           </p>
           <p className="truncate text-caption text-muted-foreground">
             {setTitle ? `Tutoring you on “${setTitle}”` : "Your AI study tutor"}
-            {mode === "offline" && " · offline mode"}
+            {(mode === "offline" || mode === "device") && (
+              <span className="raj-offline" title={mode === "device" ? "No connection: Raj is thinking on your device, from your saved notes." : "Raj is working from your own material."}>
+                {mode === "device" ? "Offline · on your device" : "Offline mode"}
+              </span>
+            )}
           </p>
         </div>
         {correct > 0 && (
@@ -335,7 +404,11 @@ export function RajChat({ setId, setTitle }: { setId: string | null; setTitle?: 
       )}
       {messages.length > 0 && !busy && (
         <div className="flex gap-2 overflow-x-auto px-5 pb-2">
-          {(awaitingAnswer ? ["Give me a hint", "Skip"] : setId ? ["Start practice", "Explain that more simply"] : ["Explain that more simply", "Give me an example"]).map((s) => (
+          {(awaitingAnswer
+            ? ["Give me a hint", "Show me the answer", "Skip"]
+            : setId
+              ? ["Quiz me", "Explain that more simply", "Give me an example", "Make a memory trick", "What did I get wrong?", "Summarize my notes", "I'm done for now"]
+              : ["Teach me active recall", "I can't focus", "I'm stressed about exams", "How should I revise for an exam?"]).map((s) => (
             <button
               key={s}
               onClick={() => send(s)}

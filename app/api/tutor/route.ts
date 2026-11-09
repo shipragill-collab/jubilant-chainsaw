@@ -3,8 +3,9 @@ import { NextResponse } from "next/server";
 import { GameError } from "@/lib/game";
 import { body, playerIdFrom } from "@/lib/http";
 import { meter } from "@/lib/profile";
-import { read } from "@/lib/store";
-import { claudeReply, offlineReply, rateLimited, sanitizeHistory } from "@/lib/tutor";
+import { isStoreUnavailable, read } from "@/lib/store";
+import type { StudySet } from "@/lib/types";
+import { clientSet, claudeReply, offlineReply, rateLimited, sanitizeHistory } from "@/lib/tutor";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -20,17 +21,25 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Raj needs a short break. Try again in a few minutes." }, { status: 429 });
   }
 
-  let playerId: string;
   try {
-    playerId = playerIdFrom(b.playerId);
-    await meter(playerId, "rajMessages");
+    await meter(playerIdFrom(b.playerId), "rajMessages");
   } catch (err) {
-    const status = err instanceof GameError ? err.status : 400;
-    return NextResponse.json({ error: (err as Error).message, upgrade: status === 402 }, { status });
+    // No database: Raj still answers (offline brain, or Claude), just unmetered.
+    if (!isStoreUnavailable(err)) {
+      const status = err instanceof GameError ? err.status : 400;
+      return NextResponse.json({ error: (err as Error).message, upgrade: status === 402 }, { status });
+    }
   }
 
   const setId = typeof b.setId === "string" ? b.setId : null;
-  const set = setId ? ((await read()).studySets[setId] ?? null) : null;
+  let set: StudySet | null = null;
+  try {
+    set = setId ? ((await read()).studySets[setId] ?? null) : null;
+  } catch (err) {
+    if (!isStoreUnavailable(err)) throw err;
+  }
+  // The browser sends its cached copy of the set; use it when the store can't help.
+  if (!set && b.set && typeof b.set === "object") set = clientSet(b.set as Record<string, unknown>);
 
   const useClaude =
     Boolean(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN) && process.env.QUIZ_DUEL_OFFLINE !== "1";

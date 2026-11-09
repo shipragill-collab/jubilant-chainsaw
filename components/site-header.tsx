@@ -121,7 +121,7 @@ export function SiteHeader() {
           </Link>
         </span>
       </div>
-      <nav ref={mobileNav} className="mx-auto mt-2 flex max-w-7xl items-center gap-1 overflow-x-auto pb-1 [scrollbar-width:none] xl:hidden" aria-label="Main">
+      <nav ref={mobileNav} className="mobile-nav mx-auto mt-2 flex max-w-7xl items-center gap-1 overflow-x-auto rounded-full p-1 [scrollbar-width:none] xl:hidden" aria-label="Main">
         {[...NAV, { href: "/search", label: "Search" }].map((n) => (
           <Link key={n.href} href={n.href} className="nav-link shrink-0" aria-current={isActive(n.href) ? "page" : undefined}>
             {n.label}
