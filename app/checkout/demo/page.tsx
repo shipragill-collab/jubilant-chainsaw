@@ -10,7 +10,7 @@ import { api, getPlayerId } from "@/lib/player";
 import { refreshProfiles } from "@/lib/use-profile";
 
 interface Summary {
-  order: { id: string; kind: "pro" | "coins" | "gems" | "pass" | "item"; status: string; name: string; detail: string; pricePence: number; coins: number; gems: number; recurring: boolean };
+  order: { id: string; kind: "pro" | "coins" | "gems" | "pass" | "bundle" | "item"; status: string; name: string; detail: string; pricePence: number; coins: number; gems: number; recurring: boolean };
   live: boolean;
 }
 
@@ -38,7 +38,7 @@ export default function DemoCheckout() {
       const r = await api<{ itemId: string | null }>("/api/billing/demo", { body: { order: summary.order.id, playerId: getPlayerId() } });
       refreshProfiles();
       const k = summary.order.kind;
-      router.push(k === "pass" ? "/pass?purchased=pass" : k === "pro" ? "/pricing?purchased=pro" : `/shop?purchased=${k}${r.itemId ? `&item=${r.itemId}` : ""}`);
+      router.push(k === "pass" ? "/pass?purchased=pass" : k === "pro" || k === "bundle" ? `/pricing?purchased=${k}` : `/shop?purchased=${k}${r.itemId ? `&item=${r.itemId}` : ""}`);
     } catch (err) {
       setError((err as Error).message);
       setBusy(false);

@@ -1,6 +1,6 @@
 import Stripe from "stripe";
-import { COIN_PACKS, GEM_PACKS, PLANS, itemById } from "./catalog";
-import { PASS } from "./pass";
+import { COIN_PACKS, GEM_PACKS, MIN_PRICE_PENCE, PLANS, itemById } from "./catalog";
+import { BUNDLE, PASS } from "./pass";
 import { GameError } from "./game";
 import { giveItem, grantPass, grantPro, profileOf } from "./profile";
 import { newId, read, update } from "./store";
@@ -29,6 +29,9 @@ export function describeOrder(o: Pick<Order, "kind" | "packId" | "itemId">) {
   if (o.kind === "pro") {
     return { name: "Quiz Duel Pro", detail: "Monthly subscription", pricePence: PLANS.pro.pricePence, coins: PLANS.pro.monthlyCoins, gems: 0, recurring: true };
   }
+  if (o.kind === "bundle") {
+    return { name: `Quiz Duel ${BUNDLE.name}`, detail: "Monthly subscription · Pro + Duel Pass", pricePence: BUNDLE.pricePence, coins: PLANS.pro.monthlyCoins, gems: 0, recurring: true };
+  }
   if (o.kind === "pass") {
     return { name: PASS.name, detail: "Monthly subscription · 30 reward tiers", pricePence: PASS.pricePence, coins: 0, gems: 0, recurring: true };
   }
@@ -49,7 +52,7 @@ export function describeOrder(o: Pick<Order, "kind" | "packId" | "itemId">) {
 
 /** Start a purchase. Returns where to send the browser. */
 export async function startCheckout(req: Request, playerId: string, kind: unknown, packId: unknown, itemId?: unknown): Promise<string> {
-  if (kind !== "pro" && kind !== "coins" && kind !== "gems" && kind !== "pass" && kind !== "item") throw new GameError("Unknown purchase.");
+  if (kind !== "pro" && kind !== "coins" && kind !== "gems" && kind !== "pass" && kind !== "bundle" && kind !== "item") throw new GameError("Unknown purchase.");
   if (kind === "item") {
     const db = await read();
     if (db.profiles[playerId]?.owned.includes(String(itemId))) throw new GameError("You already own this.", 409);
@@ -64,6 +67,7 @@ export async function startCheckout(req: Request, playerId: string, kind: unknow
     status: "pending",
   };
   const item = describeOrder(order);
+  if (item.pricePence < MIN_PRICE_PENCE) throw new GameError("That price is below the minimum.", 400);
   await update((db) => {
     db.orders[order.id] = order;
   });
@@ -103,6 +107,11 @@ export function fulfil(db: Db, orderId: string, stripeIds?: { customer?: string 
   if (order.kind === "pro") {
     grantPro(p);
     if (stripeIds?.subscription) p.stripeSubscriptionId = stripeIds.subscription;
+  } else if (order.kind === "bundle") {
+    // One subscription keeps both going; renewals and cancellations match either id.
+    grantPro(p);
+    grantPass(p);
+    if (stripeIds?.subscription) p.stripeSubscriptionId = p.stripePassSubscriptionId = stripeIds.subscription;
   } else if (order.kind === "pass") {
     grantPass(p);
     if (stripeIds?.subscription) p.stripePassSubscriptionId = stripeIds.subscription;

@@ -26,6 +26,7 @@ import {
   proSkinFor,
   seasonStatus,
   type Equipped,
+  PLANS,
   type Rarity,
   type ShopItem,
   type Slot,
@@ -314,7 +315,7 @@ export default function ShopPage() {
             {profile?.passActive && <Badge tone="brand">Duel Pass</Badge>}
             {!pro && (
               <Link href="/pricing" className="underline underline-offset-4 hover:text-foreground">
-                Pro: a free skin every month for £1.99
+                Pro: a free skin every month for {formatPrice(PLANS.pro.pricePence)}
               </Link>
             )}
           </div>
@@ -447,7 +448,7 @@ export default function ShopPage() {
                       <button
                         onClick={() => setTryOn(tryOn?.id === item.id ? null : item)}
                         className={`item-tile block w-full ${tryOn?.id === item.id ? "is-trying" : ""} ${
-                          item.rarity === "legendary" ? "legendary-frame" : item.rarity === "epic" ? "epic-frame" : ""
+                          item.rarity === "legendary" ? "legendary-frame" : item.rarity === "epic" ? "epic-frame" : item.rarity === "rare" ? "rare-frame" : ""
                         }`}
                         aria-label={`Try on ${item.name}`}
                       >

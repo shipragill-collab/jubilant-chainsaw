@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { PreviewEmpty } from "@/components/preview-empty";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { PreviewCard, SetThumbnail } from "@/components/gallery";
@@ -132,13 +133,22 @@ function CategoryBand({ sets }: { sets: StudySetSummary[] }) {
               ))}
             </div>
           ) : (
-            <p className="pl-1 text-title text-muted-foreground">
-              No sets yet.{" "}
-              <Link href="/study" className="text-foreground underline underline-offset-4">
-                Make your first one
-              </Link>
-              .
-            </p>
+            <PreviewEmpty
+              preview={
+                <div className="flex flex-wrap gap-x-7 gap-y-3 p-6">
+                  {["Cell Biology", "The French Revolution", "Quadratic Equations", "Photosynthesis", "World War I", "Spanish Verbs", "The Water Cycle"].map((t) => (
+                    <span key={t} className="text-[24px] leading-[1.35] tracking-tight sm:text-[30px]">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              }
+              eyebrow="Your sets live here"
+              title="Turn your notes into a study set"
+              body="Paste notes or upload a file. Raj makes flashcards, notes and a quiz you can duel a friend on."
+              href="/study"
+              cta="Make your first set"
+            />
           ))}
       </div>
     </section>

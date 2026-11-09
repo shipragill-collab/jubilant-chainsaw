@@ -2,21 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Avatar } from "@/components/avatar";
-import { Coin } from "@/components/coin";
-import { Gem } from "@/components/gem";
+import { PassPipeline } from "@/components/pass-pipeline";
 import { Badge, Button, Spinner } from "@/components/ui";
-import { formatPrice, itemById } from "@/lib/catalog";
-import { PASS, rewardLabel, seasonOf, tierFor, tierRewards, type Reward, type Track } from "@/lib/pass";
+import { formatPrice } from "@/lib/catalog";
+import { PASS, rewardLabel, seasonOf, tierFor, tierRewards, type Track } from "@/lib/pass";
 import { api, getPlayerId } from "@/lib/player";
 import { refreshProfiles, useProfile, type ClientProfile } from "@/lib/use-profile";
-
-function RewardArt({ r, equipped }: { r: Reward; equipped?: Record<string, string> }) {
-  if (r.kind === "coins") return <Coin size={34} />;
-  if (r.kind === "gems") return <Gem size={34} />;
-  const item = itemById(r.itemId);
-  return item ? <Avatar equipped={{ ...(equipped ?? {}), skin: equipped?.skin ?? "skin-classic", [item.slot]: item.id }} size={48} /> : null;
-}
 
 /** The Duel Pass: a 30-tier monthly season with a free and a pass track. */
 export default function PassPage() {
@@ -122,61 +113,19 @@ export default function PassPage() {
         </div>
       </div>
 
-      {/* The tier track: free rewards on top, pass rewards below */}
-      <div className="-mx-4 overflow-x-auto px-4 pb-3 sm:-mx-8 sm:px-8">
-        <ol className="flex gap-3" aria-label="Pass tiers">
-          {Array.from({ length: PASS.tiers }, (_, i) => i + 1).map((t) => {
-            const r = tierRewards(t);
-            const reached = tier >= t;
-            const cell = (track: Track) => {
-              const reward = r[track];
-              const key = `${t}:${track}`;
-              const isClaimed = claimed.has(key);
-              const locked = track === "premium" && !active;
-              const big = reward?.kind === "item";
-              return (
-                <div
-                  className={`grid h-[132px] place-items-center gap-1 rounded-2xl border-[1.5px] p-2 text-center ${
-                    reward ? (big ? "border-amber-400/70 bg-[color-mix(in_oklab,#f59e0b_10%,var(--surface))]" : "border-surface-border bg-surface") : "border-dashed border-surface-border"
-                  } ${!reached || locked ? "opacity-60" : ""}`}
-                >
-                  {reward ? (
-                    <>
-                      <RewardArt r={reward} equipped={profile?.equipped as Record<string, string> | undefined} />
-                      <span className="line-clamp-2 text-caption font-semibold">{rewardLabel(reward)}</span>
-                      {isClaimed ? (
-                        <span className="text-caption text-success">Claimed</span>
-                      ) : reached && !locked ? (
-                        <button
-                          type="button"
-                          onClick={() => claim([{ tier: t, track }])}
-                          disabled={busy !== null}
-                          className="rounded-full bg-brand px-2.5 py-0.5 text-caption font-semibold text-brand-foreground"
-                        >
-                          Claim
-                        </button>
-                      ) : (
-                        <span className="text-caption text-muted-foreground">{locked ? "Pass" : `Tier ${t}`}</span>
-                      )}
-                    </>
-                  ) : (
-                    <span className="text-caption text-faint-foreground">—</span>
-                  )}
-                </div>
-              );
-            };
-            return (
-              <li key={t} className="grid w-[112px] shrink-0 gap-2">
-                <span className={`text-center text-label font-bold tabular-nums ${reached ? "text-foreground" : "text-muted-foreground"}`}>{t}</span>
-                {cell("free")}
-                {cell("premium")}
-              </li>
-            );
-          })}
-        </ol>
-      </div>
+      {/* The pipeline: free track on top, pass track below, one progress rail between them */}
+      <PassPipeline
+        tier={tier}
+        progress={tier < PASS.tiers ? into / PASS.xpPerTier : 0}
+        active={active}
+        claimed={claimed}
+        busy={busy}
+        equipped={profile?.equipped as Record<string, string> | undefined}
+        onClaim={(t, track) => claim([{ tier: t, track }])}
+        onUnlock={active ? undefined : subscribe}
+      />
       <p className="text-body text-muted-foreground">
-        Top row: free track for everyone. Bottom row: Duel Pass track. Pass rewards you&apos;ve reached stay claimable until the season ends.{" "}
+        Top track: free for everyone. Bottom track: Duel Pass. Pass rewards you&apos;ve reached stay claimable until the season ends.{" "}
         <Link href="/pricing" className="underline underline-offset-4">Compare plans</Link>
       </p>
     </div>

@@ -2,7 +2,7 @@
 
 export type PlanId = "free" | "pro";
 export const GEM_PACKS = [
-  { id: "gems-60", gems: 60, pricePence: 20, label: "Handful" },
+  { id: "gems-60", gems: 60, pricePence: 30, label: "Handful" },
   { id: "gems-200", gems: 200, pricePence: 50, label: "Pouch" },
   { id: "gems-500", gems: 500, pricePence: 100, label: "Vault" },
 ];
@@ -17,6 +17,9 @@ export interface Plan {
   limits: { aiGenerations: number | null; rajMessages: number | null };
   monthlyCoins: number;
 }
+
+/** The lowest price anything can be sold for (Stripe's minimum card charge in GBP). */
+export const MIN_PRICE_PENCE = 30;
 
 export const PLANS: Record<PlanId, Plan> = {
   free: {
@@ -39,7 +42,7 @@ export const PLANS: Record<PlanId, Plan> = {
     id: "pro",
     name: "Pro",
     pricePence: 199,
-    tagline: "Unlimited AI, a bigger allowance of coins, and exclusive gear.",
+    tagline: "Unlimited AI and Raj, so you can study as much as you like on your own.",
     features: [
       "Unlimited AI quizzes and study sets",
       "Unlimited guided practice with Raj",
@@ -61,7 +64,7 @@ export interface CoinPack {
 }
 
 export const COIN_PACKS: CoinPack[] = [
-  { id: "coins-500", coins: 500, pricePence: 20, label: "Pocket" },
+  { id: "coins-500", coins: 500, pricePence: 30, label: "Pocket" },
   { id: "coins-1500", coins: 1500, pricePence: 50, label: "Satchel" },
   { id: "coins-4000", coins: 4000, pricePence: 100, label: "Treasure chest" },
 ];

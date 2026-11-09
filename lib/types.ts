@@ -122,7 +122,7 @@ export interface Profile {
 export interface Order {
   id: string;
   playerId: string;
-  kind: "pro" | "coins" | "gems" | "pass" | "item";
+  kind: "pro" | "coins" | "gems" | "pass" | "bundle" | "item";
   packId?: string;
   itemId?: string;
   createdAt: number;

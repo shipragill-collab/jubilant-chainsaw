@@ -3,11 +3,11 @@ import { itemById } from "./catalog";
 /**
  * The Duel Pass: a monthly season of 30 tiers. Studying and duels earn XP.
  * Everyone can claim the free track (every third tier); Duel Pass holders
- * (£1.99/month) claim every tier: coins, gems, pass-only skins and bling.
+ * (£1/month) claim every tier: coins, gems, pass-only skins and bling.
  */
 export const PASS = {
   name: "Duel Pass",
-  pricePence: 199,
+  pricePence: 100,
   tiers: 30,
   xpPerTier: 100,
   xp: { activity: 10, duel: 25, win: 25 },
@@ -18,6 +18,13 @@ export const PASS = {
     "Exclusive bling: Prism Shades and the Champion Chain",
     "Earn XP from studying, duels and wins",
   ],
+};
+
+/** Pro and the Duel Pass together, for less than both separately. */
+export const BUNDLE = {
+  name: "Ultimate",
+  pricePence: 249,
+  features: ["Everything in Pro", "Everything in the Duel Pass", "One subscription, one renewal date"],
 };
 
 export type Reward = { kind: "coins"; amount: number } | { kind: "gems"; amount: number } | { kind: "item"; itemId: string };
