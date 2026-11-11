@@ -6,13 +6,13 @@ const variants: Record<Variant, string> = {
   primary: "btn btn-primary bg-primary text-primary-foreground",
   brand: "btn btn-brand bg-brand text-brand-foreground",
   secondary: "btn btn-secondary text-secondary-foreground",
-  ghost: "text-muted-foreground transition hover:bg-surface-hover hover:text-foreground",
+  ghost: "btn text-muted-foreground hover:bg-surface-hover hover:text-foreground",
 };
 
 export function buttonClass({ variant = "primary", size = "default" }: { variant?: Variant; size?: "sm" | "default" | "lg" } = {}) {
   const sizing =
-    size === "lg" ? "h-12 px-6 text-body-lg font-semibold" : size === "sm" ? "h-8 px-3 text-label font-medium" : "h-10 px-4 text-body font-medium";
-  return `inline-flex items-center justify-center gap-2 rounded-full transition outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-45 ${sizing} ${variants[variant]}`;
+    size === "lg" ? "h-12 px-6 text-[13px]" : size === "sm" ? "h-8 px-3 text-[11px]" : "h-10 px-4 text-[12px]";
+  return `inline-flex items-center justify-center gap-2 rounded-[6px] transition outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-45 ${sizing} ${variants[variant]}`;
 }
 
 export function Button({

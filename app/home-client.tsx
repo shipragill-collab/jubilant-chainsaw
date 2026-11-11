@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { PreviewEmpty } from "@/components/preview-empty";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { PreviewCard, SetThumbnail } from "@/components/gallery";
+import { DuelOrbit } from "@/components/duel-orbit";
 import { RajMoodCard } from "@/components/raj-mood-card";
+import { Reveal, RiseWords } from "@/components/reveal";
 import { Button, Panel, Spinner, buttonClass, inputClass, ErrorText } from "@/components/ui";
 import { api, getPlayerId, getSavedName, saveName } from "@/lib/player";
 import { SAMPLES } from "@/lib/samples";
@@ -16,7 +18,7 @@ const MIN = 80;
 const MAX = 40_000;
 const DAY = 24 * 3600 * 1000;
 
-export function HomeClient({ collage }: { collage: ReactNode }) {
+export function HomeClient() {
   const [sets, setSets] = useState<StudySetSummary[] | null>(null);
   useEffect(() => {
     api<{ sets: StudySetSummary[] }>(`/api/study?playerId=${getPlayerId()}`)
@@ -26,36 +28,66 @@ export function HomeClient({ collage }: { collage: ReactNode }) {
 
   return (
     <>
-      <Hero collage={collage} />
-      <section className="pb-12 sm:pb-16">
+      <Hero />
+      <Reveal className="pb-12 sm:pb-16">
         <RajMoodCard />
-      </section>
-      <CategoryBand sets={sets ?? []} />
-      <Gallery sets={sets} />
-      <StartDuel />
+      </Reveal>
+      <Reveal>
+        <CategoryBand sets={sets ?? []} />
+      </Reveal>
+      <Reveal>
+        <Gallery sets={sets} />
+      </Reveal>
+      <Reveal>
+        <StartDuel />
+      </Reveal>
     </>
   );
 }
 
-/** Big collage, a heavy left-aligned headline, and stacked pill buttons. */
-function Hero({ collage }: { collage: ReactNode }) {
+/** The stage: an animated duel dial, a tight left-aligned headline, mono actions. */
+function Hero() {
+  const [copied, setCopied] = useState(false);
+  const steps = "notes → 10 questions → duel";
   return (
-    <section className="flex flex-col items-center pt-8 pb-16 sm:pt-12 sm:pb-24">
-      {collage}
-      <div className="w-full max-w-[860px]">
-        <h1 className="display text-[44px] sm:text-[80px]">Turn your notes into a game you can win</h1>
-        <p className="mt-6 max-w-2xl text-title text-muted-foreground">
-          AI turns what you&apos;re studying into flashcards, notes and a 10-question duel. Challenge a friend, and ask
-          Raj, your AI tutor, whenever you&apos;re stuck.
-        </p>
+    <section className="relative grid gap-8 pt-6 pb-16 sm:pt-10 sm:pb-24 lg:grid-cols-[minmax(0,6fr)_minmax(0,6fr)] lg:items-end lg:gap-6">
+      <div className="pointer-events-none mx-auto w-full max-w-[560px] lg:order-2 lg:max-w-none">
+        <DuelOrbit />
       </div>
-      <div className="mt-10 flex flex-col items-center gap-3">
-        <a href="#start" className={buttonClass({ variant: "brand", size: "lg" })}>
-          Start a duel for free
-        </a>
-        <Link href="/study" className={buttonClass({ variant: "secondary", size: "lg" })}>
-          I already have study notes
-        </Link>
+      <div className="flex flex-col gap-7 lg:order-1 lg:pb-10">
+        <p className="font-mono text-[12px] tracking-[0.14em] text-muted-foreground uppercase">
+          <span className="mr-2 inline-block size-1.5 translate-y-[-2px] rounded-full bg-brand align-middle" />
+          Study duels · with Raj, your AI tutor
+        </p>
+        <h1 className="display text-[46px] sm:text-[68px] xl:text-[76px]">
+          <RiseWords text="Turn your notes into a game you can win." />
+        </h1>
+        <p className="max-w-[46ch] text-body-lg text-muted-foreground">
+          Paste what you&apos;re studying. Get flashcards, notes and a 10-question quiz, then duel a friend on it. Raj explains anything you get stuck on.
+        </p>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              navigator.clipboard?.writeText(steps).then(() => setCopied(true)).catch(() => undefined);
+              setTimeout(() => setCopied(false), 1400);
+            }}
+            className="inline-flex h-12 items-center gap-3 rounded-[6px] bg-surface pr-3 pl-4 font-mono text-[13px] shadow-[inset_0_0_0_1px_var(--surface-border)] transition hover:shadow-[inset_0_0_0_1px_var(--input)]"
+            aria-label="How it works: notes, then 10 questions, then a duel"
+          >
+            <span className="text-muted-foreground">$</span> {steps}
+            <span className="text-faint-foreground" aria-hidden>{copied ? "✓" : "⧉"}</span>
+          </button>
+          <a href="#start" className={buttonClass({ variant: "brand", size: "lg" })}>
+            Start a duel
+            <svg viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden>
+              <path d="m9 6 6 6-6 6" />
+            </svg>
+          </a>
+          <Link href="/study" className={buttonClass({ variant: "secondary", size: "lg" })}>
+            I have notes
+          </Link>
+        </div>
       </div>
     </section>
   );

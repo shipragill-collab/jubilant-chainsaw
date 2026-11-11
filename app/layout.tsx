@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ServiceWorker } from "@/components/service-worker";
 import { SITE, siteUrl } from "@/lib/site";
 import { SiteHeader } from "@/components/site-header";
+import { MotionRoot } from "@/components/reveal";
 import { SkinProvider } from "@/components/skin-provider";
 import { themeBootScript } from "@/lib/theme";
 import "./globals.css";
@@ -35,10 +36,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* eslint-disable-next-line @next/next/no-page-custom-font */}
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+          href="https://fonts.googleapis.com/css2?family=TASA+Orbiter:wght@400..800&family=Geist+Mono:wght@400..600&family=Space+Grotesk:wght@500;700&display=swap"
         />
       </head>
       <body className="min-h-dvh">
+        <MotionRoot>
         <SkinProvider />
         <SiteHeader />
         <main className="mx-auto max-w-7xl px-4 sm:px-8">{children}</main>
@@ -52,6 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <span>Made for curious minds.</span>
           </nav>
         </footer>
+        </MotionRoot>
         <ServiceWorker />
       </body>
     </html>

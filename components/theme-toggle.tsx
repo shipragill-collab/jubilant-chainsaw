@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { THEME_KEY as KEY } from "@/lib/theme";
 
 type Theme = "system" | "light" | "dark";
-const ORDER: Theme[] = ["system", "light", "dark"];
+const ORDER: Theme[] = ["dark", "light", "system"];
 const LABEL: Record<Theme, string> = { system: "Theme: match device", light: "Theme: light", dark: "Theme: dark" };
 
 function apply(theme: Theme) {
@@ -18,13 +18,13 @@ function apply(theme: Theme) {
   }
 }
 
-/** Cycles Match device → Light → Dark. */
+/** Cycles Dark → Light → Match device. Dark is the default. */
 export function ThemeToggle({ className = "" }: { className?: string }) {
-  const [theme, setTheme] = useState<Theme>("system");
+  const [theme, setTheme] = useState<Theme>("dark");
   useEffect(() => {
     try {
       const t = localStorage.getItem(KEY);
-      if (t === "light" || t === "dark") setTheme(t);
+      if (t === "light" || t === "system") setTheme(t);
     } catch {
       /* ignore */
     }
