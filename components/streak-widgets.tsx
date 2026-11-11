@@ -145,7 +145,7 @@ function Milestones({ a }: { a: Activity }) {
         <span className="grid size-16 shrink-0 place-items-center rounded-2xl bg-[var(--raj-tint)] text-title-lg font-extrabold text-foreground tabular-nums">{target}</span>
         <div className="min-w-0 flex-1 space-y-2">
           <p className="text-title-sm font-semibold">{target - a.streak} day{target - a.streak === 1 ? "" : "s"} to a {target}-day streak</p>
-          <div className="h-2.5 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuemin={previous} aria-valuemax={target} aria-valuenow={a.streak}>
+          <div className="h-2.5 overflow-hidden rounded-full bg-muted" role="progressbar" aria-label="Progress to your next streak milestone" aria-valuemin={previous} aria-valuemax={target} aria-valuenow={a.streak}>
             <div className="h-full rounded-full bg-[var(--raj-mustard)] transition-[width] duration-700" style={{ width: `${pct}%` }} />
           </div>
         </div>

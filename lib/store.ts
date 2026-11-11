@@ -14,10 +14,10 @@ import type { Db } from "./types";
  *   serialized in-process. Good for local use and single-server hosting.
  */
 
-const COLLECTIONS = ["quizzes", "duels", "studySets", "profiles", "orders"] as const;
+const COLLECTIONS = ["quizzes", "duels", "studySets", "profiles", "orders", "meta"] as const;
 type Collection = (typeof COLLECTIONS)[number];
 
-const emptyDb = (): Db => ({ quizzes: {}, duels: {}, studySets: {}, profiles: {}, orders: {} });
+const emptyDb = (): Db => ({ quizzes: {}, duels: {}, studySets: {}, profiles: {}, orders: {}, meta: {} });
 
 function normalize(partial: Partial<Db>): Db {
   const db = emptyDb();

@@ -135,6 +135,8 @@ export interface Db {
   duels: Record<string, Duel>;
   studySets: Record<string, StudySet>;
   profiles: Record<string, Profile>;
+  /** App-wide counters, e.g. today's Claude spend (see lib/ai-budget.ts). */
+  meta?: { aiSpend?: { day: string; pence: number } };
 }
 
 /** Question as sent to a player who hasn't answered it yet: no answer key. */

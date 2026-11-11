@@ -87,7 +87,7 @@ export default function PassPage() {
                 <span>{xp.toLocaleString()} XP</span>
                 <span>{tier < PASS.tiers ? `${PASS.xpPerTier - into} XP to tier ${tier + 1}` : "Season complete!"}</span>
               </div>
-              <div className="mt-2 h-3 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuemin={0} aria-valuemax={PASS.xpPerTier} aria-valuenow={tier < PASS.tiers ? into : PASS.xpPerTier}>
+              <div className="mt-2 h-3 overflow-hidden rounded-full bg-muted" role="progressbar" aria-label={`XP towards tier ${tier + 1}`} aria-valuemin={0} aria-valuemax={PASS.xpPerTier} aria-valuenow={tier < PASS.tiers ? into : PASS.xpPerTier}>
                 <div className="h-full rounded-full bg-brand transition-[width] duration-700" style={{ width: `${tier < PASS.tiers ? (into / PASS.xpPerTier) * 100 : 100}%` }} />
               </div>
             </div>

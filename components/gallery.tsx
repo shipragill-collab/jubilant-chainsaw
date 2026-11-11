@@ -42,7 +42,7 @@ const PALETTES = [
   { bg: "#f6efe6", fg: "#2b1a0f", accent: "#e1342f" },
   { bg: "#1f2937", fg: "#f9fafb", accent: "#d9ef7b" },
   { bg: "#c9d8f0", fg: "#132a4d", accent: "#132a4d" },
-  { bg: "#e1342f", fg: "#ffffff", accent: "#ffffff" },
+  { bg: "#b9262a", fg: "#ffffff", accent: "#ffffff" },
 ];
 
 export function paletteFor(key: string) {
@@ -56,7 +56,7 @@ export function SetThumbnail({ title, kicker, lines, seed }: { title: string; ki
   const p = paletteFor(seed);
   return (
     <div className="flex h-full flex-col p-[6%]" style={{ background: p.bg, color: p.fg }}>
-      <div className="flex items-center justify-between text-[10px] tracking-wide uppercase opacity-70 sm:text-[11px]">
+      <div className="flex items-center justify-between text-[10px] tracking-wide uppercase opacity-85 sm:text-[11px]">
         <span className="flex items-center gap-1.5">
           <span className="size-2 rounded-full" style={{ background: p.accent }} />
           {kicker}
@@ -66,7 +66,7 @@ export function SetThumbnail({ title, kicker, lines, seed }: { title: string; ki
       <p className="display mt-auto line-clamp-3 text-[22px] sm:text-[30px]">{title}</p>
       <div className="mt-3 space-y-1">
         {lines.slice(0, 2).map((l, i) => (
-          <p key={i} className="truncate text-[11px] opacity-70 sm:text-[12px]">
+          <p key={i} className="truncate text-[11px] opacity-85 sm:text-[12px]">
             {l}
           </p>
         ))}

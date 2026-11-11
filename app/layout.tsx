@@ -1,12 +1,28 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import Link from "next/link";
+import { ServiceWorker } from "@/components/service-worker";
+import { SITE, siteUrl } from "@/lib/site";
 import { SiteHeader } from "@/components/site-header";
 import { SkinProvider } from "@/components/skin-provider";
 import { themeBootScript } from "@/lib/theme";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Quiz Duel",
-  description: "Turn your notes into flashcards and quiz duels, with Raj, your AI tutor.",
+  metadataBase: new URL(siteUrl()),
+  title: { default: `${SITE.name}: ${SITE.tagline}`, template: `%s · ${SITE.name}` },
+  description: SITE.description,
+  applicationName: SITE.name,
+  appleWebApp: { capable: true, title: SITE.name, statusBarStyle: "default" },
+  openGraph: { type: "website", siteName: SITE.name, title: `${SITE.name}: ${SITE.tagline}`, description: SITE.description, locale: "en_GB" },
+  twitter: { card: "summary_large_image", title: `${SITE.name}: ${SITE.tagline}`, description: SITE.description },
+  formatDetection: { telephone: false },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f6f3ee" },
+    { media: "(prefers-color-scheme: dark)", color: "#14111b" },
+  ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -30,8 +46,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <span>
             <span className="font-display text-body font-bold text-foreground">Quiz Duel</span> · study together, compete for fun.
           </span>
-          <span>Made for curious minds.</span>
+          <nav aria-label="Legal" className="flex gap-4">
+            <Link href="/privacy" className="hover:text-foreground">Privacy</Link>
+            <Link href="/terms" className="hover:text-foreground">Terms</Link>
+            <span>Made for curious minds.</span>
+          </nav>
         </footer>
+        <ServiceWorker />
       </body>
     </html>
   );

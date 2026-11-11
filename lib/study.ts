@@ -3,6 +3,7 @@ import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { z } from "zod";
 import { GameError } from "./game";
 import { MAX_NOTES_LENGTH, MIN_NOTES_LENGTH } from "./generate";
+import { aiAllowed, recordAiUsage } from "./ai-budget";
 import { offlineStudySet } from "./offline-study";
 import { meter } from "./profile";
 import { newId, update } from "./store";
@@ -93,6 +94,7 @@ async function generateWithClaude(material: string): Promise<GeneratedStudySet |
   // Leave time to fall back to the offline generator within a 60-second serverless limit.
   }, { timeout: 45_000, maxRetries: 0 });
   const message = await stream.finalMessage();
+  await recordAiUsage(message.usage);
   if (message.stop_reason === "refusal" || message.stop_reason === "max_tokens") return null;
   const text = message.content.flatMap((b) => (b.type === "text" ? [b.text] : [])).join("");
   const parsed = StudySchema.safeParse(JSON.parse(text));
@@ -104,7 +106,7 @@ async function generateWithClaude(material: string): Promise<GeneratedStudySet |
 
 export async function generateStudySet(material: string): Promise<GeneratedStudySet> {
   const hasCredentials = Boolean(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN);
-  if (hasCredentials && process.env.QUIZ_DUEL_OFFLINE !== "1") {
+  if (hasCredentials && process.env.QUIZ_DUEL_OFFLINE !== "1" && (await aiAllowed())) {
     try {
       const set = await generateWithClaude(material);
       if (set) return set;

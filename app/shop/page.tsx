@@ -365,7 +365,7 @@ export default function ShopPage() {
                 <button key={f} type="button" onClick={() => setFilter(f)} aria-pressed={filter === f} className="chip">
                   <span aria-hidden className="chip-dot" style={{ color: CHIP_COLOR[f] }} />
                   {f === "all" ? "All" : f === "festive" ? "Festive" : f === "paid" ? "Buy with £" : f === "exclusive" ? "Pass & Pro" : RARITY_LABEL[f as Rarity]}
-                  <span className="tabular-nums opacity-60">{filterCount(f)}</span>
+                  <span className="chip-count tabular-nums">{filterCount(f)}</span>
                 </button>
               ))}
             </div>

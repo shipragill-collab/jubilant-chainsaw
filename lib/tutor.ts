@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { recordAiUsage } from "./ai-budget";
 import { brainReply, cardOptions as brainCardOptions, maskedHint, type Knowledge } from "./raj-brain";
 import type { Flashcard, StudySet } from "./types";
 
@@ -94,6 +95,7 @@ export async function* claudeReply(history: ChatMessage[], set: StudySet | null)
     }
   }
   const final = await stream.finalMessage();
+  await recordAiUsage(final.usage);
   if (final.stop_reason === "refusal" && !any) {
     yield "Sorry, I can't help with that one. Want to try a different question about your material?";
   }

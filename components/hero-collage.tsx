@@ -54,14 +54,14 @@ export function HeroCollage({ photos = {} }: { photos?: Record<number, string> }
         {/* Centre, top: quiz question */}
         <Tile
           src={photos[2]}
-          className="top-0 left-[183px] z-10 h-[260px] w-[288px] bg-[#e1342f]"
+          className="top-0 left-[183px] z-10 h-[260px] w-[288px] bg-[#c8282d]"
           fallback={
             <div className="flex h-full flex-col gap-2 p-6 text-white">
-              <span className="text-caption font-semibold tracking-wide uppercase opacity-80">Question 3 / 10</span>
+              <span className="text-caption font-semibold tracking-wide uppercase opacity-90">Question 3 / 10</span>
               <span className="text-title-lg font-bold leading-tight">Where does photosynthesis happen?</span>
               <div className="mt-auto space-y-1.5">
                 {["Mitochondria", "Chloroplasts", "Nucleus"].map((o, i) => (
-                  <div key={o} className={`rounded-full px-3 py-1.5 text-label font-medium ${i === 1 ? "bg-white text-[#e1342f]" : "bg-white/15"}`}>
+                  <div key={o} className={`rounded-full px-3 py-1.5 text-label font-medium ${i === 1 ? "bg-white text-[#c8282d]" : "bg-black/15"}`}>
                     {o}
                   </div>
                 ))}

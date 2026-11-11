@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { GameError } from "@/lib/game";
+import { aiAllowed } from "@/lib/ai-budget";
 import { body, playerIdFrom } from "@/lib/http";
 import { meter } from "@/lib/profile";
 import { isStoreUnavailable, read } from "@/lib/store";
@@ -42,7 +43,7 @@ export async function POST(req: Request) {
   if (!set && b.set && typeof b.set === "object") set = clientSet(b.set as Record<string, unknown>);
 
   const useClaude =
-    Boolean(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN) && process.env.QUIZ_DUEL_OFFLINE !== "1";
+    Boolean(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN) && process.env.QUIZ_DUEL_OFFLINE !== "1" && (await aiAllowed());
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream<Uint8Array>({

@@ -97,7 +97,7 @@ export function PassPipeline({
         <span className="pipe-label-gap" />
         <span className="pipe-label is-premium">Pass</span>
       </div>
-      <div ref={scroller} className="pipe-scroll">
+      <div ref={scroller} className="pipe-scroll" tabIndex={0} aria-label="Season rewards, scroll sideways">
         <ol className="pipe-grid" style={{ width: PASS.tiers * COL, gridTemplateColumns: `repeat(${PASS.tiers}, ${COL}px)` }}>
           <li className="pipe-rail" aria-hidden>
             <span className="pipe-rail-fill" style={{ width: fill }} />

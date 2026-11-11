@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { z } from "zod";
+import { aiAllowed, recordAiUsage } from "./ai-budget";
 import { generateOfflineQuestions, guessTitle } from "./offline-generator";
 import { QUESTION_COUNT, type Question, type QuestionSource } from "./types";
 
@@ -81,6 +82,7 @@ async function generateWithClaude(notes: string, avoid: string[]): Promise<Gener
     messages: [{ role: "user", content: `<notes>\n${notes}\n</notes>${avoidText}` }],
   // Leave time to fall back to the offline generator within a 60-second serverless limit.
   }, { timeout: 45_000, maxRetries: 0 });
+  await recordAiUsage(response.usage);
 
   if (response.stop_reason === "refusal" || !response.parsed_output) return null;
   const questions = validateQuestions(response.parsed_output.questions);
@@ -98,7 +100,7 @@ async function generateWithClaude(notes: string, avoid: string[]): Promise<Gener
  */
 export async function generateQuiz(notes: string, avoid: string[] = []): Promise<GeneratedQuiz> {
   const hasCredentials = Boolean(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN);
-  if (hasCredentials && process.env.QUIZ_DUEL_OFFLINE !== "1") {
+  if (hasCredentials && process.env.QUIZ_DUEL_OFFLINE !== "1" && (await aiAllowed())) {
     try {
       const quiz = await generateWithClaude(notes, avoid);
       if (quiz) return quiz;
