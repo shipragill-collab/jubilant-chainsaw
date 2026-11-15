@@ -21,8 +21,8 @@ export interface Plan {
 /** The lowest price anything can be sold for (Stripe's minimum card charge in GBP). */
 export const MIN_PRICE_PENCE = 30;
 
-/** The most anything in the shop costs (packs and paid skins). Plans are separate. */
-export const MAX_SHOP_PRICE_PENCE = 40;
+/** The most anything in the shop costs (item packs). Single items stay at 40p or less; plans are separate. */
+export const MAX_SHOP_PRICE_PENCE = 50;
 
 export const PLANS: Record<PlanId, Plan> = {
   free: {
@@ -338,4 +338,27 @@ export function shopGroups(items: ShopItem[], now = Date.now()): ShopGroup[] {
   const festiveGroup: ShopGroup = { key: "festive", label: "Festive", items: festive };
   const holiday = festive.some(live);
   return (holiday ? [festiveGroup, ...byRarity] : [...byRarity, festiveGroup]).filter((g) => g.items.length > 0);
+}
+
+/** Themed bundles of coin-shop items plus bonus coins, for real money: cheaper than buying them one by one. */
+export interface ItemPack {
+  id: string;
+  name: string;
+  tagline: string;
+  items: string[];
+  coins: number;
+  pricePence: number;
+}
+
+export const ITEM_PACKS: ItemPack[] = [
+  { id: "pack-scholar", name: "Scholar pack", tagline: "Look the part for exam season.", items: ["skin-sage", "hat-cap", "eyes-round", "neck-bowtie"], coins: 300, pricePence: 50 },
+  { id: "pack-night-owl", name: "Night Owl pack", tagline: "For late-night revision sessions.", items: ["skin-midnight", "hat-headphones", "eyes-shades", "neck-scarf"], coins: 300, pricePence: 50 },
+  { id: "pack-wizard", name: "Wizard pack", tagline: "Turn every answer into a spell.", items: ["skin-galaxy", "hat-wizard", "eyes-monocle", "neck-medal"], coins: 500, pricePence: 50 },
+];
+
+export const itemPackById = (id: string | null | undefined) => ITEM_PACKS.find((p) => p.id === id);
+
+/** What a pack would cost in coins if bought item by item, plus its bonus coins. */
+export function packWorth(pack: ItemPack): number {
+  return pack.items.reduce((sum, id) => sum + (itemById(id)?.price ?? 0), 0) + pack.coins;
 }

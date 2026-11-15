@@ -6,6 +6,7 @@ import { Avatar } from "@/components/avatar";
 import { Coin, Coins } from "@/components/coin";
 import { Gem, Gems } from "@/components/gem";
 import { RajCompanion } from "@/components/raj-companion";
+import { ItemPackCard } from "@/components/item-pack-card";
 import { PackCard, bonusPercent } from "@/components/pack-card";
 import { Segmented } from "@/components/segmented";
 import { Badge, Button, Spinner } from "@/components/ui";
@@ -26,6 +27,7 @@ import {
   proSkinFor,
   seasonStatus,
   type Equipped,
+  ITEM_PACKS,
   PLANS,
   shopGroups,
   type Rarity,
@@ -79,6 +81,7 @@ export default function ShopPage() {
     else if (bought === "pro") setMessage({ tone: "ok", text: "Welcome to Pro! Your bonus coins and this month's Pro skin are waiting." });
     else if (bought === "coins") setMessage({ tone: "ok", text: "Coins added. Happy shopping!" });
     else if (bought === "gems") setMessage({ tone: "ok", text: "Gems added. Bling awaits." });
+    else if (bought === "pack") setMessage({ tone: "ok", text: "Pack unlocked! You're wearing your new look, and the bonus coins are in your wallet." });
     else if (q.get("checkout") === "cancelled") setMessage({ tone: "error", text: "Checkout cancelled. You haven't been charged." });
     else if (q.get("checkout") === "failed") setMessage({ tone: "error", text: "We couldn't confirm that payment. If you were charged, contact support." });
     if (q.get("tab") === "theme") setSlot("theme");
@@ -125,7 +128,7 @@ export default function ShopPage() {
     }
   }
 
-  async function checkout(kind: "coins" | "gems" | "item", ref: string) {
+  async function checkout(kind: "coins" | "gems" | "item" | "pack", ref: string) {
     setBusy(ref);
     setMessage(null);
     try {
@@ -279,6 +282,21 @@ export default function ShopPage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Item packs: a whole look plus coins, for 50p */}
+      <section className="space-y-4 pb-6" aria-labelledby="packs-title">
+        <div className="flex flex-wrap items-end justify-between gap-2">
+          <div>
+            <h2 id="packs-title" className="text-[28px] leading-none sm:text-[34px]">Item packs</h2>
+            <p className="mt-2 text-body text-muted-foreground">A full look plus bonus coins, for less than buying each piece.</p>
+          </div>
+        </div>
+        <div className="pack-scroll sm:grid sm:grid-cols-3">
+          {ITEM_PACKS.map((pk) => (
+            <ItemPackCard key={pk.id} pack={pk} owned={profile?.owned ?? []} busy={busy === pk.id} disabled={busy !== null} onBuy={() => checkout("pack", pk.id)} />
+          ))}
         </div>
       </section>
 

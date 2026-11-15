@@ -10,7 +10,7 @@ import { api, getPlayerId } from "@/lib/player";
 import { refreshProfiles } from "@/lib/use-profile";
 
 interface Summary {
-  order: { id: string; kind: "pro" | "pro_year" | "coins" | "gems" | "pass" | "bundle" | "item"; status: string; name: string; detail: string; pricePence: number; coins: number; gems: number; recurring: boolean };
+  order: { id: string; kind: "pro" | "pro_year" | "coins" | "gems" | "pass" | "bundle" | "item" | "pack"; status: string; name: string; detail: string; pricePence: number; coins: number; gems: number; recurring: boolean };
   live: boolean;
 }
 

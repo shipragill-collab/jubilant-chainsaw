@@ -15,6 +15,7 @@ import { buttonClass } from "./ui";
 const NAV = [
   { href: "/study", label: "Study" },
   { href: "/tutor", label: "Ask Raj" },
+  { href: "/games", label: "Games" },
   { href: "/streak", label: "Streak" },
   { href: "/leaderboard", label: "Leaderboard" },
   { href: "/shop", label: "Shop" },

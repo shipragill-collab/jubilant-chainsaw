@@ -20,6 +20,7 @@ const ICONS = {
 
 const MORE = [
   { href: "/", label: "Home", note: "Start here" },
+  { href: "/games", label: "Games", note: "Play with your notes" },
   { href: "/streak", label: "Streak", note: "Your daily habit" },
   { href: "/leaderboard", label: "Leaderboard", note: "Who's winning" },
   { href: "/pass", label: "Duel Pass", note: "Season rewards" },

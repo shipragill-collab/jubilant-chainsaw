@@ -1,5 +1,5 @@
 import Stripe from "stripe";
-import { COIN_PACKS, GEM_PACKS, MIN_PRICE_PENCE, PLANS, PRO_YEARLY, itemById } from "./catalog";
+import { COIN_PACKS, GEM_PACKS, MIN_PRICE_PENCE, PLANS, PRO_YEARLY, itemById, itemPackById } from "./catalog";
 import { BUNDLE, PASS } from "./pass";
 import { GameError } from "./game";
 import { giveItem, grantPass, grantPro, grantProYear, profileOf } from "./profile";
@@ -43,6 +43,11 @@ export function describeOrder(o: Pick<Order, "kind" | "packId" | "itemId">) {
     if (!item?.pricePence) throw new GameError("That item isn't sold for money.", 404);
     return { name: item.name, detail: `${item.rarity[0].toUpperCase()}${item.rarity.slice(1)} ${item.slot === "theme" ? "app skin" : "skin"}`, pricePence: item.pricePence, coins: 0, gems: 0, recurring: false };
   }
+  if (o.kind === "pack") {
+    const pack = itemPackById(o.packId);
+    if (!pack) throw new GameError("Unknown pack.", 404);
+    return { name: pack.name, detail: `${pack.items.length} items + ${pack.coins} coins`, pricePence: pack.pricePence, coins: pack.coins, gems: 0, recurring: false };
+  }
   if (o.kind === "gems") {
     const pack = GEM_PACKS.find((p) => p.id === o.packId);
     if (!pack) throw new GameError("Unknown gem pack.", 404);
@@ -55,16 +60,21 @@ export function describeOrder(o: Pick<Order, "kind" | "packId" | "itemId">) {
 
 /** Start a purchase. Returns where to send the browser. */
 export async function startCheckout(req: Request, playerId: string, kind: unknown, packId: unknown, itemId?: unknown): Promise<string> {
-  if (kind !== "pro" && kind !== "pro_year" && kind !== "coins" && kind !== "gems" && kind !== "pass" && kind !== "bundle" && kind !== "item") throw new GameError("Unknown purchase.");
+  if (kind !== "pro" && kind !== "pro_year" && kind !== "coins" && kind !== "gems" && kind !== "pass" && kind !== "bundle" && kind !== "item" && kind !== "pack") throw new GameError("Unknown purchase.");
   if (kind === "item") {
     const db = await read();
     if (db.profiles[playerId]?.owned.includes(String(itemId))) throw new GameError("You already own this.", 409);
+  }
+  if (kind === "pack") {
+    const pack = itemPackById(String(packId));
+    const owned = (await read()).profiles[playerId]?.owned ?? [];
+    if (pack && pack.items.every((id) => owned.includes(id))) throw new GameError("You already own everything in this pack.", 409);
   }
   const order: Order = {
     id: newId(16),
     playerId,
     kind,
-    packId: kind === "coins" || kind === "gems" ? String(packId) : undefined,
+    packId: kind === "coins" || kind === "gems" || kind === "pack" ? String(packId) : undefined,
     itemId: kind === "item" ? String(itemId) : undefined,
     createdAt: Date.now(),
     status: "pending",
@@ -125,6 +135,10 @@ export function fulfil(db: Db, orderId: string, stripeIds?: { customer?: string 
     if (stripeIds?.subscription) p.stripePassSubscriptionId = stripeIds.subscription;
   } else if (order.kind === "item") {
     giveItem(p, order.itemId!);
+  } else if (order.kind === "pack") {
+    const pack = itemPackById(order.packId)!;
+    for (const id of pack.items) giveItem(p, id);
+    p.coins += pack.coins;
   } else {
     const d = describeOrder(order);
     p.coins += d.coins;

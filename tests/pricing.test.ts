@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { describeOrder, fulfil } from "@/lib/billing";
-import { COIN_PACKS, GEM_PACKS, ITEMS, MAX_SHOP_PRICE_PENCE, MIN_PRICE_PENCE, PLANS, formatPrice, shopGroups } from "@/lib/catalog";
+import { COIN_PACKS, GEM_PACKS, ITEMS, ITEM_PACKS, MAX_SHOP_PRICE_PENCE, MIN_PRICE_PENCE, PLANS, formatPrice, shopGroups } from "@/lib/catalog";
 import { generateOfflineQuestions } from "@/lib/offline-generator";
 import { sampleBySlug } from "@/lib/samples";
 import { BUNDLE, PASS } from "@/lib/pass";
@@ -46,10 +46,11 @@ describe("the Ultimate bundle", () => {
 });
 
 describe("shop limits and order", () => {
-  it("never charges more than 40p for anything in the shop", () => {
-    const shop = [...COIN_PACKS, ...GEM_PACKS].map((p) => p.pricePence).concat(ITEMS.flatMap((i) => (i.pricePence ? [i.pricePence] : [])));
-    expect(Math.max(...shop)).toBe(MAX_SHOP_PRICE_PENCE);
-    expect(MAX_SHOP_PRICE_PENCE).toBe(40);
+  it("caps the shop at 50p: item packs 50p, single items 40p or less", () => {
+    const singles = [...COIN_PACKS, ...GEM_PACKS].map((p) => p.pricePence).concat(ITEMS.flatMap((i) => (i.pricePence ? [i.pricePence] : [])));
+    expect(Math.max(...singles)).toBeLessThanOrEqual(40);
+    expect(ITEM_PACKS.every((p) => p.pricePence === 50)).toBe(true);
+    expect(MAX_SHOP_PRICE_PENCE).toBe(50);
   });
 
   it("puts Mythic then Legendary first, and Festive last, outside holidays", () => {

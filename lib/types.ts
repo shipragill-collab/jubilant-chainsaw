@@ -136,7 +136,7 @@ export interface Profile {
 export interface Order {
   id: string;
   playerId: string;
-  kind: "pro" | "pro_year" | "coins" | "gems" | "pass" | "bundle" | "item";
+  kind: "pro" | "pro_year" | "coins" | "gems" | "pass" | "bundle" | "item" | "pack";
   packId?: string;
   itemId?: string;
   createdAt: number;

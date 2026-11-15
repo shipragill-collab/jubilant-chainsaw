@@ -96,6 +96,9 @@ export function StudySetView({ set, ownerHash }: { set: PublicSet; ownerHash: st
             <Button variant="brand" onClick={() => router.push(`/?study=${set.id}#start`)}>
               Quiz a friend on this
             </Button>
+            <a href={`/games?src=set:${set.id}`} className="btn btn-secondary inline-flex h-10 items-center rounded-[6px] px-4 text-[12px]">
+              Play games
+            </a>
             <Button variant="secondary" onClick={() => copy(window.location.href.split("#")[0], "Link copied")}>
               {copied === "Link copied" ? "Link copied!" : "Share"}
             </Button>
