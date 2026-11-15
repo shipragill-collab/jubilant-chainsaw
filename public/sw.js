@@ -1,5 +1,5 @@
 /* Quiz Duel service worker: makes the app open, and Raj work, without internet. */
-const VERSION = "qd-v1";
+const VERSION = "qd-v2";
 const PAGES = ["/", "/study", "/tutor", "/streak", "/offline"];
 
 self.addEventListener("install", (event) => {
@@ -33,6 +33,8 @@ self.addEventListener("fetch", (event) => {
   const fonts = url.hostname === "fonts.googleapis.com" || url.hostname === "fonts.gstatic.com";
   if (!sameOrigin && !fonts) return;
   if (sameOrigin && url.pathname.startsWith("/api/")) return; // live data; Raj has his own offline fallback
+  // Next.js page data for in-app navigation: always live, or it can point at files from an older build.
+  if (url.searchParams.has("_rsc") || req.headers.get("RSC") || req.headers.get("Next-Router-Prefetch")) return;
 
   // Build files never change once published: cache first.
   if (fonts || url.pathname.startsWith("/_next/static/") || url.pathname.startsWith("/icons/") || url.pathname.startsWith("/hero/")) {
@@ -50,11 +52,6 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Everything else: serve what we have, refresh in the background.
-  event.respondWith(
-    caches.match(req).then((hit) => {
-      const live = fetch(req).then((res) => put(req, res.clone()) && res).catch(() => hit);
-      return hit || live;
-    }),
-  );
+  // Everything else: network first, saved copy only when offline.
+  event.respondWith(fetch(req).then((res) => put(req, res.clone()) && res).catch(() => caches.match(req)));
 });

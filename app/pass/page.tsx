@@ -20,11 +20,11 @@ export default function PassPage() {
     if (new URLSearchParams(window.location.search).get("purchased") === "pass") setMessage({ tone: "ok", text: "Welcome to the Duel Pass! Every tier is unlocked for claiming as you reach it." });
   }, []);
 
-  const xp = profile?.pass.xp ?? 0;
+  const xp = Number(profile?.pass?.xp) || 0;
   const tier = tierFor(xp);
   const into = xp - tier * PASS.xpPerTier;
   const active = Boolean(profile?.passActive);
-  const claimed = new Set(profile?.pass.claimed ?? []);
+  const claimed = new Set(Array.isArray(profile?.pass?.claimed) ? profile.pass.claimed : []);
   const daysLeft = Math.max(0, Math.ceil((season.endsAt - Date.now()) / 864e5));
 
   const claimable: { tier: number; track: Track }[] = [];
@@ -41,7 +41,7 @@ export default function PassPage() {
       let next: ClientProfile | null = null;
       for (const c of list) next = await api<ClientProfile>("/api/pass/claim", { body: { playerId: getPlayerId(), ...c } });
       if (next) setProfile((p) => (p ? { ...p, ...next } : p));
-      setMessage({ tone: "ok", text: list.length > 1 ? `Claimed ${list.length} rewards.` : `Claimed: ${rewardLabel(tierRewards(list[0].tier)[list[0].track]!)}` });
+      setMessage({ tone: "ok", text: list.length > 1 ? `Claimed ${list.length} rewards.` : `Claimed: ${(() => { const r = tierRewards(list[0].tier)[list[0].track]; return r ? rewardLabel(r) : "reward"; })()}` });
       refreshProfiles();
     } catch (err) {
       setMessage({ tone: "error", text: (err as Error).message });
@@ -84,7 +84,7 @@ export default function PassPage() {
             </div>
             <div className="min-w-0 flex-1 basis-48">
               <div className="flex justify-between text-label text-muted-foreground">
-                <span>{xp.toLocaleString()} XP</span>
+                <span>{xp.toLocaleString("en-GB")} XP</span>
                 <span>{tier < PASS.tiers ? `${PASS.xpPerTier - into} XP to tier ${tier + 1}` : "Season complete!"}</span>
               </div>
               <div className="mt-2 h-3 overflow-hidden rounded-full bg-muted" role="progressbar" aria-label={`XP towards tier ${tier + 1}`} aria-valuemin={0} aria-valuemax={PASS.xpPerTier} aria-valuenow={tier < PASS.tiers ? into : PASS.xpPerTier}>

@@ -55,7 +55,13 @@ export function PassPipeline({
 
   useEffect(() => {
     const el = scroller.current;
-    if (el) el.scrollTo({ left: Math.max(0, (tier - 1.5) * COL - el.clientWidth / 4), behavior: "smooth" });
+    if (!el) return;
+    const left = Math.max(0, (tier - 1.5) * COL - el.clientWidth / 4);
+    try {
+      el.scrollTo({ left, behavior: "smooth" });
+    } catch {
+      el.scrollLeft = left; // older Safari
+    }
   }, [tier]);
 
   const cell = (t: number, track: Track) => {

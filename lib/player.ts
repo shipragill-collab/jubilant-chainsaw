@@ -24,7 +24,10 @@ let memoryId: string | null = null;
 export function getPlayerId(): string {
   const stored = safeGet(ID_KEY) ?? memoryId;
   if (stored) return stored;
-  const id = crypto.randomUUID();
+  const id =
+    typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : "10000000-1000-4000-8000-100000000000".replace(/[018]/g, (c) => (Number(c) ^ (Math.random() * 16) >> (Number(c) / 4)).toString(16));
   memoryId = id;
   safeSet(ID_KEY, id);
   return id;

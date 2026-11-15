@@ -52,43 +52,45 @@ function Hero() {
   const [copied, setCopied] = useState(false);
   const steps = "notes → 10 questions → duel";
   return (
-    <section className="relative grid gap-8 pt-6 pb-16 sm:pt-10 sm:pb-24 lg:grid-cols-[minmax(0,6fr)_minmax(0,6fr)] lg:items-end lg:gap-6">
-      <div className="pointer-events-none order-2 mx-auto w-full max-w-[320px] sm:max-w-[480px] lg:max-w-none">
+    <section className="relative grid gap-8 pt-6 pb-16 sm:pt-10 sm:pb-24 md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] md:items-center md:gap-8 lg:grid-cols-[minmax(0,6fr)_minmax(0,6fr)] lg:gap-6">
+      <div className="hero-dial pointer-events-none order-2 mx-auto w-full">
         <DuelOrbit />
       </div>
-      <div className="order-1 flex flex-col gap-7 lg:pb-10">
+      <div className="order-1 flex min-w-0 flex-col gap-7 lg:pb-10">
         <p className="font-mono text-[12px] tracking-[0.14em] text-muted-foreground uppercase">
           <span className="mr-2 inline-block size-1.5 translate-y-[-2px] rounded-full bg-brand align-middle" />
           Study duels · with Raj, your AI tutor
         </p>
-        <h1 className="display text-[46px] sm:text-[68px] xl:text-[76px]">
+        <h1 className="display text-[46px] sm:text-[60px] md:text-[52px] lg:text-[64px] xl:text-[76px]">
           <RiseWords text="Turn your notes into a game you can win." />
         </h1>
         <p className="max-w-[46ch] text-body-lg text-muted-foreground">
           Paste what you&apos;re studying. Get flashcards, notes and a 10-question quiz, then duel a friend on it. Raj explains anything you get stuck on.
         </p>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-col items-start gap-3">
           <button
             type="button"
             onClick={() => {
               navigator.clipboard?.writeText(steps).then(() => setCopied(true)).catch(() => undefined);
               setTimeout(() => setCopied(false), 1400);
             }}
-            className="inline-flex h-12 items-center gap-3 rounded-[6px] bg-surface pr-3 pl-4 font-mono text-[13px] shadow-[inset_0_0_0_1px_var(--surface-border)] transition hover:shadow-[inset_0_0_0_1px_var(--input)]"
+            className="inline-flex h-12 max-w-full items-center gap-3 rounded-[6px] bg-surface pr-3 pl-4 font-mono text-[13px] shadow-[inset_0_0_0_1px_var(--surface-border)] transition hover:shadow-[inset_0_0_0_1px_var(--input)]"
             aria-label="How it works: notes, then 10 questions, then a duel"
           >
             <span className="text-muted-foreground">$</span> {steps}
             <span className="text-faint-foreground" aria-hidden>{copied ? "✓" : "⧉"}</span>
           </button>
-          <a href="#start" className={buttonClass({ variant: "brand", size: "lg" })}>
-            Start a duel
-            <svg viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden>
-              <path d="m9 6 6 6-6 6" />
-            </svg>
-          </a>
-          <Link href="/study" className={buttonClass({ variant: "secondary", size: "lg" })}>
-            I have notes
-          </Link>
+          <div className="flex flex-wrap gap-3">
+            <a href="#start" className={buttonClass({ variant: "brand", size: "lg" })}>
+              Start a duel
+              <svg viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden>
+                <path d="m9 6 6 6-6 6" />
+              </svg>
+            </a>
+            <Link href="/study" className={buttonClass({ variant: "secondary", size: "lg" })}>
+              I have notes
+            </Link>
+          </div>
         </div>
       </div>
     </section>
