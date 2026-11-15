@@ -80,7 +80,7 @@ export function StudySetView({ set, ownerHash }: { set: PublicSet; ownerHash: st
       aside={
         <div className="space-y-5 pt-1">
           <div className="flex flex-wrap gap-2">
-            <Badge>{set.source === "claude" ? "Written by Claude" : "Auto-generated"}</Badge>
+            <Badge>{set.source === "claude" ? "Written by Claude" : set.source === "library" ? "Ready-made" : "Auto-generated"}</Badge>
             <Badge>{set.flashcards.length} flashcards</Badge>
             <Badge>{set.notes.keyTerms.length} key terms</Badge>
           </div>

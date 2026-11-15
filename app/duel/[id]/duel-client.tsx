@@ -75,7 +75,7 @@ export function DuelClient({ id }: { id: string }) {
       <header className="space-y-3">
         <div className="flex flex-wrap items-center gap-2">
           {view.rematchOf && <Badge tone="brand">Rematch</Badge>}
-          <Badge>{view.source === "claude" ? "Written by Claude" : "Auto-generated"}</Badge>
+          <Badge>{view.source === "claude" ? "Written by Claude" : view.source === "library" ? "Ready-made" : "Auto-generated"}</Badge>
           <Badge>{view.questionCount} questions</Badge>
         </div>
         <h1 className="display text-[36px] sm:text-[48px]">{view.title}</h1>

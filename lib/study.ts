@@ -4,6 +4,7 @@ import { z } from "zod";
 import { GameError } from "./game";
 import { MAX_NOTES_LENGTH, MIN_NOTES_LENGTH } from "./generate";
 import { aiAllowed, recordAiUsage } from "./ai-budget";
+import { packFor } from "./library";
 import { offlineStudySet } from "./offline-study";
 import { meter } from "./profile";
 import { newId, update } from "./store";
@@ -105,6 +106,8 @@ async function generateWithClaude(material: string): Promise<GeneratedStudySet |
 }
 
 export async function generateStudySet(material: string): Promise<GeneratedStudySet> {
+  const pack = packFor(material);
+  if (pack) return { title: pack.title, notes: pack.notes, flashcards: pack.flashcards, source: "library" };
   const hasCredentials = Boolean(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN);
   if (hasCredentials && process.env.QUIZ_DUEL_OFFLINE !== "1" && (await aiAllowed())) {
     try {

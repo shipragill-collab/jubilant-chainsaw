@@ -199,7 +199,7 @@ export default function StudyPage() {
                   <span>{s.termCount} Key terms</span>
                 </div>
                 <div className="flex flex-wrap gap-x-4 gap-y-1 text-body-lg text-muted-foreground">
-                  <span>{s.source === "claude" ? "Written by Claude" : "Auto-generated"}</span>
+                  <span>{s.source === "claude" ? "Written by Claude" : s.source === "library" ? "Ready-made" : "Auto-generated"}</span>
                   <span>{timeAgo(s.createdAt)}</span>
                 </div>
               </div>

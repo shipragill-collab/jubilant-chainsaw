@@ -10,7 +10,8 @@ export interface Question {
   explanation?: string;
 }
 
-export type QuestionSource = "claude" | "offline";
+/** Who wrote the content: Claude, the built-in library, or the offline generator. */
+export type QuestionSource = "claude" | "library" | "offline";
 
 export interface Quiz {
   id: string;

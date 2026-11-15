@@ -17,10 +17,23 @@ describe("offline generator", () => {
     expect(qs).toHaveLength(10);
     expect(validateQuestions(qs)).toHaveLength(10);
     for (const q of qs) {
-      expect(q.prompt).toContain("_____");
       expect(q.options[q.answerIndex]).toBeTruthy();
+      expect(q.explanation).toBeTruthy();
+      expect(q.options.join(" ")).not.toMatch(/None of the above|All of the above|Not mentioned/);
     }
     expect(generateOfflineQuestions(NOTES, 10)).toEqual(qs);
+  });
+
+  it("mixes question types instead of only fill-in-the-blank", () => {
+    const qs = generateOfflineQuestions(NOTES, 10);
+    const kind = (p: string) =>
+      p.startsWith("Fill in") ? "cloze" : p.startsWith("Which term") ? "term" : p.startsWith("Which of these") ? "truth" : p.startsWith("Which number") ? "number" : p.startsWith("What") ? "meaning" : "other";
+    expect(new Set(qs.map((q) => kind(q.prompt))).size).toBeGreaterThanOrEqual(3);
+  });
+
+  it("gives believable wrong years for date questions", () => {
+    const q = generateOfflineQuestions(NOTES, 20).find((x) => x.prompt.startsWith("Which number") && x.options.includes("1799"));
+    if (q) for (const o of q.options) expect(o).toMatch(/^\d{4}$/);
   });
 
   it("returns nothing for empty notes", () => {

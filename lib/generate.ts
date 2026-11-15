@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { z } from "zod";
 import { aiAllowed, recordAiUsage } from "./ai-budget";
+import { packFor, quizFromPack } from "./library";
 import { generateOfflineQuestions, guessTitle } from "./offline-generator";
 import { QUESTION_COUNT, type Question, type QuestionSource } from "./types";
 
@@ -99,6 +100,10 @@ async function generateWithClaude(notes: string, avoid: string[]): Promise<Gener
  * falls back to the offline generator otherwise (or if the API call fails).
  */
 export async function generateQuiz(notes: string, avoid: string[] = []): Promise<GeneratedQuiz> {
+  // Sample subjects use the hand-written library: best quality, and free.
+  const pack = packFor(notes);
+  if (pack) return { title: pack.title, questions: quizFromPack(pack, QUESTION_COUNT, avoid), source: "library" };
+
   const hasCredentials = Boolean(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN);
   if (hasCredentials && process.env.QUIZ_DUEL_OFFLINE !== "1" && (await aiAllowed())) {
     try {

@@ -145,3 +145,9 @@ tests/                   vitest unit tests
 | `npm run build` / `npm start` | Production build / server |
 | `npm test` | Unit tests |
 | `npm run typecheck` | TypeScript check |
+
+## Works fully without an API key
+
+- **Built-in library** (`lib/library.ts`): hand-written notes, key terms, 12 flashcards and 15 explained quiz questions for each of the 9 sample subjects. Sample study sets and duels always use it (labelled "Ready-made"), so they cost nothing; rematches draw different questions from the bank.
+- **Free question maker** (`lib/offline-generator.ts`) for anyone's own notes mixes five question types: "What does X mean?", "Which term matches…?", "Which statement is true?", number/date questions with believable nearby options, and fill-in-the-blank. Every question explains its answer.
+- **Raj offline** (`lib/raj-brain.ts`) knows the library's explanations, lists the topics in a set, quizzes on one topic ("Quiz me on the Calvin cycle"), and explains the last answer ("Why is that the answer?").

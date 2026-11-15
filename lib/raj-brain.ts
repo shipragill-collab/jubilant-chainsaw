@@ -7,6 +7,7 @@
  * BM25, recognises what kind of question was asked, and runs adaptive
  * practice in three formats with forgiving, partial-credit marking.
  */
+import { packFor } from "./library";
 import { splitSentences, STOPWORDS } from "./offline-generator";
 import type { Flashcard, KeyTerm, StudyNotes } from "./types";
 
@@ -91,6 +92,13 @@ function index(k: Knowledge): Index {
   for (const sec of k.notes?.sections ?? []) for (const p of sec.points) texts.add(clean(p));
   for (const t of k.notes?.keyTerms ?? []) texts.add(`${t.term} is ${t.definition.replace(/^[A-Z]/, (c) => c.toLowerCase())}`);
   if (!k.material) for (const c of k.flashcards) texts.add(clean(`${c.front.replace(/[“”"]/g, "")} ${c.back}`));
+  // Sample subjects: also know the library's notes, key terms and explanations.
+  const pack = k.material ? packFor(k.material) : undefined;
+  if (pack) {
+    for (const sec of pack.notes.sections) for (const p of sec.points) texts.add(clean(p));
+    for (const t of pack.notes.keyTerms) texts.add(`${t.term} is ${t.definition.replace(/^[A-Z]/, (ch) => ch.toLowerCase())}`);
+    for (const q of pack.questions) texts.add(clean(q.explanation));
+  }
   const docs = [...texts].filter((t) => t.length > 8).map((text) => ({ text, toks: tokens(text) }));
   const df = new Map<string, number>();
   for (const d of docs) for (const t of new Set(d.toks)) df.set(t, (df.get(t) ?? 0) + 1);
@@ -230,8 +238,12 @@ const weakCards = (history: BrainMessage[]) => {
   return [...latest].filter(([, ok]) => !ok).map(([i]) => i);
 };
 
-function pickCard(k: Knowledge, history: BrainMessage[]): number {
+function pickCard(k: Knowledge, history: BrainMessage[], allowed?: number[]): number {
   const n = k.flashcards.length;
+  if (allowed?.length) {
+    const asked = history.flatMap((m) => (m.role === "assistant" ? [...m.content.matchAll(/Flashcard (\d+) of/g)].map((x) => Number(x[1]) - 1) : []));
+    return allowed.find((i) => !asked.slice(-3).includes(i)) ?? allowed[0];
+  }
   const asked = history.flatMap((m) => (m.role === "assistant" ? [...m.content.matchAll(/Flashcard (\d+) of/g)].map((x) => Number(x[1]) - 1) : []));
   const recent = new Set(asked.slice(-3));
   const weak = weakCards(history).filter((i) => !recent.has(i));
@@ -459,8 +471,44 @@ export function brainReply(history: BrainMessage[], k: Knowledge | null): string
     if (r) return r;
   }
 
+  // "What's in this set?" — list the topics and offer a focused quiz on each.
+  if (/\b(what('s| is) in (this|the) set|what topics|which topics|what can i (study|learn)|contents)\b/.test(low)) {
+    const sections = (k.notes?.sections ?? []).map((x) => x.heading).filter(Boolean).slice(0, 6);
+    if (sections.length) {
+      return `**${k.title}** covers:\n\n${sections.map((h) => `- ${h}`).join("\n")}\n\nThere are ${k.flashcards.length} flashcards. Pick a topic and I'll quiz you on just that.\n\n${choicesTag(sections.slice(0, 3).map((h) => `Quiz me on ${h.toLowerCase()}`))}`;
+    }
+  }
+
+  // "Why is that the answer?" right after a question: explain the last card.
+  const lastAsked = [...history].reverse().find((h) => h.role === "assistant" && ASK_RE.test(h.content));
+  if (lastAsked && /^\s*why\b.*\b(that|it|this|answer|right|wrong|correct)\b|^\s*why\s*\??\s*$|^\s*how come\b/i.test(last)) {
+    const i = Number(lastAsked.content.match(ASK_RE)![1]) - 1;
+    const card = k.flashcards[i];
+    if (card) {
+      const more = search(k, `${card.front} ${card.back}`, 2).map((r) => `- ${r.text}`).join("\n");
+      return `The answer is **${card.back}**.${more ? `\n\nHere's why, from your notes:\n${more}` : ""}\n\n${choicesTag(["Next question", "Explain it more simply", "Make a memory trick"])}`;
+    }
+  }
+
   if (/\b(quiz|test) me\b|\bpracti[cs]e\b|^\s*(next|another|skip|go|again|ready)\b/.test(low)) {
-    const i = pickCard(k, history);
+    // "Quiz me on photosynthesis" / "Quiz me on these" narrows the cards.
+    const topic = last.match(/\b(?:quiz|test|practi[cs]e)(?: me)? (?:on|about|with) (.+?)[?.!]*$/i)?.[1]?.trim();
+    let allowed: number[] | undefined;
+    if (topic && /^(these|them|those|my mistakes|what i got wrong)$/i.test(topic)) allowed = weakCards(history);
+    else if (topic) {
+      const want = new Set(tokens(topic));
+      const sec = (k.notes?.sections ?? []).find((x) => tokens(x.heading).some((t) => want.has(t)));
+      const secToks = new Set(sec ? tokens(`${sec.heading} ${sec.points.join(" ")}`) : []);
+      allowed = k.flashcards
+        .map((c, idx) => ({ idx, toks: tokens(`${c.front} ${c.back}`) }))
+        .filter(({ toks }) => toks.some((t) => want.has(t)) || (secToks.size > 0 && toks.filter((t) => secToks.has(t)).length >= 2))
+        .map(({ idx }) => idx);
+      if (!allowed.length) {
+        const sections = (k.notes?.sections ?? []).map((x) => x.heading).slice(0, 3);
+        return `I couldn't find flashcards about **${topic}** in ${k.title}.${sections.length ? ` Try one of these topics instead:` : ""}\n\n${choicesTag(sections.length ? sections.map((h) => `Quiz me on ${h.toLowerCase()}`) : ["Start practice"])}`;
+      }
+    }
+    const i = pickCard(k, history, allowed);
     const asked = history.filter((m) => m.role === "assistant" && ASK_RE.test(m.content)).length;
     const format: Format = (["mc", "tf", "type"] as Format[])[asked % 3];
     const weak = weakCards(history).includes(i);

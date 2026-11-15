@@ -1,4 +1,6 @@
-import { generateOfflineQuestions, guessTitle, splitSentences, STOPWORDS } from "./offline-generator";
+import { clozeQuestions, extractDefinitions, guessTitle, splitSentences, STOPWORDS } from "./offline-generator";
+
+export { extractDefinitions };
 import type { Flashcard, KeyTerm, NoteSection, StudyNotes } from "./types";
 
 /**
@@ -6,16 +8,6 @@ import type { Flashcard, KeyTerm, NoteSection, StudyNotes } from "./types";
  * API call fails. Everything here is extractive: it reorganizes the user's own
  * sentences rather than inventing content.
  */
-
-const DEFINITION = /^(an?\s+|the\s+)?([A-Za-z][\w\s'()/-]{1,50}?)\s+(is|are|was|were|refers to|means|describes|consists of)\s+(.{8,})$/i;
-
-/** Lower-case a sentence-initial common noun ("Atom" → "atom"), but keep names and acronyms. */
-function asPhrase(article: string, term: string, plural: boolean): string {
-  const proper = /[A-Z]/.test(term.slice(1)) || term.split(/\s+/).filter((w) => /^[A-Z]/.test(w)).length > 1;
-  // With an article, or as a plural ("Ribosomes are…"), a capitalized first word is just sentence case.
-  const t = !proper && (article || plural) ? term[0].toLowerCase() + term.slice(1) : term;
-  return article ? `${article.toLowerCase()} ${t}` : t;
-}
 
 function trimSentence(s: string): string {
   return s.replace(/\s+/g, " ").trim().replace(/[.;:]+$/, "");
@@ -48,33 +40,6 @@ function chunk(material: string): { heading: string | null; text: string }[] {
   }
   flush();
   return chunks;
-}
-
-export function extractDefinitions(material: string): (KeyTerm & { question: string })[] {
-  const seen = new Set<string>();
-  const out: (KeyTerm & { question: string })[] = [];
-  for (const sentence of splitSentences(material)) {
-    const m = trimSentence(sentence).match(DEFINITION);
-    if (!m) continue;
-    const article = (m[1] ?? "").trim();
-    const term = m[2].trim();
-    const words = term.split(/\s+/);
-    if (words.length > 5 || STOPWORDS.has(words[0].toLowerCase()) && words.length === 1) continue;
-    if (/^(it|this|that|these|those|they|there|he|she|which)$/i.test(term)) continue;
-    const key = term.toLowerCase();
-    if (seen.has(key)) continue;
-    seen.add(key);
-    const verb = m[3].toLowerCase();
-    const rest = m[4].trim();
-    const definition = verb === "is" || verb === "are" || verb === "was" || verb === "were" ? rest : `${verb} ${rest}`;
-    const plural = verb === "are" || verb === "were";
-    out.push({
-      term: term[0].toUpperCase() + term.slice(1),
-      definition: definition[0].toUpperCase() + definition.slice(1),
-      question: `What ${plural ? "are" : "is"} ${asPhrase(article, term, plural)}?`,
-    });
-  }
-  return out;
 }
 
 export function offlineNotes(material: string): StudyNotes {
@@ -132,7 +97,7 @@ export function offlineFlashcards(material: string, max = 20): Flashcard[] {
   for (const { question, definition } of extractDefinitions(material)) {
     push({ front: question, back: definition });
   }
-  for (const q of generateOfflineQuestions(material, max)) {
+  for (const q of clozeQuestions(material, max)) {
     push({ front: q.prompt.replace(/^Fill in the blank:\s*/, ""), back: q.options[q.answerIndex] });
   }
   return cards;

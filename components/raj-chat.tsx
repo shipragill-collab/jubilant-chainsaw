@@ -405,7 +405,7 @@ export function RajChat({ setId, setTitle }: { setId: string | null; setTitle?: 
           {(awaitingAnswer
             ? ["Give me a hint", "Show me the answer", "Skip"]
             : setId
-              ? ["Quiz me", "Explain that more simply", "Give me an example", "Make a memory trick", "What did I get wrong?", "Summarize my notes", "I'm done for now"]
+              ? ["Quiz me", "What topics are in this set?", "Explain that more simply", "Give me an example", "Make a memory trick", "What did I get wrong?", "Summarize my notes", "I'm done for now"]
               : ["Teach me active recall", "I can't focus", "I'm stressed about exams", "How should I revise for an exam?"]).map((s) => (
             <button
               key={s}
