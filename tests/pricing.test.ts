@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { describeOrder, fulfil } from "@/lib/billing";
-import { COIN_PACKS, GEM_PACKS, ITEMS, MIN_PRICE_PENCE, PLANS, formatPrice } from "@/lib/catalog";
+import { COIN_PACKS, GEM_PACKS, ITEMS, MAX_SHOP_PRICE_PENCE, MIN_PRICE_PENCE, PLANS, formatPrice, shopGroups } from "@/lib/catalog";
+import { generateOfflineQuestions } from "@/lib/offline-generator";
+import { sampleBySlug } from "@/lib/samples";
 import { BUNDLE, PASS } from "@/lib/pass";
 import { hasPass, isPro, profileOf } from "@/lib/profile";
 import type { Db } from "@/lib/types";
@@ -14,11 +16,11 @@ describe("prices", () => {
   });
 
   it("has the agreed prices", () => {
-    expect([...COIN_PACKS.map((p) => p.pricePence)]).toEqual([30, 50, 100]);
-    expect([...GEM_PACKS.map((p) => p.pricePence)]).toEqual([30, 50, 100]);
+    expect([...COIN_PACKS.map((p) => p.pricePence)]).toEqual([30, 35, 40]);
+    expect([...GEM_PACKS.map((p) => p.pricePence)]).toEqual([30, 35, 40]);
     expect(PASS.pricePence).toBe(100);
     expect(PLANS.pro.pricePence).toBe(199);
-    expect(ITEMS.filter((i) => i.rarity === "mythic").every((i) => i.pricePence === 50)).toBe(true);
+    expect(ITEMS.filter((i) => i.rarity === "mythic").every((i) => i.pricePence === 40)).toBe(true);
     expect(BUNDLE.pricePence).toBeLessThan(PLANS.pro.pricePence + PASS.pricePence);
   });
 
@@ -40,5 +42,34 @@ describe("the Ultimate bundle", () => {
     expect(p.stripeSubscriptionId).toBe("sub_1");
     expect(p.stripePassSubscriptionId).toBe("sub_1");
     expect(describeOrder({ kind: "bundle" }).recurring).toBe(true);
+  });
+});
+
+describe("shop limits and order", () => {
+  it("never charges more than 40p for anything in the shop", () => {
+    const shop = [...COIN_PACKS, ...GEM_PACKS].map((p) => p.pricePence).concat(ITEMS.flatMap((i) => (i.pricePence ? [i.pricePence] : [])));
+    expect(Math.max(...shop)).toBe(MAX_SHOP_PRICE_PENCE);
+    expect(MAX_SHOP_PRICE_PENCE).toBe(40);
+  });
+
+  it("puts Mythic then Legendary first, and Festive last, outside holidays", () => {
+    const keys = shopGroups(ITEMS, Date.parse("2026-09-10T12:00:00Z")).map((g) => g.key);
+    expect(keys.slice(0, 2)).toEqual(["mythic", "legendary"]);
+    expect(keys.at(-1)).toBe("festive");
+  });
+
+  it("puts in-season festive skins at the very top during a holiday", () => {
+    const groups = shopGroups(ITEMS, Date.parse("2026-12-20T12:00:00Z"));
+    expect(groups[0].key).toBe("festive");
+    expect(groups[0].items[0].season).toBe("christmas");
+    expect(groups[1].key).toBe("mythic");
+  });
+});
+
+describe("Languages subject", () => {
+  it("has a sample that makes a full offline quiz", () => {
+    const s = sampleBySlug("languages");
+    expect(s?.subject).toBe("Languages");
+    expect(generateOfflineQuestions(s!.material)).toHaveLength(10);
   });
 });

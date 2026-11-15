@@ -52,6 +52,30 @@ The Jacobins were the most radical political club of the revolution.
 Napoleon Bonaparte seized power in the coup of 18 Brumaire in 1799.`,
   },
   {
+    slug: "languages",
+    subject: "Languages",
+    title: "Spanish: everyday basics",
+    material: `# Spanish: everyday basics
+## Greetings
+In Spanish, hola means hello and adiós means goodbye.
+Gracias means thank you, and the polite reply de nada means you're welcome.
+The question ¿Cómo te llamas? asks someone their name.
+The answer Me llamo Ana means my name is Ana.
+
+## Grammar
+Every Spanish noun is either masculine or feminine.
+Masculine nouns usually take el, as in el libro, which means the book.
+Feminine nouns usually take la, as in la mesa, which means the table.
+Adjectives usually come after the noun, so a big house is una casa grande.
+Written questions begin with an upside-down question mark.
+
+## Verbs
+The verb ser is used for permanent traits such as nationality.
+The verb estar is used for temporary states and for locations.
+Hablar is a regular verb that means to speak.
+Yo hablo means I speak, and nosotros hablamos means we speak.`,
+  },
+  {
     slug: "physics",
     subject: "Physics",
     title: "Newton's laws of motion",

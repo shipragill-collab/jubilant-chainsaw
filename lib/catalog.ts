@@ -3,8 +3,8 @@
 export type PlanId = "free" | "pro";
 export const GEM_PACKS = [
   { id: "gems-60", gems: 60, pricePence: 30, label: "Handful" },
-  { id: "gems-200", gems: 200, pricePence: 50, label: "Pouch" },
-  { id: "gems-500", gems: 500, pricePence: 100, label: "Vault" },
+  { id: "gems-200", gems: 200, pricePence: 35, label: "Pouch" },
+  { id: "gems-500", gems: 500, pricePence: 40, label: "Vault" },
 ];
 
 export interface Plan {
@@ -20,6 +20,9 @@ export interface Plan {
 
 /** The lowest price anything can be sold for (Stripe's minimum card charge in GBP). */
 export const MIN_PRICE_PENCE = 30;
+
+/** The most anything in the shop costs (packs and paid skins). Plans are separate. */
+export const MAX_SHOP_PRICE_PENCE = 40;
 
 export const PLANS: Record<PlanId, Plan> = {
   free: {
@@ -65,8 +68,8 @@ export interface CoinPack {
 
 export const COIN_PACKS: CoinPack[] = [
   { id: "coins-500", coins: 500, pricePence: 30, label: "Pocket" },
-  { id: "coins-1500", coins: 1500, pricePence: 50, label: "Satchel" },
-  { id: "coins-4000", coins: 4000, pricePence: 100, label: "Treasure chest" },
+  { id: "coins-1500", coins: 1500, pricePence: 35, label: "Satchel" },
+  { id: "coins-4000", coins: 4000, pricePence: 40, label: "Treasure chest" },
 ];
 
 export type Slot = "skin" | "hat" | "eyes" | "neck" | "theme";
@@ -178,8 +181,8 @@ const SKINS: ShopItem[] = [
   skin("skin-pro-2026-12", "Frost Crown", "epic", { kind: "radial", colors: ["#ffffff", "#bae6fd", "#3b82f6"], face: "#0b2a44" }, "December's Pro skin.", { proMonth: "2026-12" }),
   skin("skin-pro-2027-01", "New Moon", "epic", { kind: "stars", colors: ["#c7d2fe", "#312e81", "#0b0b2a"] }, "January's Pro skin.", { proMonth: "2027-01" }),
   // Bought with real money
-  skin("skin-royal-velvet", "Royal Velvet", "legendary", { kind: "radial", colors: ["#c084fc", "#6d28d9", "#2e1065"] }, "Soft as a library armchair.", { pricePence: 99 }),
-  skin("skin-golden-hour", "Golden Hour", "legendary", { kind: "glow", colors: ["#fff7ae", "#fbbf24", "#ea580c"] }, "Glows like late sunlight.", { pricePence: 149 }),
+  skin("skin-royal-velvet", "Royal Velvet", "legendary", { kind: "radial", colors: ["#c084fc", "#6d28d9", "#2e1065"] }, "Soft as a library armchair.", { pricePence: 40 }),
+  skin("skin-golden-hour", "Golden Hour", "legendary", { kind: "glow", colors: ["#fff7ae", "#fbbf24", "#ea580c"] }, "Glows like late sunlight.", { pricePence: 40 }),
 ];
 
 const ACCESSORIES: ShopItem[] = [
@@ -212,7 +215,7 @@ const APP_SKINS: ShopItem[] = [
     name: "Midnight Folio",
     rarity: "mythic",
     price: 0,
-    pricePence: 50,
+    pricePence: 40,
     description: "Obsidian and gold leaf for the whole app, a gilded Raj, drifting gold dust, sounds and haptics.",
     lore:
       "Bound in obsidian and edged in gold leaf, this is the last page of the Library of Night, the card scholars studied by candlelight after every other lamp went out. Raj found it under a stack of unfinished revision and refused to give it back. Wear it, and every answer you earn is written in gold.",
@@ -223,7 +226,7 @@ const APP_SKINS: ShopItem[] = [
     name: "Moonlit Porcelain",
     rarity: "mythic",
     price: 0,
-    pricePence: 50,
+    pricePence: 40,
     description: "Glazed porcelain, cobalt ink and silver leaf for the whole app, with a porcelain Raj and soft chime sounds.",
     lore:
       "Fired once a century in a kiln lit only by moonlight, Moonlit Porcelain is the teacup the old masters drank from while they marked their students' work. Every crack was mended with silver. Raj polished it until the cobalt shone, and now your answers ring like fine china.",
@@ -311,3 +314,25 @@ export const TRIAL_DAYS = 7;
 
 /** Pro paid yearly: about two months free, with a year of bonus coins up front. */
 export const PRO_YEARLY = { pricePence: 1999, coins: 12_000 };
+
+export interface ShopGroup {
+  key: Rarity | "festive";
+  label: string;
+  items: ShopItem[];
+}
+
+/**
+ * Shop sections, rarest first: Mythic and Legendary lead. During a holiday the
+ * Festive section jumps to the very top (in-season skins first); the rest of
+ * the year it sits at the bottom until its season comes round again.
+ */
+export function shopGroups(items: ShopItem[], now = Date.now()): ShopGroup[] {
+  const live = (i: ShopItem) => Boolean(i.season && seasonStatus(i.season, now).active);
+  const festive = items.filter((i) => i.season).sort((a, b) => Number(live(b)) - Number(live(a)));
+  const byRarity: ShopGroup[] = [...RARITIES]
+    .reverse()
+    .map((r) => ({ key: r, label: RARITY_LABEL[r], items: items.filter((i) => !i.season && i.rarity === r) }));
+  const festiveGroup: ShopGroup = { key: "festive", label: "Festive", items: festive };
+  const holiday = festive.some(live);
+  return (holiday ? [festiveGroup, ...byRarity] : [...byRarity, festiveGroup]).filter((g) => g.items.length > 0);
+}

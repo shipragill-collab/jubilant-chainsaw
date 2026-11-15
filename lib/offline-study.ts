@@ -78,7 +78,9 @@ export function extractDefinitions(material: string): (KeyTerm & { question: str
 }
 
 export function offlineNotes(material: string): StudyNotes {
-  const sentences = splitSentences(material).map(trimSentence);
+  // Markdown headings are titles, not facts: keep them out of the summary and points.
+  const body = material.replace(/^\s*#{1,6}\s+.*$/gm, "");
+  const sentences = splitSentences(body).map(trimSentence);
   const chunks = chunk(material);
 
   let sections: NoteSection[];

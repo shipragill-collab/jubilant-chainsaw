@@ -27,6 +27,7 @@ import {
   seasonStatus,
   type Equipped,
   PLANS,
+  shopGroups,
   type Rarity,
   type ShopItem,
   type Slot,
@@ -97,17 +98,8 @@ export default function ShopPage() {
       (filter === "festive" ? Boolean(i.season) : filter === "paid" ? howToGet(i) === "money" : filter === "exclusive" ? Boolean(i.passTier || i.proMonth) : i.rarity === filter);
     return list.filter(ofFilter);
   }, [slot, filter]);
-  // Rarest first: Mythic, Legendary, Epic, Rare, then Common.
-  const groups = useMemo(() => {
-    const festive = items
-      .filter((i) => i.season)
-      .sort((a, b) => Number(seasonStatus(b.season!).active) - Number(seasonStatus(a.season!).active));
-    const rest = items.filter((i) => !i.season);
-    const byRarity = [...RARITIES]
-      .reverse()
-      .map((r) => ({ key: r as Rarity | "festive", label: RARITY_LABEL[r], items: rest.filter((i) => i.rarity === r) }));
-    return [{ key: "festive" as const, label: "Festive", items: festive }, ...byRarity].filter((g) => g.items.length > 0);
-  }, [items]);
+  // Mythic and Legendary first; Festive jumps to the top only during a holiday.
+  const groups = useMemo(() => shopGroups(items), [items]);
   const festiveNow = ITEMS.filter((i) => i.season && seasonStatus(i.season).active);
   const filterCount = (f: Filter) =>
     ITEMS.filter((i) => i.slot === slot || (slot === "skin" && i.slot === "theme")).filter(
