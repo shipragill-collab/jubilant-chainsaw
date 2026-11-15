@@ -5,7 +5,8 @@ import { getPlayerId } from "@/lib/player";
 import { brainReply, type Knowledge } from "@/lib/raj-brain";
 import type { RajFeeling } from "@/lib/raj-mood";
 import { sfx, skinActive } from "@/lib/sfx";
-import { refreshProfiles } from "@/lib/use-profile";
+import { daysUntil, dueCards, loadExamDate, loadMemory, recordAnswer } from "@/lib/memory";
+import { refreshProfiles, useProfile } from "@/lib/use-profile";
 import { useRajActivity } from "@/lib/use-raj";
 import { RAJ_STATUS, RajCompanion, type RajState } from "./raj-companion";
 import { Button, ErrorNotice } from "./ui";
@@ -213,8 +214,44 @@ function ThinkingBubble({ steps }: { steps: string[] }) {
   );
 }
 
-export function RajChat({ setId, setTitle }: { setId: string | null; setTitle?: string }) {
+/** Plain text for reading aloud: no markdown, no answer buttons. */
+export function speakable(text: string): string {
+  return text
+    .replace(/<choices>[\s\S]*?<\/choices>/g, "")
+    .replace(/[*_`#>]/g, "")
+    .replace(/→/g, ", ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function speak(text: string) {
+  try {
+    const synth = window.speechSynthesis;
+    synth.cancel();
+    const u = new SpeechSynthesisUtterance(speakable(text));
+    u.lang = "en-GB";
+    u.rate = 1.02;
+    synth.speak(u);
+  } catch {
+    /* no speech on this device */
+  }
+}
+
+const READ_KEY = "quiz-duel:raj-read-aloud";
+
+export function RajChat({ setId, setTitle, autoSend }: { setId: string | null; setTitle?: string; autoSend?: { text: string; n: number } | null }) {
   const knowledge = useKnowledge(setId);
+  const { profile } = useProfile();
+  const pro = profile?.plan === "pro";
+  const [readAloud, setReadAloud] = useState(false);
+  const canSpeak = typeof window !== "undefined" && "speechSynthesis" in window;
+  useEffect(() => {
+    try {
+      setReadAloud(localStorage.getItem(READ_KEY) === "1");
+    } catch {
+      /* ignore */
+    }
+  }, []);
   const storageKey = `quiz-duel:raj:${setId ?? "general"}`;
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
@@ -253,6 +290,22 @@ export function RajChat({ setId, setTitle }: { setId: string | null; setTitle?: 
     scroller.current?.scrollTo({ top: scroller.current.scrollHeight });
   }, [messages]);
 
+  /** Pro: tell Raj which cards are due and how long until the exam. */
+  function proContext(): { due?: number[]; examDays?: number | null } {
+    if (!pro || !setId || !knowledge) return {};
+    return { due: dueCards(loadMemory(setId), knowledge.flashcards.length), examDays: daysUntil(loadExamDate(setId)) };
+  }
+
+  // A message sent from elsewhere on the page ("Review my due cards", "Go over them with Raj").
+  const lastAuto = useRef(0);
+  useEffect(() => {
+    if (!autoSend || autoSend.n === lastAuto.current || busy) return;
+    if (setId && !knowledge) return; // wait for the set to load
+    lastAuto.current = autoSend.n;
+    void send(autoSend.text);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoSend, knowledge, busy]);
+
   async function send(text: string) {
     const content = text.trim();
     if (!content || busy) return;
@@ -287,7 +340,7 @@ export function RajChat({ setId, setTitle }: { setId: string | null; setTitle?: 
         const res = await fetch("/api/tutor", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ messages: history, setId, set: knowledge, playerId: getPlayerId() }),
+          body: JSON.stringify({ messages: history, setId, set: knowledge, playerId: getPlayerId(), ...proContext() }),
           signal: ctrl.signal,
         }).catch((err: Error) => {
           if (err.name === "AbortError") throw err;
@@ -325,12 +378,20 @@ export function RajChat({ setId, setTitle }: { setId: string | null; setTitle?: 
         if (reply.trim()) throw new GoLocal(); // a half-streamed reply is still worth keeping
         // Offline: Raj thinks on this device, from the cached study set.
         setMode("device");
-        const local = brainReply(history, knowledge);
+        const local = brainReply(history, knowledge ? { ...knowledge, ...proContext() } : null);
         await waitThink();
         await typeOut(local);
         reply = local;
       }
       if (/^\s*\*\*Correct/.test(reply) && skinActive()) sfx.chime();
+      // Raj's memory: note how this flashcard went (everyone's answers are kept; Pro uses them).
+      if (setId) {
+        const asked = [...messages].reverse().find((m) => m.role === "assistant" && /Flashcard \d+ of/.test(m.content));
+        const idx = asked ? Number(asked.content.match(/Flashcard (\d+) of/)![1]) - 1 : -1;
+        if (idx >= 0 && /^\s*\*\*Correct/.test(reply)) recordAnswer(setId, idx, true);
+        else if (idx >= 0 && /The answer is \*\*/.test(reply)) recordAnswer(setId, idx, false);
+      }
+      if (pro && readAloud && canSpeak) speak(reply);
     } catch (err) {
       if ((err as Error).name === "AbortError") return;
       if (err instanceof GoLocal) return; // kept the partial reply
@@ -390,6 +451,34 @@ export function RajChat({ setId, setTitle }: { setId: string | null; setTitle?: 
             <span className="hidden sm:inline">{correct} correct</span>
           </span>
         )}
+        {canSpeak && (
+          pro ? (
+            <button
+              type="button"
+              aria-pressed={readAloud}
+              title={readAloud ? "Raj reads answers aloud: on" : "Raj reads answers aloud: off"}
+              aria-label="Read Raj's answers aloud"
+              onClick={() => {
+                const next = !readAloud;
+                setReadAloud(next);
+                if (!next) window.speechSynthesis?.cancel();
+                try {
+                  localStorage.setItem(READ_KEY, next ? "1" : "0");
+                } catch {
+                  /* ignore */
+                }
+              }}
+              className={`read-toggle ${readAloud ? "is-on" : ""}`}
+            >
+              <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 9v6h4l5 4V5L8 9z" /><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11" /></svg>
+            </button>
+          ) : (
+            <a href="/pricing" className="read-toggle is-locked" title="Raj reads aloud with Pro" aria-label="Raj reads aloud with Pro">
+              <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 9v6h4l5 4V5L8 9z" /><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11" /></svg>
+              <span className="pro-badge">Pro</span>
+            </a>
+          )
+        )}
         {messages.length > 0 && (
           <Button variant="ghost" size="sm" onClick={clear}>
             New chat
@@ -436,6 +525,11 @@ export function RajChat({ setId, setTitle }: { setId: string | null; setTitle?: 
                       return (
                         <>
                           <RichText text={text} />
+                          {pro && canSpeak && live && (
+                            <button type="button" onClick={() => speak(m.content)} className="mt-2 inline-flex items-center gap-1.5 font-mono text-[11px] tracking-[0.1em] text-muted-foreground uppercase hover:text-foreground" aria-label="Read this answer aloud">
+                              <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 9v6h4l5 4V5L8 9z" /><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11" /></svg> Listen
+                            </button>
+                          )}
                           {choices.length > 0 && (
                             <div className={`mt-4 grid gap-2 ${live ? "" : "opacity-50"}`}>
                               {choices.map((c) => (

@@ -22,6 +22,10 @@ export interface Knowledge {
   material?: string;
   notes?: StudyNotes;
   flashcards: Flashcard[];
+  /** Pro: cards due for review now (from Raj's memory), weakest first. */
+  due?: number[];
+  /** Pro: whole days until the exam, if the student set a date. */
+  examDays?: number | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -240,6 +244,12 @@ const weakCards = (history: BrainMessage[]) => {
 
 function pickCard(k: Knowledge, history: BrainMessage[], allowed?: number[]): number {
   const n = k.flashcards.length;
+  // Pro memory: cards you're about to forget come first.
+  if (!allowed?.length && k.due?.length) {
+    const recentAsked = history.flatMap((m) => (m.role === "assistant" ? [...m.content.matchAll(/Flashcard (\d+) of/g)].map((x) => Number(x[1]) - 1) : [])).slice(-3);
+    const due = k.due.filter((i) => i < n && !recentAsked.includes(i));
+    if (due.length && !weakCards(history).length) return due[0];
+  }
   if (allowed?.length) {
     const asked = history.flatMap((m) => (m.role === "assistant" ? [...m.content.matchAll(/Flashcard (\d+) of/g)].map((x) => Number(x[1]) - 1) : []));
     return allowed.find((i) => !asked.slice(-3).includes(i)) ?? allowed[0];
@@ -394,7 +404,8 @@ function mnemonic(k: Knowledge, topic: string): string {
 }
 
 function studyPlan(k: Knowledge, last: string): string {
-  const days = Number((last.match(/(\d+)\s*(day|days)/i) ?? [])[1] ?? 7);
+  const asked = (last.match(/(\d+)\s*(day|days)/i) ?? [])[1];
+  const days = Number(asked ?? (k.examDays && k.examDays > 0 ? k.examDays : 7));
   const n = k.flashcards.length;
   const steps = [1, 2, 4, 7, 14].filter((d) => d <= Math.max(days, 2));
   return `Here's a ${days}-day plan for **${k.title}**, using spaced repetition (each review is spaced further apart, which makes memories last):\n\n${steps
@@ -469,6 +480,14 @@ export function brainReply(history: BrainMessage[], k: Knowledge | null): string
   } else if (p && (/\b(hint|clue)\b/i.test(last) || !COMMAND.test(last))) {
     const r = practice(k, history, last, p);
     if (r) return r;
+  }
+
+  // Pro: "Review my due cards" uses Raj's memory of what you're about to forget.
+  if (/\b(review|practi[cs]e|quiz me on) (my )?(due|due cards|cards that are due)\b|\bwhat('s| is) due\b|\bdue cards\b/.test(low)) {
+    if (!k.due) return `Raj's memory is a **Pro** feature: I remember every card you answer and bring each one back just before you'd forget it.\n\n${choicesTag(["Start practice"])}`;
+    if (!k.due.length) return `Nothing's due right now. Your memory is in great shape! Want to learn some new cards?\n\n${choicesTag(["Start practice", "What topics are in this set?"])}`;
+    const i = pickCard(k, history, k.due);
+    return ask(k, i, "mc", `${k.due.length} card${k.due.length === 1 ? " is" : "s are"} due. Let's lock them in.\n\n`);
   }
 
   // "What's in this set?" — list the topics and offer a focused quiz on each.

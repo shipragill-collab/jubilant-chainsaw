@@ -143,8 +143,15 @@ export function clientSet(raw: Record<string, unknown>): StudySet | null {
   };
 }
 
-export function offlineReply(history: ChatMessage[], set: StudySet | null): string {
-  return brainReply(history, set ? knowledgeOf(set) : null);
+export function offlineReply(history: ChatMessage[], set: StudySet | null, extra: Pick<Knowledge, "due" | "examDays"> = {}): string {
+  return brainReply(history, set ? { ...knowledgeOf(set), ...extra } : null);
+}
+
+/** Pro context sent by the browser: due card indexes and days to the exam, validated. */
+export function proContext(raw: Record<string, unknown>): Pick<Knowledge, "due" | "examDays"> {
+  const due = Array.isArray(raw.due) ? raw.due.filter((n): n is number => Number.isInteger(n) && n >= 0 && n < 500).slice(0, 200) : undefined;
+  const examDays = Number.isInteger(raw.examDays) && (raw.examDays as number) >= 0 && (raw.examDays as number) < 1000 ? (raw.examDays as number) : null;
+  return { due, examDays };
 }
 
 // Simple in-memory rate limit so a public deployment can't run up the API bill.

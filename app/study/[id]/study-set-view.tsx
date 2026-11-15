@@ -2,7 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { MockExam, ProStudyPanel } from "@/components/pro-study";
 import { RajChat } from "@/components/raj-chat";
+import { recordAnswer } from "@/lib/memory";
 import { Segmented } from "@/components/segmented";
 import { Badge, Button, Card, Section } from "@/components/ui";
 import { api, getPlayerId } from "@/lib/player";
@@ -10,11 +12,12 @@ import { refreshProfiles } from "@/lib/use-profile";
 import type { Flashcard, StudyNotes, StudySet } from "@/lib/types";
 
 type PublicSet = Omit<StudySet, "ownerId" | "material">;
-type Tab = "notes" | "flashcards" | "raj";
+type Tab = "notes" | "flashcards" | "raj" | "exam";
 const TABS: { id: Tab; label: string }[] = [
   { id: "notes", label: "Notes" },
   { id: "flashcards", label: "Flashcards" },
-  { id: "raj", label: "Ask Raj" },
+  { id: "raj", label: "Raj" },
+  { id: "exam", label: "Exam" },
 ];
 
 export function notesToMarkdown(title: string, notes: StudyNotes): string {
@@ -38,11 +41,16 @@ export function StudySetView({ set, ownerHash }: { set: PublicSet; ownerHash: st
   const [tab, setTab] = useState<Tab>("notes");
   const [isOwner, setIsOwner] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
+  const [rajAsk, setRajAsk] = useState<{ text: string; n: number } | null>(null);
+  const askRaj = (text: string) => {
+    setRajAsk((prev) => ({ text, n: (prev?.n ?? 0) + 1 }));
+    setTab("raj");
+  };
 
   useEffect(() => {
     void sha256Hex(getPlayerId()).then((h) => setIsOwner(h === ownerHash)).catch(() => undefined);
     const hash = window.location.hash.slice(1);
-    if (hash === "flashcards" || hash === "raj") setTab(hash);
+    if (hash === "flashcards" || hash === "raj" || hash === "exam") setTab(hash);
   }, [ownerHash]);
 
   function flash(msg: string) {
@@ -92,6 +100,7 @@ export function StudySetView({ set, ownerHash }: { set: PublicSet; ownerHash: st
               {copied === "Link copied" ? "Link copied!" : "Share"}
             </Button>
           </div>
+          <ProStudyPanel setId={set.id} cardCount={set.flashcards.length} onReview={() => askRaj("Review my due cards")} onExam={() => setTab("exam")} />
           {isOwner && (
             <button type="button" onClick={remove} className="text-label text-muted-foreground underline underline-offset-4 hover:text-destructive">
               Delete this set
@@ -122,8 +131,10 @@ export function StudySetView({ set, ownerHash }: { set: PublicSet; ownerHash: st
           />
         ) : tab === "flashcards" ? (
           <FlashcardsView setId={set.id} cards={set.flashcards} />
+        ) : tab === "exam" ? (
+          <MockExam setId={set.id} onAskRaj={(missed) => askRaj(`Explain these simply: ${missed.slice(0, 3).join(" ")}`)} />
         ) : (
-          <RajChat setId={set.id} setTitle={set.title} />
+          <RajChat setId={set.id} setTitle={set.title} autoSend={rajAsk} />
         )}
       </div>
     </Section>
@@ -244,6 +255,7 @@ function FlashcardsView({ setId, cards }: { setId: string; cards: Flashcard[] })
         // Reviewing flashcards counts toward the study streak.
         void api("/api/activity", { body: { playerId: getPlayerId() } }).then(refreshProfiles).catch(() => undefined);
       }
+      recordAnswer(setId, cardIndex, value === "known");
       setProgress((prev) => {
         const next = { ...prev, [cardIndex]: value };
         saveProgress(setId, next);

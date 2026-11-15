@@ -6,7 +6,7 @@ import { body, playerIdFrom } from "@/lib/http";
 import { meter } from "@/lib/profile";
 import { isStoreUnavailable, read } from "@/lib/store";
 import type { StudySet } from "@/lib/types";
-import { clientSet, claudeReply, offlineReply, rateLimited, sanitizeHistory } from "@/lib/tutor";
+import { clientSet, proContext, claudeReply, offlineReply, rateLimited, sanitizeHistory } from "@/lib/tutor";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -42,6 +42,7 @@ export async function POST(req: Request) {
   // The browser sends its cached copy of the set; use it when the store can't help.
   if (!set && b.set && typeof b.set === "object") set = clientSet(b.set as Record<string, unknown>);
 
+  const extra = proContext(b);
   const useClaude =
     Boolean(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN) && process.env.QUIZ_DUEL_OFFLINE !== "1" && (await aiAllowed());
   const encoder = new TextEncoder();
@@ -56,7 +57,7 @@ export async function POST(req: Request) {
             controller.enqueue(encoder.encode(chunk));
           }
         } else {
-          controller.enqueue(encoder.encode(offlineReply(history, set)));
+          controller.enqueue(encoder.encode(offlineReply(history, set, extra)));
           sent = true;
         }
       } catch (err) {
@@ -64,7 +65,7 @@ export async function POST(req: Request) {
           err instanceof Anthropic.RateLimitError
             ? "I'm getting a lot of questions right now. Give me a moment and ask again."
             : err instanceof Anthropic.APIError
-              ? "I couldn't reach my brain just now. Here's what I can do offline:\n\n" + offlineReply(history, set)
+              ? "I couldn't reach my brain just now. Here's what I can do offline:\n\n" + offlineReply(history, set, extra)
               : "Something went wrong on my side. Please try again.";
         console.warn("[raj]", err);
         controller.enqueue(encoder.encode(sent ? `\n\n_${msg.split("\n")[0]}_` : msg));
