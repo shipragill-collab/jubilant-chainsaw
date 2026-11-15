@@ -61,9 +61,8 @@ export function Section({ title, intro, children, aside }: { title: ReactNode; i
 }
 
 export const inputClass =
-  "w-full rounded-2xl border border-input bg-surface px-4 text-body-lg text-foreground placeholder:text-faint-foreground outline-none transition focus:border-foreground";
+  "w-full rounded-[8px] border border-input bg-surface px-4 text-body-lg text-foreground placeholder:text-faint-foreground outline-none transition focus:border-foreground";
 
-/** An error message; when it's about the Free plan's limits, adds a link to the plans page. */
 /** An error box, or the upgrade card when the "error" is a free limit. */
 export function ErrorNotice({ message, className }: { message: string; className: string }) {
   if (/Upgrade to Pro/.test(message)) return <UpgradePrompt message={message} />;

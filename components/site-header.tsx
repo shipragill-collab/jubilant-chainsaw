@@ -87,7 +87,7 @@ export function SiteHeader() {
   }, [path]);
   return (
     <header className="site-head sticky top-0 z-40">
-      <div className="site-bar mx-auto flex h-16 max-w-7xl items-center gap-2 px-4 sm:gap-3 sm:px-8">
+      <div className="site-bar mx-auto flex h-14 max-w-7xl items-center gap-2 px-4 sm:h-16 sm:gap-3 sm:px-8">
         <Link href="/" className="mr-auto flex shrink-0 items-center gap-2.5 rounded-md pr-2" aria-label="Quiz Duel home">
           <span aria-hidden className="relative size-8 rounded-full bg-brand">
             <span className="absolute inset-[7px] rounded-full border-2 border-[var(--brand-foreground)] opacity-80" />
@@ -121,7 +121,7 @@ export function SiteHeader() {
           </Link>
         </span>
       </div>
-      <nav ref={mobileNav} className="mobile-nav mx-auto flex max-w-7xl items-center gap-1 overflow-x-auto px-3 py-1.5 [scrollbar-width:none] sm:px-7 xl:hidden" aria-label="Main">
+      <nav ref={mobileNav} className="mobile-nav mx-auto hidden max-w-7xl items-center gap-1 overflow-x-auto px-3 py-1.5 [scrollbar-width:none] sm:px-7 md:flex xl:hidden" aria-label="Main">
         {[...NAV, { href: "/search", label: "Search" }].map((n) => (
           <Link key={n.href} href={n.href} className="nav-link shrink-0" aria-current={isActive(n.href) ? "page" : undefined}>
             {n.label}

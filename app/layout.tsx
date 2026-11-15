@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { ServiceWorker } from "@/components/service-worker";
+import { TabBar } from "@/components/tab-bar";
 import { SITE, siteUrl } from "@/lib/site";
 import { SiteHeader } from "@/components/site-header";
 import { MotionRoot } from "@/components/reveal";
@@ -54,6 +55,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <span>Made for curious minds.</span>
           </nav>
         </footer>
+        <TabBar />
         </MotionRoot>
         <ServiceWorker />
       </body>

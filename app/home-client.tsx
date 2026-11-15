@@ -53,10 +53,10 @@ function Hero() {
   const steps = "notes → 10 questions → duel";
   return (
     <section className="relative grid gap-8 pt-6 pb-16 sm:pt-10 sm:pb-24 lg:grid-cols-[minmax(0,6fr)_minmax(0,6fr)] lg:items-end lg:gap-6">
-      <div className="pointer-events-none mx-auto w-full max-w-[560px] lg:order-2 lg:max-w-none">
+      <div className="pointer-events-none order-2 mx-auto w-full max-w-[320px] sm:max-w-[480px] lg:max-w-none">
         <DuelOrbit />
       </div>
-      <div className="flex flex-col gap-7 lg:order-1 lg:pb-10">
+      <div className="order-1 flex flex-col gap-7 lg:pb-10">
         <p className="font-mono text-[12px] tracking-[0.14em] text-muted-foreground uppercase">
           <span className="mr-2 inline-block size-1.5 translate-y-[-2px] rounded-full bg-brand align-middle" />
           Study duels · with Raj, your AI tutor
@@ -215,7 +215,7 @@ function Gallery({ sets }: { sets: StudySetSummary[] | null }) {
     <section className="py-12 sm:py-16">
       <div className="grid grid-cols-1 gap-x-12 gap-y-12 md:grid-cols-2">
         {[...mine, ...samples].map((t) => (
-          <PreviewCard key={t.key} href={t.href} title={t.title} meta={t.meta} dot={t.dot}>
+          <PreviewCard key={t.key} href={t.href} title={t.title} meta={t.meta} dot={t.dot} hideTitle>
             <SetThumbnail title={t.title} kicker={t.kicker} lines={t.lines} seed={t.key} />
           </PreviewCard>
         ))}
