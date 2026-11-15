@@ -1,5 +1,6 @@
 "use client";
 
+import { loadLevel } from "@/lib/tracks";
 import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import { getPlayerId } from "@/lib/player";
 import { brainReply, type Knowledge } from "@/lib/raj-brain";
@@ -340,7 +341,7 @@ export function RajChat({ setId, setTitle, autoSend }: { setId: string | null; s
         const res = await fetch("/api/tutor", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ messages: history, setId, set: knowledge, playerId: getPlayerId(), ...proContext() }),
+          body: JSON.stringify({ messages: history, setId, set: knowledge, playerId: getPlayerId(), level: loadLevel(), ...proContext() }),
           signal: ctrl.signal,
         }).catch((err: Error) => {
           if (err.name === "AbortError") throw err;

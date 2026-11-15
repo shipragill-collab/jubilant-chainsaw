@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { Avatar } from "@/components/avatar";
 import { Button, Spinner } from "@/components/ui";
-import { PLANS, PRO_YEARLY, TRIAL_DAYS, currentMonth, formatPrice, proSkinFor } from "@/lib/catalog";
+import { ElevenPackCard } from "@/components/eleven-pack";
+import { ELEVEN_PLUS, PLANS, PRO_YEARLY, TRIAL_DAYS, currentMonth, formatPrice, proSkinFor } from "@/lib/catalog";
 import { Segmented } from "@/components/segmented";
 import { BUNDLE, PASS } from "@/lib/pass";
 import { api, getPlayerId } from "@/lib/player";
@@ -300,6 +301,16 @@ export default function PricingPage() {
           )}
         </PlanCard>
       </div>
+
+      <section className="grid gap-6 rounded-[14px] border border-surface-border p-5 sm:p-7 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] md:items-center" aria-label="11+ Pack">
+        <div className="space-y-2">
+          <p className="font-mono text-[11px] tracking-[0.12em] text-muted-foreground uppercase">For 11+ families</p>
+          <h2 className="text-[28px] leading-tight">11+ Pack</h2>
+          <p className="text-body-lg text-muted-foreground">{ELEVEN_PLUS.tagline} Works alongside any plan.</p>
+          <Link href="/11-plus" className="inline-block text-body underline underline-offset-4">Try a free paper first →</Link>
+        </div>
+        <ElevenPackCard />
+      </section>
 
       {/* Free stays visible but quiet, so it's a safety net rather than a competing choice. */}
       <section className="plan-free grid gap-4 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center" aria-label="Free plan">

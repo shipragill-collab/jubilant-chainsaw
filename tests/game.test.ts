@@ -84,12 +84,14 @@ describe("duel flow", () => {
     expect(toView(d, quiz, "p2").review).toHaveLength(2);
 
     const db: Db = { quizzes: { q1: quiz }, duels: { d1: d }, studySets: {}, profiles: {}, orders: {} };
-    const rows = leaderboard(db);
+    const rows = leaderboard(db, "p2");
     expect(rows.map((r) => [r.name, r.wins, r.losses])).toEqual([
       ["Sam", 1, 0],
       ["Alex", 0, 1],
     ]);
     expect(rows[0].accuracy).toBe(1);
+    // Friends only: someone who never duelled them sees nobody.
+    expect(leaderboard(db, "stranger")).toEqual([]);
   });
 
   it("reports ties", () => {
@@ -99,6 +101,6 @@ describe("duel flow", () => {
     play(d, "p1", [0, 1], 1000);
     play(d, "p2", [0, 1], 1000);
     expect(duelOutcome(d).winnerId).toBeNull();
-    expect(leaderboard({ quizzes: { q1: quiz }, duels: { d1: d }, studySets: {}, profiles: {}, orders: {} })[0].ties).toBe(1);
+    expect(leaderboard({ quizzes: { q1: quiz }, duels: { d1: d }, studySets: {}, profiles: {}, orders: {} }, "p1")[0].ties).toBe(1);
   });
 });

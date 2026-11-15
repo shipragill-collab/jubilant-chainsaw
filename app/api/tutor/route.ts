@@ -6,7 +6,7 @@ import { body, playerIdFrom } from "@/lib/http";
 import { meter } from "@/lib/profile";
 import { isStoreUnavailable, read } from "@/lib/store";
 import type { StudySet } from "@/lib/types";
-import { clientSet, proContext, claudeReply, offlineReply, rateLimited, sanitizeHistory } from "@/lib/tutor";
+import { clientSet, levelOf, proContext, claudeReply, offlineReply, rateLimited, sanitizeHistory } from "@/lib/tutor";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
       let sent = false;
       try {
         if (useClaude) {
-          for await (const chunk of claudeReply(history, set)) {
+          for await (const chunk of claudeReply(history, set, levelOf(b.level))) {
             sent = true;
             controller.enqueue(encoder.encode(chunk));
           }

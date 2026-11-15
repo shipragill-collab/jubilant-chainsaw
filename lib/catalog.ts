@@ -318,6 +318,19 @@ export const TRIAL_DAYS = 7;
 /** Pro paid yearly: about two months free, with a year of bonus coins up front. */
 export const PRO_YEARLY = { pricePence: 1999, coins: 12_000 };
 
+/** The 11+ Pack: every practice paper and the weak-spot report. */
+export const ELEVEN_PLUS = {
+  name: "11+ Pack",
+  pricePence: 399,
+  tagline: "Unlimited 11+ practice papers for less than a coffee a month.",
+  features: [
+    "40 practice papers in each subject: maths, verbal and non-verbal reasoning, English",
+    "Timed papers with answers explained",
+    "Weak-spot report: see exactly which question types to practise",
+    "Your best score saved for every paper, so you can see progress",
+  ],
+};
+
 export interface ShopGroup {
   key: Rarity | "festive";
   label: string;

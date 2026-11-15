@@ -19,6 +19,9 @@ const ICONS = {
 };
 
 const MORE = [
+  { href: "/11-plus", label: "11+", note: "Practice papers" },
+  { href: "/past-papers", label: "Past papers", note: "11+ and GCSE" },
+  { href: "/goals", label: "My goals", note: "Target schools" },
   { href: "/tutor", label: "Ask Raj", note: "Your AI tutor" },
   { href: "/games", label: "Games", note: "Play with your notes" },
   { href: "/streak", label: "Streak", note: "Your daily habit" },

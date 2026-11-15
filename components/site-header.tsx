@@ -14,13 +14,19 @@ import { buttonClass } from "./ui";
 
 const NAV = [
   { href: "/study", label: "Study" },
+  { href: "/11-plus", label: "11+" },
+  { href: "/past-papers", label: "Papers" },
+  { href: "/goals", label: "Goals" },
   { href: "/tutor", label: "Ask Raj" },
   { href: "/games", label: "Games" },
+  { href: "/shop", label: "Shop" },
+  { href: "/pricing", label: "Plans" },
+];
+/** Desktop only: tucked into a "More" menu so the bar fits. */
+const NAV_MORE = [
   { href: "/streak", label: "Streak" },
   { href: "/leaderboard", label: "Leaderboard" },
-  { href: "/shop", label: "Shop" },
-  { href: "/pass", label: "Pass" },
-  { href: "/pricing", label: "Plans" },
+  { href: "/pass", label: "Duel Pass" },
 ];
 
 function SearchIcon({ className = "size-[18px]" }: { className?: string }) {
@@ -96,6 +102,16 @@ export function SiteHeader() {
               {n.label}
             </Link>
           ))}
+          <details className="nav-more" key={path}>
+            <summary className={`nav-link ${NAV_MORE.some((n) => isActive(n.href)) ? "is-active" : ""}`}>More</summary>
+            <div className="nav-more-menu">
+              {NAV_MORE.map((n) => (
+                <Link key={n.href} href={n.href} className="nav-more-link" aria-current={isActive(n.href) ? "page" : undefined}>
+                  {n.label}
+                </Link>
+              ))}
+            </div>
+          </details>
           <span className="ml-2">
             <HeaderSearch />
           </span>

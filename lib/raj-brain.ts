@@ -7,6 +7,7 @@
  * BM25, recognises what kind of question was asked, and runs adaptive
  * practice in three formats with forgiving, partial-credit marking.
  */
+import { exampleFor, TIPS } from "./eleven-plus";
 import { packFor } from "./library";
 import { splitSentences, STOPWORDS } from "./offline-generator";
 import type { Flashcard, KeyTerm, StudyNotes } from "./types";
@@ -443,6 +444,19 @@ function coach(last: string): string {
 /** Messages that are requests to Raj, never answers to the open flashcard. */
 const COMMAND = /^\s*(next|another|skip|quiz me|start practice|practi[cs]e|explain|summar|mnemonic|plan|make|give me an example|what did i|review|i'?m done|done for now|stop)\b/i;
 
+/** 11+ help: a tip for the question type, then a worked example. */
+function elevenPlusCoach(low: string): string | null {
+  const topics = Object.keys(TIPS).sort((a, b) => b.length - a.length);
+  const topic = topics.find((t) => low.includes(t.toLowerCase())) ?? topics.find((t) => low.includes(t.toLowerCase().replace(/s$/, "")));
+  if (!topic) {
+    return `The 11+ usually tests some mix of **maths**, **English**, **verbal reasoning** and **non-verbal reasoning**. Which type of question do you want to get better at?\n\n${choicesTag(["11+ letter codes", "11+ analogies", "11+ ratio", "11+ hidden words"])}`;
+  }
+  const ex = exampleFor(topic);
+  const tip = `**${topic}:** ${TIPS[topic]}`;
+  if (!ex || ex.shapes || ex.optionShapes) return `${tip}\n\nTry a practice paper on the 11+ page to see some.\n\n${choicesTag(["11+ letter codes", "11+ ratio"])}`;
+  return `${tip}\n\nHere's one worked through:\n\n**${ex.prompt}**\n\n${ex.options.map((o, i) => `- ${o}${i === ex.answer ? " ✓" : ""}`).join("\n")}\n\n${ex.explain}\n\n${choicesTag([`Another 11+ ${topic.toLowerCase()} example`, "11+ letter codes", "11+ analogies"])}`;
+}
+
 export function brainReply(history: BrainMessage[], k: Knowledge | null): string {
   const last = history[history.length - 1]?.content.trim() ?? "";
   const low = last.toLowerCase();
@@ -457,6 +471,11 @@ export function brainReply(history: BrainMessage[], k: Knowledge | null): string
   }
   if (/who are you|what can you do|how do you work|^help$|what do you do/.test(low)) {
     return `I'm **Raj**, your study tutor. I can:\n\n- quiz you with multiple choice, true or false, and type-your-answer questions\n- give hints that get stronger each time\n- explain things simply, give examples, and compare ideas\n- make memory tricks and study plans\n- bring back the questions you got wrong\n\n${choicesTag(k ? ["Start practice", "Explain the key ideas simply"] : ["How should I revise for an exam?"])}`;
+  }
+
+  if (/\b11\s*\+|11 plus|eleven plus|\bverbal reasoning\b|\bnon-?verbal\b/.test(low)) {
+    const r = elevenPlusCoach(low);
+    if (r) return r;
   }
 
   if (!k || !k.flashcards.length) return coach(last);

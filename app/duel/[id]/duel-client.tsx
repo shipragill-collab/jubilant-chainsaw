@@ -162,11 +162,14 @@ function ShareLink({ compact = false }: { compact?: boolean }) {
   }
 
   return (
+    <div className="space-y-1.5">
     <div className={`flex gap-2 ${compact ? "" : "flex-col sm:flex-row"}`}>
       <input readOnly value={url} onFocus={(e) => e.target.select()} className={`${inputClass} h-10 font-mono text-label`} />
       <Button variant="primary" onClick={share} className="shrink-0">
         {copied ? "Copied!" : "Copy link"}
       </Button>
+    </div>
+    {!compact && <p className="text-label text-muted-foreground">Duels are private: only people with this link can join. Send it to friends, not public posts.</p>}
     </div>
   );
 }
@@ -228,6 +231,7 @@ function JoinCard({ view, playerId, onJoined }: { view: DuelView; playerId: stri
             autoFocus
           />
         </label>
+        <p className="text-label text-muted-foreground">Use a first name or nickname, never your full name. Only accept duels from people you know.</p>
         {error && <p className="text-label text-destructive">{error}</p>}
         <Button type="submit" variant="brand" size="lg" disabled={busy || !name.trim()}>
           {busy ? <Spinner /> : null} Accept challenge

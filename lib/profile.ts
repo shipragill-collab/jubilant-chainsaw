@@ -63,6 +63,13 @@ export const addXp = (p: Profile, xp: number) => {
 };
 
 export const hasPass = (p: Profile, now = Date.now()) => Boolean(p.passUntil && p.passUntil > now);
+export const hasEleven = (p: Profile, now = Date.now()) => Boolean(p.elevenUntil && p.elevenUntil > now);
+
+/** Grant the 11+ Pack for a period (purchase or renewal). */
+export function grantEleven(p: Profile, days = 31, now = Date.now()) {
+  const from = p.elevenUntil && p.elevenUntil > now ? p.elevenUntil : now;
+  p.elevenUntil = from + days * 24 * 3600 * 1000;
+}
 
 export const isPro = (p: Profile, now = Date.now()) => p.plan === "pro" && (p.proUntil === null || p.proUntil > now);
 
@@ -227,6 +234,8 @@ export function profileView(p: Profile, now = Date.now()) {
     passUntil: hasPass(p, now) ? (p.passUntil ?? null) : null,
     pass: p.pass ?? { season: seasonOf(now).id, xp: 0, claimed: [] },
     hasPassSubscription: Boolean(p.stripePassSubscriptionId),
+    elevenActive: hasEleven(p, now),
+    hasElevenSubscription: Boolean(p.stripeElevenSubscriptionId),
     trialAvailable: !p.trialStartedAt && !pro,
     onTrial: pro && Boolean(p.trialUntil && p.proUntil === p.trialUntil),
     proInterval: pro ? (p.proInterval ?? "month") : null,

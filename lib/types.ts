@@ -110,6 +110,9 @@ export interface Profile {
   activity?: number[];
   /** Premium currency: earned on the Duel Pass or bought in packs; buys bling. */
   gems?: number;
+  /** 11+ Pack access lasts until this time (ms). */
+  elevenUntil?: number | null;
+  stripeElevenSubscriptionId?: string;
   /** Duel Pass access lasts until this time (ms). */
   passUntil?: number | null;
   /** This season's Duel Pass progress. */
@@ -136,7 +139,7 @@ export interface Profile {
 export interface Order {
   id: string;
   playerId: string;
-  kind: "pro" | "pro_year" | "coins" | "gems" | "pass" | "bundle" | "item" | "pack";
+  kind: "pro" | "pro_year" | "coins" | "gems" | "pass" | "bundle" | "item" | "pack" | "eleven";
   packId?: string;
   itemId?: string;
   createdAt: number;

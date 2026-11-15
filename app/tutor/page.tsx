@@ -11,9 +11,13 @@ import type { StudySetSummary } from "@/lib/types";
 export default function TutorPage() {
   const [sets, setSets] = useState<StudySetSummary[]>([]);
   const [setId, setSetId] = useState<string | null>(null);
+  const [ask, setAsk] = useState<{ text: string; n: number } | null>(null);
 
   useEffect(() => {
-    const fromUrl = new URLSearchParams(window.location.search).get("set");
+    const params = new URLSearchParams(window.location.search);
+    const fromUrl = params.get("set");
+    const q = params.get("ask");
+    if (q) setAsk({ text: q.slice(0, 300), n: 1 });
     api<{ sets: StudySetSummary[] }>(`/api/study?playerId=${getPlayerId()}`)
       .then((r) => {
         setSets(r.sets);
@@ -55,7 +59,7 @@ export default function TutorPage() {
         </div>
       }
     >
-      <RajChat setId={setId} setTitle={current?.title} />
+      <RajChat setId={setId} setTitle={current?.title} autoSend={ask} />
     </Section>
   );
 }

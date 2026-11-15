@@ -13,6 +13,7 @@ export default function PrivacyPage() {
           <li><strong>The display name you choose</strong> for duels. It appears on the leaderboard, so don&apos;t use your full name.</li>
           <li><strong>Study material you add</strong>, plus the notes, flashcards and quizzes made from it.</li>
           <li><strong>Duel results</strong> (answers, scores, wins) for the leaderboard, and <strong>your shop items, coins and streak</strong>.</li>
+          <li><strong>Your goals</strong> (what you&apos;re studying for, up to 3 target schools, your track and your practice paper scores) stay in your browser only. We never ask for your full name, date of birth or school.</li>
           <li><strong>Your chats with Raj</strong> stay in your browser. They&apos;re sent to our server only to get Raj&apos;s reply and aren&apos;t kept there.</li>
         </ul>
       </LegalSection>
@@ -26,6 +27,7 @@ export default function PrivacyPage() {
       </LegalSection>
       <LegalSection title="Children">
         <p>Quiz Duel is made for students. If you&apos;re under 13, please ask a parent or guardian before using it, and before buying anything.</p>
+        <p>To keep younger players safe, duels are private (only people with your link can join) and the leaderboard only shows people you&apos;ve duelled, never strangers.</p>
       </LegalSection>
       <LegalSection title="Deleting your data">
         <p>You can delete any study set you made from its page. Clearing your browser&apos;s site data removes your player ID and Raj chats from your device.</p>

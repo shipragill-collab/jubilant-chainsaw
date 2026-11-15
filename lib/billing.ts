@@ -1,8 +1,8 @@
 import Stripe from "stripe";
-import { COIN_PACKS, GEM_PACKS, MIN_PRICE_PENCE, PLANS, PRO_YEARLY, itemById, itemPackById } from "./catalog";
+import { COIN_PACKS, ELEVEN_PLUS, GEM_PACKS, MIN_PRICE_PENCE, PLANS, PRO_YEARLY, itemById, itemPackById } from "./catalog";
 import { BUNDLE, PASS } from "./pass";
 import { GameError } from "./game";
-import { giveItem, grantPass, grantPro, grantProYear, profileOf } from "./profile";
+import { giveItem, grantEleven, grantPass, grantPro, grantProYear, profileOf } from "./profile";
 import { newId, read, update } from "./store";
 import type { Db, Order } from "./types";
 
@@ -35,6 +35,9 @@ export function describeOrder(o: Pick<Order, "kind" | "packId" | "itemId">) {
   if (o.kind === "bundle") {
     return { name: `Quiz Duel ${BUNDLE.name}`, detail: "Monthly subscription · Pro + Duel Pass", pricePence: BUNDLE.pricePence, coins: PLANS.pro.monthlyCoins, gems: 0, recurring: true };
   }
+  if (o.kind === "eleven") {
+    return { name: ELEVEN_PLUS.name, detail: "Monthly subscription · every 11+ practice paper", pricePence: ELEVEN_PLUS.pricePence, coins: 0, gems: 0, recurring: true };
+  }
   if (o.kind === "pass") {
     return { name: PASS.name, detail: "Monthly subscription · 30 reward tiers", pricePence: PASS.pricePence, coins: 0, gems: 0, recurring: true };
   }
@@ -60,7 +63,7 @@ export function describeOrder(o: Pick<Order, "kind" | "packId" | "itemId">) {
 
 /** Start a purchase. Returns where to send the browser. */
 export async function startCheckout(req: Request, playerId: string, kind: unknown, packId: unknown, itemId?: unknown): Promise<string> {
-  if (kind !== "pro" && kind !== "pro_year" && kind !== "coins" && kind !== "gems" && kind !== "pass" && kind !== "bundle" && kind !== "item" && kind !== "pack") throw new GameError("Unknown purchase.");
+  if (kind !== "pro" && kind !== "pro_year" && kind !== "coins" && kind !== "gems" && kind !== "pass" && kind !== "bundle" && kind !== "item" && kind !== "pack" && kind !== "eleven") throw new GameError("Unknown purchase.");
   if (kind === "item") {
     const db = await read();
     if (db.profiles[playerId]?.owned.includes(String(itemId))) throw new GameError("You already own this.", 409);
@@ -133,6 +136,9 @@ export function fulfil(db: Db, orderId: string, stripeIds?: { customer?: string 
   } else if (order.kind === "pass") {
     grantPass(p);
     if (stripeIds?.subscription) p.stripePassSubscriptionId = stripeIds.subscription;
+  } else if (order.kind === "eleven") {
+    grantEleven(p);
+    if (stripeIds?.subscription) p.stripeElevenSubscriptionId = stripeIds.subscription;
   } else if (order.kind === "item") {
     giveItem(p, order.itemId!);
   } else if (order.kind === "pack") {
@@ -191,6 +197,7 @@ export async function handleWebhook(rawBody: string, signature: string | null) {
           else grantPro(prof);
         }
         if (p.stripePassSubscriptionId === sub) grantPass(profileOf(db, id));
+        if (p.stripeElevenSubscriptionId === sub) grantEleven(profileOf(db, id));
       }
     });
   } else if (event.type === "customer.subscription.deleted") {
@@ -200,17 +207,19 @@ export async function handleWebhook(rawBody: string, signature: string | null) {
       for (const p of Object.values(db.profiles)) {
         if (p.stripeSubscriptionId === sub.id) delete p.stripeSubscriptionId;
         if (p.stripePassSubscriptionId === sub.id) delete p.stripePassSubscriptionId;
+        if (p.stripeElevenSubscriptionId === sub.id) delete p.stripeElevenSubscriptionId;
       }
     });
   }
 }
 
 /** Manage or cancel Pro. Stripe: the billing portal. Demo: cancel immediately. */
-export async function manageSubscription(req: Request, playerId: string, which: "pro" | "pass" = "pro"): Promise<string> {
+export async function manageSubscription(req: Request, playerId: string, which: "pro" | "pass" | "eleven" = "pro"): Promise<string> {
   if (!paymentsLive()) {
     await update((db) => {
       const p = profileOf(db, playerId);
       if (which === "pass") p.passUntil = null;
+      else if (which === "eleven") p.elevenUntil = null;
       else {
         p.plan = "free";
         p.proUntil = null;

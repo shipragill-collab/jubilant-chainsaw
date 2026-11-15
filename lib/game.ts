@@ -166,8 +166,16 @@ export function toView(
   };
 }
 
-/** Aggregate every finished two-player duel by (case-insensitive) player name. */
-export function leaderboard(db: Db): LeaderboardRow[] {
+/**
+ * The friends board: you and everyone you've finished a duel with, ranked by
+ * their finished duels. Strangers never appear (safer for younger players).
+ */
+export function leaderboard(db: Db, playerId: string): LeaderboardRow[] {
+  const circle = new Set<string>([playerId]);
+  for (const duel of Object.values(db.duels)) {
+    if (!duel.players.some((p) => p.id === playerId) || duelOutcome(duel).status !== "finished") continue;
+    for (const p of duel.players) circle.add(p.id);
+  }
   const rows = new Map<string, LeaderboardRow & { answered: number; correct: number; lastAt: number }>();
   for (const duel of Object.values(db.duels)) {
     const quiz = db.quizzes[duel.quizId];
@@ -175,6 +183,7 @@ export function leaderboard(db: Db): LeaderboardRow[] {
     const { status, winnerId } = duelOutcome(duel);
     if (status !== "finished") continue;
     for (const p of duel.players) {
+      if (!circle.has(p.id)) continue;
       const key = p.name.replace(/ \(2\)$/, "").toLowerCase();
       const row =
         rows.get(key) ??

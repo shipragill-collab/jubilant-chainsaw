@@ -14,6 +14,7 @@ import { api, getPlayerId, getSavedName, saveName } from "@/lib/player";
 import { SAMPLES } from "@/lib/samples";
 import { timeAgo } from "@/lib/time";
 import type { StudySetSummary } from "@/lib/types";
+import { LEVELS, loadLevel, saveLevel, type Level } from "@/lib/tracks";
 
 const MIN = 80;
 const MAX = 40_000;
@@ -32,6 +33,9 @@ export function HomeClient() {
       <WelcomeTour />
       <Hero />
       <Reveal className="pb-12 sm:pb-16">
+        <LevelStrip />
+      </Reveal>
+      <Reveal className="pb-12 sm:pb-16">
         <RajMoodCard />
       </Reveal>
       <Reveal>
@@ -44,6 +48,47 @@ export function HomeClient() {
         <StartDuel />
       </Reveal>
     </>
+  );
+}
+
+const LEVEL_HOME: Record<Level, { href: string; cta: string }> = {
+  "11plus": { href: "/11-plus", cta: "Practice papers" },
+  ks3: { href: "/goals", cta: "Your track" },
+  gcse: { href: "/past-papers", cta: "Past papers" },
+};
+
+/** "What are you studying for?": takes each student straight to their part of the app. */
+function LevelStrip() {
+  const router = useRouter();
+  const [level, setLevel] = useState<Level | null>(null);
+  useEffect(() => setLevel(loadLevel()), []);
+  return (
+    <section aria-labelledby="level-strip" className="space-y-3">
+      <div className="flex flex-wrap items-end justify-between gap-2">
+        <h2 id="level-strip" className="font-mono text-[12px] font-medium tracking-[0.12em] text-muted-foreground uppercase">What are you studying for?</h2>
+        <Link href="/goals" className="font-mono text-[11px] tracking-[0.1em] text-muted-foreground uppercase underline-offset-4 hover:text-foreground hover:underline">Target schools →</Link>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-3">
+        {LEVELS.map((l) => (
+          <button
+            key={l.id}
+            type="button"
+            onClick={() => {
+              saveLevel(l.id);
+              router.push(LEVEL_HOME[l.id].href);
+            }}
+            className={`level-card ${level === l.id ? "is-picked" : ""}`}
+          >
+            <span className="flex items-baseline justify-between gap-2">
+              <span className="font-display text-[28px] leading-none font-bold tracking-[-0.03em]">{l.name}</span>
+              <span className="font-mono text-[11px] tracking-[0.1em] text-muted-foreground uppercase">{l.years}</span>
+            </span>
+            <span className="text-body text-muted-foreground">{l.blurb}</span>
+            <span className="font-mono text-[11px] tracking-[0.1em] uppercase">{LEVEL_HOME[l.id].cta} →</span>
+          </button>
+        ))}
+      </div>
+    </section>
   );
 }
 

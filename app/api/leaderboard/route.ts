@@ -1,9 +1,10 @@
 import { leaderboard } from "@/lib/game";
-import { handle } from "@/lib/http";
+import { handle, playerIdFrom } from "@/lib/http";
 import { read } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-  return handle(async () => ({ rows: leaderboard(await read()) }));
+/** Your friends board: only people you've duelled. */
+export async function GET(req: Request) {
+  return handle(async () => ({ rows: leaderboard(await read(), playerIdFrom(new URL(req.url).searchParams.get("playerId"))) }));
 }

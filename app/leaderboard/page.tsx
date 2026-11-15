@@ -1,13 +1,12 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { Avatar } from "@/components/avatar";
 import { RankBadge } from "@/components/rank-badge";
 import { PreviewEmpty } from "@/components/preview-empty";
 import { Badge, Section } from "@/components/ui";
-import { leaderboard } from "@/lib/game";
-import { SetupNotice } from "@/components/setup-notice";
-import { isStoreUnavailable, read } from "@/lib/store";
+import { api, getPlayerId } from "@/lib/player";
 import type { LeaderboardRow } from "@/lib/types";
-
-export const dynamic = "force-dynamic";
 
 /** What a busy board looks like, shown blurred behind the empty state. */
 const sample = (name: string, skin: string, wins: number, losses: number, ties: number, accuracy: number, points: number, pro = false): LeaderboardRow => ({
@@ -64,25 +63,36 @@ function LeaderTable({ rows }: { rows: LeaderboardRow[] }) {
   );
 }
 
-export default async function LeaderboardPage() {
-  let rows;
-  try {
-    rows = leaderboard(await read());
-  } catch (err) {
-    if (isStoreUnavailable(err)) return <SetupNotice what="leaderboard" />;
-    throw err;
-  }
+export default function LeaderboardPage() {
+  const [rows, setRows] = useState<LeaderboardRow[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    api<{ rows: LeaderboardRow[] }>(`/api/leaderboard?playerId=${encodeURIComponent(getPlayerId())}`)
+      .then((r) => setRows(r.rows))
+      .catch((err: Error) => setError(err.message));
+  }, []);
+  const onlyMe = rows !== null && rows.length <= 1;
   return (
-    <Section title="Leaderboard" intro="Every finished duel counts. Ranked by wins, then total points.">
-      {rows.length === 0 ? (
-        <PreviewEmpty
-          preview={<LeaderTable rows={SAMPLE_ROWS} />}
-          eyebrow="Season just started"
-          title="The podium is empty. Claim it."
-          body="Finish one duel and your name lands on this board. Win a few and you'll be the one everyone's chasing."
-          href="/#start"
-          cta="Start a duel"
-        />
+    <Section
+      title="Leaderboard"
+      intro="Your friends board: you and everyone you've duelled. Ranked by wins, then total points. Players you don't know never appear here."
+    >
+      {error ? (
+        <p className="surface p-5 text-body-lg text-muted-foreground">{error}</p>
+      ) : rows === null ? (
+        <p className="text-body text-muted-foreground">Loading…</p>
+      ) : onlyMe ? (
+        <div className="space-y-6">
+          {rows.length === 1 && <LeaderTable rows={rows} />}
+          <PreviewEmpty
+            preview={<LeaderTable rows={SAMPLE_ROWS} />}
+            eyebrow="Friends only"
+            title="Duel a friend to fill your board."
+            body="Send a friend your duel link. Everyone you finish a duel with shows up here, so you can see who's ahead."
+            href="/#start"
+            cta="Start a duel"
+          />
+        </div>
       ) : (
         <LeaderTable rows={rows} />
       )}
