@@ -1,4 +1,4 @@
-# Quiz Duel
+# PrepPass
 
 Paste your notes and get 10 multiple-choice questions. Send the link to a friend, and you both play the same quiz. Highest score wins. There's a rematch button, and a leaderboard across all finished duels.
 

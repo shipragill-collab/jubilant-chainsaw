@@ -100,7 +100,7 @@ function ShareResult({ view }: { view: DuelView }) {
   async function share() {
     setState("busy");
     const url = `${window.location.origin}/duel/${view.id}`;
-    const text = `I just played a Quiz Duel on ${view.title}. Think you can beat me?`;
+    const text = `I just played a PrepPass duel on ${view.title}. Think you can beat me?`;
     try {
       const blob = await fetch(`/api/duels/${view.id}/card`).then((r) => {
         if (!r.ok) throw new Error("card");
@@ -146,7 +146,7 @@ function ShareLink({ compact = false }: { compact?: boolean }) {
   async function share() {
     if (navigator.share && /Mobi|Android/i.test(navigator.userAgent)) {
       try {
-        await navigator.share({ title: "Quiz duel", text: "I challenge you to a quiz duel!", url });
+        await navigator.share({ title: "PrepPass duel", text: "I challenge you to a quiz duel!", url });
         return;
       } catch {
         /* cancelled: fall through to copy */

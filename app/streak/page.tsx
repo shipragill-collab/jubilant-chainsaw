@@ -1,6 +1,6 @@
 import { StreakWidgets } from "@/components/streak-widgets";
 
-export const metadata = { title: "Streak · Quiz Duel" };
+export const metadata = { title: "Streak" };
 
 export default function StreakPage() {
   return (

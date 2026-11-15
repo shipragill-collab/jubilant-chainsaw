@@ -23,7 +23,7 @@ const QuizSchema = z.object({
     .describe(`Exactly ${QUESTION_COUNT} questions`),
 });
 
-const SYSTEM = `You are an expert instructional designer writing multiple-choice questions from a student's study material for Quiz Duel, a two-player quiz game played mostly on phones.
+const SYSTEM = `You are an expert instructional designer writing multiple-choice questions from a student's study material for PrepPass, a two-player quiz game played mostly on phones.
 
 Write exactly ${QUESTION_COUNT} questions. Each has exactly 4 options and exactly one correct answer.
 

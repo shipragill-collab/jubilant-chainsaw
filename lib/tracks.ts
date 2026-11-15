@@ -1,13 +1,26 @@
+import { useEffect, useState } from "react";
 import { schoolById, type School } from "./schools";
 
 /** What the student is studying for. */
-export type Level = "11plus" | "ks3" | "gcse";
+export type Level = "ks2" | "11plus" | "ks3" | "gcse";
 
-export const LEVELS: { id: Level; name: string; years: string; blurb: string }[] = [
-  { id: "11plus", name: "11+", years: "Years 4–6", blurb: "Getting ready for grammar or independent school tests." },
-  { id: "ks3", name: "KS3", years: "Years 7–9", blurb: "Building strong habits before GCSEs." },
-  { id: "gcse", name: "GCSE", years: "Years 10–11", blurb: "Revising for exams with past papers and mocks." },
+export const LEVELS: { id: Level; name: string; years: string; ages: string; blurb: string }[] = [
+  { id: "ks2", name: "KS2", years: "Years 3–6", ages: "Ages 7–11", blurb: "Primary school: times tables, reading, spelling and SATs." },
+  { id: "11plus", name: "11+", years: "Years 4–6", ages: "Ages 9–11", blurb: "Getting ready for grammar or independent school tests." },
+  { id: "ks3", name: "KS3", years: "Years 7–9", ages: "Ages 11–14", blurb: "Building strong habits before GCSEs." },
+  { id: "gcse", name: "GCSE", years: "Years 10–11", ages: "Ages 14–16", blurb: "Revising for exams with past papers and mocks." },
 ];
+
+/** Where each level starts in the app. */
+export const LEVEL_HOME: Record<Level, { href: string; cta: string }> = {
+  ks2: { href: "/goals", cta: "Your plan" },
+  "11plus": { href: "/11-plus", cta: "Practice papers" },
+  ks3: { href: "/goals", cta: "Your track" },
+  gcse: { href: "/past-papers", cta: "Past papers" },
+};
+
+/** KS2 and 11+ are younger children: no pop-ups and no sales prompts. */
+export const isYoung = (level: Level | null) => level === "ks2" || level === "11plus";
 
 export interface Step {
   id: string;
@@ -45,6 +58,18 @@ export const TRACKS: Record<string, Track> = {
       { id: "g7", when: "1 March", title: "Offer day", tasks: ["Celebrate your hard work, whatever happens"] },
     ],
   },
+  niGrammar: {
+    id: "niGrammar",
+    name: "Northern Ireland grammar school",
+    intro: "Grammar schools in Northern Ireland use a transfer test taken in P7.",
+    steps: [
+      { id: "n1", when: "P5", title: "Strong foundations", tasks: ["Times tables up to 12 × 12", "Read every day", "Keep a word book"], actions: [GAMES, STUDY] },
+      { id: "n2", when: "P6", title: "Learn the question types", tasks: ["Find out about the transfer test and when to register", "Try practice papers in English and maths", "Note your weakest topics"], actions: [PRACTICE] },
+      { id: "n3", when: "P6, summer", title: "Register and build speed", tasks: ["Register for the test before the deadline", "One timed paper a week"], actions: [PRACTICE, RAJ] },
+      { id: "n4", when: "P7, autumn", title: "Test time", tasks: ["Light practice in the last week", "Sleep well and eat breakfast on test days"] },
+      { id: "n5", when: "P7, spring", title: "Results and applying", tasks: ["Get your results, then apply to post-primary schools", "Check each school's admissions criteria"] },
+    ],
+  },
   independent11: {
     id: "independent11",
     name: "Independent school at 11+",
@@ -67,6 +92,16 @@ export const TRACKS: Record<string, Track> = {
       { id: "t2", when: "Year 6", title: "The pre-test", tasks: ["Many schools use an online pre-test: maths, English, verbal and non-verbal reasoning", "Practise reasoning questions until they feel easy"], actions: [PRACTICE] },
       { id: "t3", when: "Year 6–7", title: "Interviews", tasks: ["Read beyond school: news, science, history", "Practise explaining your thinking out loud"], actions: [RAJ] },
       { id: "t4", when: "Year 8", title: "Final exams", tasks: ["Common Entrance or the school's own exams", "Academic scholarship candidates sit extra, harder papers"], actions: [STUDY, PAPERS] },
+    ],
+  },
+  ks2: {
+    id: "ks2",
+    name: "KS2: primary school",
+    intro: "Little and often: ten minutes a day makes a big difference.",
+    steps: [
+      { id: "p1", when: "Years 3–4", title: "Number and reading", tasks: ["Learn times tables up to 12 × 12 (there's a check in Year 4)", "Read for 15 minutes every day", "Practise spelling words each week"], actions: [GAMES, STUDY] },
+      { id: "p2", when: "Year 5", title: "Build confidence", tasks: ["Fractions, decimals and percentages", "Grammar and punctuation", "Think about the 11+ if you want a grammar or independent school"], actions: [PRACTICE, RAJ] },
+      { id: "p3", when: "Year 6", title: "SATs", tasks: ["SATs are in May: maths, reading, and grammar, punctuation and spelling", "Short practice papers each week", "Stay calm: SATs check your school is doing a good job"], actions: [PRACTICE] },
     ],
   },
   ks3: {
@@ -99,10 +134,11 @@ export function tracksFor(level: Level | null, targetIds: string[]): Track[] {
   const targets = targetIds.map(schoolById).filter((s): s is School => Boolean(s));
   const ids = new Set<string>();
   for (const s of targets) {
-    if (s.type === "grammar") ids.add("grammar11");
+    if (s.type === "grammar") ids.add(s.region === "Northern Ireland" ? "niGrammar" : "grammar11");
     else if (s.entry.includes("11+") && (level === "11plus" || level === null)) ids.add("independent11");
     else if (s.entry.includes("13+")) ids.add("independent13");
   }
+  if (level === "ks2") ids.add("ks2");
   if (level === "ks3") ids.add("ks3");
   if (level === "gcse") ids.add("gcse");
   if (level === "11plus" && !ids.size) ids.add("grammar11");
@@ -138,7 +174,7 @@ function set(key: string, value: unknown) {
 
 export const loadLevel = (): Level | null => {
   const v = get<string | null>(LEVEL_KEY, null);
-  return v === "11plus" || v === "ks3" || v === "gcse" ? v : null;
+  return v === "ks2" || v === "11plus" || v === "ks3" || v === "gcse" ? v : null;
 };
 export const saveLevel = (level: Level) => set(LEVEL_KEY, level);
 
@@ -166,6 +202,17 @@ export const loadDone = (): string[] => {
 export function toggleDone(stepId: string) {
   const d = loadDone();
   set(DONE_KEY, d.includes(stepId) ? d.filter((x) => x !== stepId) : [...d, stepId]);
+}
+
+/** The current level, kept in sync across the page. */
+export function useLevel(): Level | null | undefined {
+  const [level, setLevel] = useState<Level | null | undefined>(undefined);
+  useEffect(() => {
+    const sync = () => setLevel(loadLevel());
+    sync();
+    return onGoalsChange(sync);
+  }, []);
+  return level;
 }
 
 export function onGoalsChange(fn: () => void) {

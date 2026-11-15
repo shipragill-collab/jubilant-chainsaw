@@ -90,11 +90,11 @@ export function SiteHeader() {
   return (
     <header className="site-head sticky top-0 z-40">
       <div className="site-bar mx-auto flex h-14 max-w-7xl items-center gap-2 px-4 sm:h-16 sm:gap-3 sm:px-8">
-        <Link href="/" className="mr-auto flex shrink-0 items-center gap-2.5 rounded-md pr-2" aria-label="Quiz Duel home">
+        <Link href="/" className="mr-auto flex shrink-0 items-center gap-2.5 rounded-md pr-2" aria-label="PrepPass home">
           <span aria-hidden className="relative size-8 rounded-full bg-brand">
             <span className="absolute inset-[7px] rounded-full border-2 border-[var(--brand-foreground)] opacity-80" />
           </span>
-          <span className="font-display text-[19px] font-bold tracking-[-0.04em] whitespace-nowrap">Quiz Duel</span>
+          <span className="font-display text-[19px] font-bold tracking-[-0.04em] whitespace-nowrap">PrepPass</span>
         </Link>
         <nav className="hidden items-center gap-0.5 xl:flex" aria-label="Main">
           {NAV.map((n) => (

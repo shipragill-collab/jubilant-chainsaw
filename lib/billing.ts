@@ -1,5 +1,5 @@
 import Stripe from "stripe";
-import { COIN_PACKS, ELEVEN_PLUS, GEM_PACKS, MIN_PRICE_PENCE, PLANS, PRO_YEARLY, itemById, itemPackById } from "./catalog";
+import { COIN_PACKS, ELEVEN_PLUS, GEM_PACKS, MIN_PRICE_PENCE, PLANS, PRO_YEARLY, itemById, itemPackById, proPricing } from "./catalog";
 import { BUNDLE, PASS } from "./pass";
 import { GameError } from "./game";
 import { giveItem, grantEleven, grantPass, grantPro, grantProYear, profileOf } from "./profile";
@@ -25,15 +25,16 @@ export function appOrigin(req: Request): string {
   return `${proto}://${host}`;
 }
 
-export function describeOrder(o: Pick<Order, "kind" | "packId" | "itemId">) {
+export function describeOrder(o: Pick<Order, "kind" | "packId" | "itemId" | "tier">) {
+  const prices = proPricing(o.tier === "ks2" ? "ks2" : "standard");
   if (o.kind === "pro") {
-    return { name: "Quiz Duel Pro", detail: "Monthly subscription", pricePence: PLANS.pro.pricePence, coins: PLANS.pro.monthlyCoins, gems: 0, recurring: true };
+    return { name: o.tier === "ks2" ? "PrepPass Pro (KS2)" : "PrepPass Pro", detail: "Monthly subscription", pricePence: prices.pro, coins: PLANS.pro.monthlyCoins, gems: 0, recurring: true };
   }
   if (o.kind === "pro_year") {
-    return { name: "Quiz Duel Pro (yearly)", detail: "Yearly subscription · about two months free", pricePence: PRO_YEARLY.pricePence, coins: PRO_YEARLY.coins, gems: 0, recurring: true, interval: "year" as const };
+    return { name: "PrepPass Pro (yearly)", detail: "Yearly subscription · about two months free", pricePence: prices.proYear, coins: PRO_YEARLY.coins, gems: 0, recurring: true, interval: "year" as const };
   }
   if (o.kind === "bundle") {
-    return { name: `Quiz Duel ${BUNDLE.name}`, detail: "Monthly subscription · Pro + Duel Pass", pricePence: BUNDLE.pricePence, coins: PLANS.pro.monthlyCoins, gems: 0, recurring: true };
+    return { name: `PrepPass ${BUNDLE.name}`, detail: "Monthly subscription · Pro + Duel Pass", pricePence: prices.bundle, coins: PLANS.pro.monthlyCoins, gems: 0, recurring: true };
   }
   if (o.kind === "eleven") {
     return { name: ELEVEN_PLUS.name, detail: "Monthly subscription · every 11+ practice paper", pricePence: ELEVEN_PLUS.pricePence, coins: 0, gems: 0, recurring: true };
@@ -62,7 +63,7 @@ export function describeOrder(o: Pick<Order, "kind" | "packId" | "itemId">) {
 }
 
 /** Start a purchase. Returns where to send the browser. */
-export async function startCheckout(req: Request, playerId: string, kind: unknown, packId: unknown, itemId?: unknown): Promise<string> {
+export async function startCheckout(req: Request, playerId: string, kind: unknown, packId: unknown, itemId?: unknown, tier?: unknown): Promise<string> {
   if (kind !== "pro" && kind !== "pro_year" && kind !== "coins" && kind !== "gems" && kind !== "pass" && kind !== "bundle" && kind !== "item" && kind !== "pack" && kind !== "eleven") throw new GameError("Unknown purchase.");
   if (kind === "item") {
     const db = await read();
@@ -79,6 +80,7 @@ export async function startCheckout(req: Request, playerId: string, kind: unknow
     kind,
     packId: kind === "coins" || kind === "gems" || kind === "pack" ? String(packId) : undefined,
     itemId: kind === "item" ? String(itemId) : undefined,
+    tier: tier === "ks2" && (kind === "pro" || kind === "pro_year" || kind === "bundle") ? "ks2" : undefined,
     createdAt: Date.now(),
     status: "pending",
   };

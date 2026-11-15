@@ -25,6 +25,7 @@ export function PaperRunner({ resultKey, title, minutes, questions, onAgain }: {
   const [endsAt, setEndsAt] = useState(0);
   const [now, setNow] = useState(0);
   const [timed, setTimed] = useState(true);
+  const [sure, setSure] = useState(false);
 
   useEffect(() => {
     if (!started || done || !timed) return;
@@ -126,6 +127,11 @@ export function PaperRunner({ resultKey, title, minutes, questions, onAgain }: {
             </button>
           ))}
         </div>
+        {sure && answered < questions.length && (
+          <p role="status" className="rounded-[8px] bg-muted px-3 py-2 text-body">
+            You&apos;ve left {questions.length - answered} unanswered. Use the numbers above to go back, or tap Finish anyway.
+          </p>
+        )}
         <div className="flex flex-wrap items-center justify-between gap-2">
           <button type="button" disabled={pos === 0} onClick={() => setPos((p) => p - 1)} className="btn btn-secondary inline-flex h-10 items-center rounded-[6px] px-4 text-[12px] disabled:opacity-40">
             Back
@@ -137,12 +143,13 @@ export function PaperRunner({ resultKey, title, minutes, questions, onAgain }: {
             <button
               type="button"
               onClick={() => {
-                if (answered < questions.length && !confirm(`You've left ${questions.length - answered} unanswered. Finish anyway?`)) return;
+                // No pop-ups: the first tap explains, the second finishes.
+                if (answered < questions.length && !sure) return setSure(true);
                 setDone(true);
               }}
               className="btn btn-brand inline-flex h-10 items-center rounded-[6px] px-4 text-[12px]"
             >
-              Finish
+              {sure && answered < questions.length ? "Finish anyway" : "Finish"}
             </button>
           ) : (
             <button type="button" onClick={() => setPos((p) => p + 1)} className="btn btn-brand inline-flex h-10 items-center rounded-[6px] px-4 text-[12px]">

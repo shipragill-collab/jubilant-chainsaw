@@ -5,11 +5,12 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Avatar } from "@/components/avatar";
 import { Button, Spinner } from "@/components/ui";
 import { ElevenPackCard } from "@/components/eleven-pack";
-import { ELEVEN_PLUS, PLANS, PRO_YEARLY, TRIAL_DAYS, currentMonth, formatPrice, proSkinFor } from "@/lib/catalog";
+import { ELEVEN_PLUS, PLANS, PRO_YEARLY, TRIAL_DAYS, proPricing, currentMonth, formatPrice, proSkinFor } from "@/lib/catalog";
 import { Segmented } from "@/components/segmented";
 import { BUNDLE, PASS } from "@/lib/pass";
 import { api, getPlayerId } from "@/lib/player";
 import { refreshProfiles, useProfile, type ClientProfile } from "@/lib/use-profile";
+import { useLevel } from "@/lib/tracks";
 
 function Tick() {
   return (
@@ -157,13 +158,15 @@ export default function PricingPage() {
     }
   }
 
+  const level = useLevel();
   const pro = profile?.plan === "pro";
   const pass = Boolean(profile?.passActive);
   const both = pro && pass;
   const claimed = monthly ? profile?.owned.includes(monthly.id) : false;
   const until = (t: number | null | undefined) => (t ? new Date(t).toLocaleDateString("en-GB") : "");
-  const separately = PLANS.pro.pricePence + PASS.pricePence;
-  const saving = separately - BUNDLE.pricePence;
+  const prices = proPricing(level === "ks2" ? "ks2" : "standard");
+  const separately = prices.pro + PASS.pricePence;
+  const saving = separately - prices.bundle;
   const spin = (key: string) => (busy === key ? <Spinner /> : null);
 
   return (
@@ -184,6 +187,7 @@ export default function PricingPage() {
               {notice}
             </p>
           )}
+          {level === "ks2" && <p className="text-body text-muted-foreground">Showing KS2 prices. The Duel Pass costs the same for everyone.</p>}
           {profile && !profile.paymentsLive && <p className="text-body text-muted-foreground">Demo mode: payments aren&apos;t connected yet, so subscribing won&apos;t charge you.</p>}
         </div>
       </div>
@@ -194,9 +198,9 @@ export default function PricingPage() {
           audience="Best for solo learners"
           icon={ICONS.solo}
           title="Pro"
-          price={billing === "year" ? PRO_YEARLY.pricePence : PLANS.pro.pricePence}
+          price={billing === "year" ? prices.proYear : prices.pro}
           per={billing}
-          was={billing === "year" ? PLANS.pro.pricePence * 12 : undefined}
+          was={billing === "year" ? prices.pro * 12 : undefined}
           tagline={PLANS.pro.tagline}
           features={PLANS.pro.features.slice(0, 5)}
           status={pro ? `${profile?.onTrial ? "Free trial" : "Active"}${profile?.proUntil ? ` · until ${until(profile.proUntil)}` : ""}` : undefined}
@@ -208,7 +212,7 @@ export default function PricingPage() {
               onChange={setBilling}
               options={[
                 { id: "month", label: "Monthly" },
-                { id: "year", label: `Yearly · save ${Math.round((1 - PRO_YEARLY.pricePence / (PLANS.pro.pricePence * 12)) * 100)}%` },
+                { id: "year", label: `Yearly · save ${Math.round((1 - prices.proYear / (prices.pro * 12)) * 100)}%` },
               ]}
             />
           )}
@@ -229,7 +233,7 @@ export default function PricingPage() {
           )}
           {pro && profile?.onTrial ? (
             <button type="button" className="plan-cta" onClick={() => go("pro", "/api/billing/checkout", { kind: billing === "year" ? "pro_year" : "pro" })} disabled={busy !== null}>
-              {spin("pro")} Keep Pro · {formatPrice(billing === "year" ? PRO_YEARLY.pricePence : PLANS.pro.pricePence)}
+              {spin("pro")} Keep Pro · {formatPrice(billing === "year" ? prices.proYear : prices.pro)}
             </button>
           ) : pro ? (
             <Button variant="secondary" className="w-full" onClick={() => go("mpro", "/api/billing/manage", { which: "pro" })} disabled={busy !== null}>
@@ -238,7 +242,7 @@ export default function PricingPage() {
           ) : (
             <>
               <button type="button" className="plan-cta" onClick={() => go("pro", "/api/billing/checkout", { kind: billing === "year" ? "pro_year" : "pro" })} disabled={busy !== null}>
-                {spin("pro")} Go Pro · {formatPrice(billing === "year" ? PRO_YEARLY.pricePence : PLANS.pro.pricePence)}
+                {spin("pro")} Go Pro · {formatPrice(billing === "year" ? prices.proYear : prices.pro)}
               </button>
               {profile?.trialAvailable && (
                 <button type="button" onClick={startTrial} disabled={busy !== null} className="block w-full text-center text-body underline underline-offset-4 opacity-85 hover:opacity-100">
@@ -254,7 +258,7 @@ export default function PricingPage() {
           audience={`Best value · save ${formatPrice(saving)}`}
           icon={ICONS.crown}
           title={BUNDLE.name}
-          price={BUNDLE.pricePence}
+          price={prices.bundle}
           was={separately}
           tagline="Pro and the Duel Pass together: unlimited study and every season reward."
           features={[...BUNDLE.features, "Unlimited AI and Raj", "All 30 pass tiers, skins and bling"]}
@@ -264,7 +268,7 @@ export default function PricingPage() {
             <p className="text-body opacity-80">You have everything. Enjoy!</p>
           ) : (
             <button type="button" className="plan-cta" onClick={() => go("bundle", "/api/billing/checkout", { kind: "bundle" })} disabled={busy !== null}>
-              {spin("bundle")} Get {BUNDLE.name} · {formatPrice(BUNDLE.pricePence)}
+              {spin("bundle")} Get {BUNDLE.name} · {formatPrice(prices.bundle)}
             </button>
           )}
           <p className="text-center text-caption opacity-60">{formatPrice(separately)} if bought separately</p>

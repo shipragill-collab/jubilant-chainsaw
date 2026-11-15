@@ -1,4 +1,4 @@
-/** The gem, Quiz Duel's premium currency: a small cut sapphire-violet stone. */
+/** The gem, PrepPass's premium currency: a small cut sapphire-violet stone. */
 export function Gem({ size = 16, className = "" }: { size?: number; className?: string }) {
   return (
     <svg viewBox="0 0 20 20" width={size} height={size} className={`inline-block shrink-0 ${className}`} aria-hidden>

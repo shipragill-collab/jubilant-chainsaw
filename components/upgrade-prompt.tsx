@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { PLANS, PRO_YEARLY, TRIAL_DAYS, formatPrice } from "@/lib/catalog";
+import { TRIAL_DAYS, formatPrice, proPricing } from "@/lib/catalog";
 import { api, getPlayerId } from "@/lib/player";
 import { refreshProfiles, useProfile } from "@/lib/use-profile";
+import { isYoung, useLevel } from "@/lib/tracks";
 
 /**
  * Shown when a free limit is reached: says what happened, then offers the
@@ -15,6 +16,7 @@ export function UpgradePrompt({ message }: { message: string }) {
   const [state, setState] = useState<"idle" | "busy" | "started" | "error">("idle");
   const [error, setError] = useState("");
   const trial = profile?.trialAvailable ?? false;
+  const level = useLevel();
 
   async function startTrial() {
     setState("busy");
@@ -37,6 +39,16 @@ export function UpgradePrompt({ message }: { message: string }) {
     );
   }
 
+  if (isYoung(level ?? null)) {
+    // Younger children: no sales buttons, just a friendly message.
+    return (
+      <span role="status" className="upgrade-card block">
+        <span className="block font-semibold text-foreground">You&apos;ve done loads today. Great work!</span>
+        <span className="block text-muted-foreground">Come back tomorrow for more, or ask a grown-up about PrepPass Pro.</span>
+      </span>
+    );
+  }
+
   return (
     <span role="status" className="upgrade-card block">
       <span className="block font-mono text-[11px] tracking-[0.12em] text-brand uppercase">Free limit reached</span>
@@ -48,11 +60,11 @@ export function UpgradePrompt({ message }: { message: string }) {
           </button>
         ) : (
           <Link href="/pricing" className="btn btn-brand inline-flex h-10 items-center rounded-[6px] px-4 text-[12px]">
-            Go Pro · {formatPrice(PLANS.pro.pricePence)}/month
+            Go Pro · {formatPrice(proPricing(level === "ks2" ? "ks2" : "standard").pro)}/month
           </Link>
         )}
         <Link href="/pricing" className="text-label text-muted-foreground underline underline-offset-4 hover:text-foreground">
-          {trial ? "See plans" : `or ${formatPrice(PRO_YEARLY.pricePence)} a year`}
+          {trial ? "See plans" : `or ${formatPrice(proPricing(level === "ks2" ? "ks2" : "standard").proYear)} a year`}
         </Link>
         <span className="text-label text-muted-foreground">or come back tomorrow</span>
       </span>

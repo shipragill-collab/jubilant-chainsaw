@@ -1,4 +1,4 @@
-/** Where the site lives. Set APP_URL to your domain (e.g. https://quizduel.co.uk). */
+/** Where the site lives. Set APP_URL to your domain (e.g. https://preppass.co.uk). */
 export function siteUrl(): string {
   const raw =
     process.env.APP_URL ||
@@ -8,8 +8,8 @@ export function siteUrl(): string {
 }
 
 export const SITE = {
-  name: "Quiz Duel",
-  tagline: "Turn your notes into flashcards and quiz duels",
-  description: "Paste your notes and get flashcards, study notes and a 10-question quiz to duel a friend on, with Raj, your AI tutor.",
+  name: "PrepPass",
+  tagline: "KS2, 11+, KS3 and GCSE revision that feels like a game",
+  description: "11+ practice papers, past papers, flashcards from your notes, quiz duels with friends and Raj, your AI tutor. For KS2, 11+, KS3 and GCSE.",
   contactEmail: process.env.NEXT_PUBLIC_CONTACT_EMAIL || "",
 };

@@ -2,10 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { admissionsLink, HOW_TO_GET_IN, MAX_TARGETS, schoolById, SCHOOLS, type Region, type School, type SchoolType } from "@/lib/schools";
+import { admissionsLink, HOW_TO_GET_IN, MAX_TARGETS, REGIONS, schoolById, SCHOOLS, type Region, type School, type SchoolType } from "@/lib/schools";
 import { LEVELS, loadDone, loadLevel, loadTargets, onGoalsChange, saveLevel, toggleDone, toggleTarget, tracksFor, type Level } from "@/lib/tracks";
 
-const REGIONS: Region[] = ["London", "South East", "South West", "East", "Midlands", "North"];
 
 function useGoals() {
   const [level, setLevel] = useState<Level | null>(null);
@@ -50,6 +49,7 @@ export default function GoalsPage() {
   const [region, setRegion] = useState<Region | "all">("all");
   const [q, setQ] = useState("");
   const [warn, setWarn] = useState(false);
+  const [limit, setLimit] = useState(25);
 
   const list = useMemo(
     () =>
@@ -75,7 +75,7 @@ export default function GoalsPage() {
 
       <section aria-labelledby="level" className="space-y-3">
         <h2 id="level" className="font-mono text-[12px] font-medium tracking-[0.12em] text-muted-foreground uppercase">1 · I&apos;m studying for</h2>
-        <div className="grid gap-3 sm:grid-cols-3" role="radiogroup" aria-label="What are you studying for?">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" role="radiogroup" aria-label="What are you studying for?">
           {LEVELS.map((l) => (
             <button key={l.id} type="button" role="radio" aria-checked={level === l.id} onClick={() => saveLevel(l.id)} className={`level-card ${level === l.id ? "is-picked" : ""}`}>
               <span className="font-display text-[28px] leading-none font-bold tracking-[-0.03em]">{l.name}</span>
@@ -106,27 +106,37 @@ export default function GoalsPage() {
         )}
         <div className="surface space-y-3 p-4 sm:p-5">
           <div className="flex flex-wrap gap-2">
-            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search schools or towns" aria-label="Search schools" className="h-10 min-w-0 flex-1 basis-56 rounded-[8px] border border-input bg-surface px-3 text-body outline-none focus:border-foreground" />
+            <input value={q} onChange={(e) => { setQ(e.target.value); setLimit(25); }} placeholder="Search schools or towns" aria-label="Search schools" className="h-10 min-w-0 flex-1 basis-56 rounded-[8px] border border-input bg-surface px-3 text-body outline-none focus:border-foreground" />
             <select value={type} onChange={(e) => setType(e.target.value as SchoolType | "all")} aria-label="School type" className="h-10 rounded-[8px] border border-input bg-surface px-3 text-body">
               <option value="all">All types</option>
               <option value="grammar">Grammar (free)</option>
               <option value="independent">Independent</option>
             </select>
             <select value={region} onChange={(e) => setRegion(e.target.value as Region | "all")} aria-label="Region" className="h-10 rounded-[8px] border border-input bg-surface px-3 text-body">
-              <option value="all">All of England</option>
+              <option value="all">All of the UK</option>
               {REGIONS.map((r) => (
                 <option key={r}>{r}</option>
               ))}
             </select>
           </div>
           <ul className="divide-y divide-[var(--surface-border)]">
-            {list.map((s) => (
+            {list.slice(0, limit).map((s) => (
               <SchoolRow key={s.id} s={s} picked={targets.includes(s.id)} full={full} onToggle={() => toggle(s.id)} />
             ))}
             {!list.length && <li className="py-4 text-body text-muted-foreground">No schools match. Try a different search.</li>}
           </ul>
+          <p className="flex flex-wrap items-center justify-between gap-2 text-label text-muted-foreground">
+            <span>
+              Showing {Math.min(limit, list.length)} of {list.length} schools
+            </span>
+            {list.length > limit && (
+              <button type="button" onClick={() => setLimit((n) => n + 50)} className="chip">
+                Show more
+              </button>
+            )}
+          </p>
           <p className="text-label text-muted-foreground">
-            A list of well-known, highly selective schools, not an official ranking. Entry details change every year, so always check the school&apos;s own admissions page. Your school isn&apos;t listed? Pick the closest type and the track still fits.
+            {SCHOOLS.length} grammar and independent schools across England, Scotland, Wales and Northern Ireland. Not an official ranking. Entry details change every year, so always check the school&apos;s own admissions page. Your school isn&apos;t listed? Pick the closest type and the track still fits.
           </p>
         </div>
       </section>

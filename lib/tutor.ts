@@ -31,7 +31,7 @@ export function sanitizeHistory(raw: unknown): ChatMessage[] {
   return out;
 }
 
-const PERSONA = `You are Raj, a warm, upbeat study tutor inside Quiz Duel, an app where students turn their notes into flashcards and quiz duels with friends. You teach by doing: short explanations, then the student tries something straight away.
+const PERSONA = `You are Raj, a warm, upbeat study tutor inside PrepPass, an app where students turn their notes into flashcards and quiz duels with friends. You teach by doing: short explanations, then the student tries something straight away.
 
 How you teach:
 - Keep each turn small: at most 3 short sentences of explanation, then hand the student something to try. One idea at a time.
@@ -47,11 +47,12 @@ How you teach:
 
 /** How Raj pitches his explanations for each level. */
 const LEVEL_NOTE: Record<Level, string> = {
+  ks2: "The student is about 7 to 11 years old (Key Stage 2, primary school). Use very simple words and short sentences, lots of encouragement, and everyday examples. Keep everything friendly and age-appropriate.",
   "11plus": "The student is about 9 to 11 years old and preparing for the 11+ (maths, English, verbal and non-verbal reasoning). Use simple words and short sentences, give concrete examples, and be extra encouraging. Teach exam tricks for each question type.",
   ks3: "The student is about 11 to 14 years old (Key Stage 3). Use clear, friendly language and build good study habits.",
   gcse: "The student is about 14 to 16 years old and revising for GCSEs. Use exam-board style wording, mention common mark-scheme points, and give exam technique tips.",
 };
-export const levelOf = (v: unknown): Level | null => (v === "11plus" || v === "ks3" || v === "gcse" ? v : null);
+export const levelOf = (v: unknown): Level | null => (v === "ks2" || v === "11plus" || v === "ks3" || v === "gcse" ? v : null);
 
 function systemPrompt(set: StudySet | null, level: Level | null = null): Anthropic.Beta.BetaTextBlockParam[] {
   const persona = level ? `${PERSONA}\n\n${LEVEL_NOTE[level]}` : PERSONA;

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { ServiceWorker } from "@/components/service-worker";
 import { TabBar } from "@/components/tab-bar";
+import { AgeGate } from "@/components/age-gate";
 import { SITE, siteUrl } from "@/lib/site";
 import { SiteHeader } from "@/components/site-header";
 import { MotionRoot } from "@/components/reveal";
@@ -47,7 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main className="mx-auto max-w-7xl px-4 sm:px-8">{children}</main>
         <footer className="mx-auto mt-10 flex max-w-7xl flex-wrap items-center justify-between gap-3 border-t border-surface-border px-4 py-8 text-label text-muted-foreground sm:px-8">
           <span>
-            <span className="font-display text-body font-bold text-foreground">Quiz Duel</span> · study together, compete for fun.
+            <span className="font-display text-body font-bold text-foreground">PrepPass</span> · study together, compete for fun.
           </span>
           <nav aria-label="Legal" className="flex gap-4">
             <Link href="/privacy" className="hover:text-foreground">Privacy</Link>
@@ -56,6 +57,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </nav>
         </footer>
         <TabBar />
+        <AgeGate />
         </MotionRoot>
         <ServiceWorker />
       </body>

@@ -14,7 +14,7 @@ import { api, getPlayerId, getSavedName, saveName } from "@/lib/player";
 import { SAMPLES } from "@/lib/samples";
 import { timeAgo } from "@/lib/time";
 import type { StudySetSummary } from "@/lib/types";
-import { LEVELS, loadLevel, saveLevel, type Level } from "@/lib/tracks";
+import { LEVEL_HOME, LEVELS, loadLevel, saveLevel, type Level } from "@/lib/tracks";
 
 const MIN = 80;
 const MAX = 40_000;
@@ -51,11 +51,6 @@ export function HomeClient() {
   );
 }
 
-const LEVEL_HOME: Record<Level, { href: string; cta: string }> = {
-  "11plus": { href: "/11-plus", cta: "Practice papers" },
-  ks3: { href: "/goals", cta: "Your track" },
-  gcse: { href: "/past-papers", cta: "Past papers" },
-};
 
 /** "What are you studying for?": takes each student straight to their part of the app. */
 function LevelStrip() {
@@ -68,7 +63,7 @@ function LevelStrip() {
         <h2 id="level-strip" className="font-mono text-[12px] font-medium tracking-[0.12em] text-muted-foreground uppercase">What are you studying for?</h2>
         <Link href="/goals" className="font-mono text-[11px] tracking-[0.1em] text-muted-foreground uppercase underline-offset-4 hover:text-foreground hover:underline">Target schools →</Link>
       </div>
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {LEVELS.map((l) => (
           <button
             key={l.id}
@@ -156,7 +151,7 @@ function CategoryBand({ sets }: { sets: StudySetSummary[] }) {
         ? [
             { href: "/study", label: "Notes & Flashcards" },
             { href: "/tutor", label: "Ask Raj" },
-            { href: "/#start", label: "Quiz Duel" },
+            { href: "/#start", label: "Duels" },
             { href: "/leaderboard", label: "Leaderboard" },
           ]
         : sets.slice(0, 12).map((s) => ({ href: `/study/${s.id}`, label: s.title }));

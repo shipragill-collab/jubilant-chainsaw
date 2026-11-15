@@ -318,6 +318,18 @@ export const TRIAL_DAYS = 7;
 /** Pro paid yearly: about two months free, with a year of bonus coins up front. */
 export const PRO_YEARLY = { pricePence: 1999, coins: 12_000 };
 
+/**
+ * Pro prices by stage. KS2 has its own price; the Duel Pass costs the same for everyone.
+ * Ultimate stays Pro + Duel Pass with 50p off.
+ */
+export type PriceTier = "standard" | "ks2";
+export const KS2_PRO = { pricePence: 299, yearPence: 2999 };
+export function proPricing(tier: PriceTier) {
+  const pro = tier === "ks2" ? KS2_PRO.pricePence : PLANS.pro.pricePence;
+  const proYear = tier === "ks2" ? KS2_PRO.yearPence : PRO_YEARLY.pricePence;
+  return { pro, proYear, bundle: pro + 100 - 50 };
+}
+
 /** The 11+ Pack: every practice paper and the weak-spot report. */
 export const ELEVEN_PLUS = {
   name: "11+ Pack",

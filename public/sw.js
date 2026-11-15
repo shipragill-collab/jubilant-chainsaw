@@ -1,4 +1,4 @@
-/* Quiz Duel service worker: makes the app open, and Raj work, without internet. */
+/* PrepPass service worker: makes the app open, and Raj work, without internet. */
 const VERSION = "qd-v2";
 const PAGES = ["/", "/study", "/tutor", "/streak", "/offline"];
 

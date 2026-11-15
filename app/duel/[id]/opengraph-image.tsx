@@ -1,6 +1,6 @@
 import { cardData, renderCard } from "@/lib/result-card";
 
-export const alt = "A Quiz Duel result";
+export const alt = "A PrepPass result";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 

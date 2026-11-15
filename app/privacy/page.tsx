@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import { LegalPage, LegalSection } from "@/components/legal-page";
 import { SITE } from "@/lib/site";
 
-export const metadata: Metadata = { title: "Privacy", description: "What Quiz Duel stores, why, and how to delete it." };
+export const metadata: Metadata = { title: "Privacy", description: "What PrepPass stores, why, and how to delete it." };
 
 export default function PrivacyPage() {
   return (
-    <LegalPage title="Privacy" updated="11 November 2026" intro="Quiz Duel keeps as little about you as it can. There are no accounts, no ads and no tracking cookies.">
+    <LegalPage title="Privacy" updated="11 November 2026" intro="PrepPass keeps as little about you as it can. There are no accounts, no ads and no tracking cookies.">
       <LegalSection title="What we store">
         <ul>
           <li><strong>A random player ID</strong>, kept in your browser, so the app recognises you. It isn&apos;t linked to your name, email or phone.</li>
@@ -26,12 +26,12 @@ export default function PrivacyPage() {
         </ul>
       </LegalSection>
       <LegalSection title="Children">
-        <p>Quiz Duel is made for students. If you&apos;re under 13, please ask a parent or guardian before using it, and before buying anything.</p>
+        <p>PrepPass is made for students. If you&apos;re under 13, please ask a parent or guardian before using it, and before buying anything.</p>
         <p>To keep younger players safe, duels are private (only people with your link can join) and the leaderboard only shows people you&apos;ve duelled, never strangers.</p>
       </LegalSection>
       <LegalSection title="Deleting your data">
         <p>You can delete any study set you made from its page. Clearing your browser&apos;s site data removes your player ID and Raj chats from your device.</p>
-        <p>To have everything linked to your player ID removed from our server, {SITE.contactEmail ? <>email <a className="underline underline-offset-4" href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a></> : "contact the person who shared Quiz Duel with you"} with the ID shown in your browser&apos;s site data, and we&apos;ll delete it.</p>
+        <p>To have everything linked to your player ID removed from our server, {SITE.contactEmail ? <>email <a className="underline underline-offset-4" href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a></> : "contact the person who shared PrepPass with you"} with the ID shown in your browser&apos;s site data, and we&apos;ll delete it.</p>
       </LegalSection>
     </LegalPage>
   );

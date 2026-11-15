@@ -142,6 +142,8 @@ export interface Order {
   kind: "pro" | "pro_year" | "coins" | "gems" | "pass" | "bundle" | "item" | "pack" | "eleven";
   packId?: string;
   itemId?: string;
+  /** Price tier at checkout (KS2 has its own Pro price). */
+  tier?: "ks2";
   createdAt: number;
   status: "pending" | "paid";
 }

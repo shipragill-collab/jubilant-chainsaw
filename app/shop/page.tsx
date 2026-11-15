@@ -33,7 +33,9 @@ import {
   type Rarity,
   type ShopItem,
   type Slot,
+  proPricing,
 } from "@/lib/catalog";
+import { isYoung, loadLevel, useLevel } from "@/lib/tracks";
 import { api, getPlayerId } from "@/lib/player";
 import { refreshProfiles, useProfile, type ClientProfile } from "@/lib/use-profile";
 
@@ -65,6 +67,8 @@ function SourceTag({ item }: { item: ShopItem }) {
 
 export default function ShopPage() {
   const { profile, setProfile } = useProfile();
+  const level = useLevel();
+  const young = isYoung(level ?? null);
   const [slot, setSlot] = useState<Slot>("skin");
   const [filter, setFilter] = useState<Filter>("all");
   const [tryOn, setTryOn] = useState<ShopItem | null>(null);
@@ -76,7 +80,7 @@ export default function ShopPage() {
     const q = new URLSearchParams(window.location.search);
     const bought = q.get("purchased");
     const item = itemById(q.get("item"));
-    if (bought === "item" && item?.slot === "theme") setUnboxing(item);
+    if (bought === "item" && item?.slot === "theme" && !isYoung(loadLevel())) setUnboxing(item);
     else if (bought === "item" && item) setMessage({ tone: "ok", text: `${item.name} is yours!` });
     else if (bought === "pro") setMessage({ tone: "ok", text: "Welcome to Pro! Your bonus coins and this month's Pro skin are waiting." });
     else if (bought === "coins") setMessage({ tone: "ok", text: "Coins added. Happy shopping!" });
@@ -148,7 +152,9 @@ export default function ShopPage() {
     try {
       const next = await api<ClientProfile>("/api/shop/buy", { body: { playerId: getPlayerId(), itemId: item.id } });
       setProfile((p) => (p ? { ...p, ...next } : p));
-      setUnboxing(item);
+      // Younger children get a calm message instead of the unboxing pop-up.
+      if (young) setMessage({ tone: "ok", text: `${item.name} is yours! Find it in your locker.` });
+      else setUnboxing(item);
     } catch (err) {
       setMessage({ tone: "error", text: (err as Error).message });
     } finally {
@@ -225,7 +231,7 @@ export default function ShopPage() {
       <section id="wallet" className="grid scroll-mt-24 gap-8 pt-8 pb-4 sm:pt-12 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,2.15fr)] lg:gap-12">
         <div className="space-y-5 lg:pt-2">
           <div className="space-y-2">
-            <p className="text-caption font-bold tracking-[0.18em] text-brand uppercase">Quiz Duel store</p>
+            <p className="text-caption font-bold tracking-[0.18em] text-brand uppercase">PrepPass store</p>
             <h1 className="text-[52px] leading-[0.95] sm:text-[68px]">Shop</h1>
             <p className="max-w-[34ch] text-body-lg text-muted-foreground">Top up, then dress your duellist in anything from Common to Mythic.</p>
           </div>
@@ -325,7 +331,7 @@ export default function ShopPage() {
             {profile?.passActive && <Badge tone="brand">Duel Pass</Badge>}
             {!pro && (
               <Link href="/pricing" className="underline underline-offset-4 hover:text-foreground">
-                Pro: a free skin every month for {formatPrice(PLANS.pro.pricePence)}
+                Pro: a free skin every month for {formatPrice(proPricing(level === "ks2" ? "ks2" : "standard").pro)}
               </Link>
             )}
           </div>

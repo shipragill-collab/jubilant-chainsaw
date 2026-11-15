@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { RajCompanion } from "./raj-companion";
+import { isYoung, useLevel } from "@/lib/tracks";
 
 const KEY = "quiz-duel:welcomed";
 
@@ -68,15 +69,18 @@ export function WelcomeTour() {
   const [step, setStep] = useState(0);
   const [dir, setDir] = useState(1);
 
+  const level = useLevel();
   useEffect(() => {
+    // Wait for the stage to be chosen; KS2 and 11+ never get pop-ups.
+    if (!level || isYoung(level)) return;
     let seen = true;
     try {
       seen = Boolean(localStorage.getItem(KEY));
     } catch {
       /* private mode: don't nag */
     }
-    if (!seen) ref.current?.showModal();
-  }, []);
+    if (!seen && !ref.current?.open) ref.current?.showModal();
+  }, [level]);
 
   function close() {
     try {
@@ -97,7 +101,7 @@ export function WelcomeTour() {
   return (
     <dialog ref={ref} className="welcome" aria-labelledby="welcome-title" onCancel={close}>
       <div className="flex items-center justify-between gap-4">
-        <span className="font-mono text-[11px] tracking-[0.14em] text-muted-foreground uppercase">Welcome to Quiz Duel</span>
+        <span className="font-mono text-[11px] tracking-[0.14em] text-muted-foreground uppercase">Welcome to PrepPass</span>
         <button type="button" onClick={close} className="btn rounded-[6px] px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground">
           Skip
         </button>

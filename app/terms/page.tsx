@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import { LegalPage, LegalSection } from "@/components/legal-page";
 import { SITE } from "@/lib/site";
 
-export const metadata: Metadata = { title: "Terms", description: "The rules for using Quiz Duel, in plain English." };
+export const metadata: Metadata = { title: "Terms", description: "The rules for using PrepPass, in plain English." };
 
 export default function TermsPage() {
   return (
     <LegalPage title="Terms" updated="11 November 2026" intro="The short version: study hard, play fair, and be kind on the leaderboard.">
-      <LegalSection title="Using Quiz Duel">
+      <LegalSection title="Using PrepPass">
         <ul>
           <li>Only add material you&apos;re allowed to use, such as your own notes or class handouts for personal study.</li>
           <li>Pick a display name that won&apos;t upset anyone. We may remove names or content that break this rule.</li>
@@ -19,7 +19,7 @@ export default function TermsPage() {
       </LegalSection>
       <LegalSection title="Purchases">
         <ul>
-          <li>Coins, gems, skins and accessories are virtual items for use in Quiz Duel. They have no cash value and can&apos;t be exchanged for money.</li>
+          <li>Coins, gems, skins and accessories are virtual items for use in PrepPass. They have no cash value and can&apos;t be exchanged for money.</li>
           <li>Pro, the Duel Pass and Ultimate are monthly subscriptions that renew automatically until you cancel. You can cancel any time from the Plans page, and you keep access until the end of the month you paid for.</li>
           <li>If something goes wrong with a purchase, {SITE.contactEmail ? <>email <a className="underline underline-offset-4" href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a></> : "get in touch"} and we&apos;ll sort it out. This doesn&apos;t affect your legal rights as a consumer.</li>
           <li>If you&apos;re under 18, ask a parent or guardian before buying anything.</li>

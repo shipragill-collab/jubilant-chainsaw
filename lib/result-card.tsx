@@ -60,7 +60,7 @@ export function renderCard(d: CardData | null, tall: boolean) {
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 46, height: 46, borderRadius: 46, background: RED }}>
               <div style={{ width: 20, height: 20, borderRadius: 20, border: `4px solid ${INK}` }} />
             </div>
-            <div style={{ fontSize: 32, fontWeight: 700, letterSpacing: -1 }}>Quiz Duel</div>
+            <div style={{ fontSize: 32, fontWeight: 700, letterSpacing: -1 }}>PrepPass</div>
           </div>
           <div style={{ display: "flex", fontSize: 22, letterSpacing: 4, color: MUTED }}>{done ? "FINAL SCORE" : "DUEL IN PROGRESS"}</div>
         </div>

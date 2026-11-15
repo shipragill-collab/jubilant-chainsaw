@@ -31,7 +31,7 @@ const StudySchema = z.object({
     .describe("12-25 atomic flashcards"),
 });
 
-const SYSTEM = `You are an expert instructional designer turning a student's study material into clean notes and active-recall flashcards for Quiz Duel, a study app used mostly on phones.
+const SYSTEM = `You are an expert instructional designer turning a student's study material into clean notes and active-recall flashcards for PrepPass, a study app used mostly on phones.
 
 Notes:
 - Start with a 2-4 sentence summary.

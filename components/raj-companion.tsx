@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import type { RajFeeling } from "@/lib/raj-mood";
 
 /**
- * Raj, Quiz Duel's AI study companion: a living flashcard.
+ * Raj, PrepPass's AI study companion: a living flashcard.
  *
  * Built from five primitives: a rounded card body, a folded corner, a mustard
  * bookmark ribbon, two dot eyes and a line mouth. States:

@@ -50,3 +50,40 @@ describe("school tracks", () => {
     expect(new Set(SCHOOLS.map((s) => s.id)).size).toBe(SCHOOLS.length);
   });
 });
+
+describe("UK schools", () => {
+  it("has a big list with unique ids and complete data", async () => {
+    const { SCHOOLS, REGIONS } = await import("@/lib/schools");
+    expect(SCHOOLS.length).toBeGreaterThan(300);
+    expect(new Set(SCHOOLS.map((s) => s.id)).size).toBe(SCHOOLS.length);
+    for (const s of SCHOOLS) {
+      expect(REGIONS).toContain(s.region);
+      expect(s.gender).toBeTruthy();
+      expect(s.entry.length).toBeGreaterThan(0);
+    }
+    for (const r of REGIONS) expect(SCHOOLS.some((s) => s.region === r)).toBe(true);
+  });
+  it("keeps old saved target ids working", async () => {
+    const { schoolById } = await import("@/lib/schools");
+    expect(schoolById("st-pauls")?.name).toBe("St Paul's School");
+    expect(schoolById("tiffin")?.type).toBe("grammar");
+  });
+  it("gives Northern Ireland grammar schools their own track", async () => {
+    const { SCHOOLS } = await import("@/lib/schools");
+    const ni = SCHOOLS.find((s) => s.region === "Northern Ireland")!;
+    expect(tracksFor("11plus", [ni.id]).map((t) => t.id)).toEqual(["niGrammar"]);
+    expect(tracksFor("ks2", []).map((t) => t.id)).toEqual(["ks2"]);
+  });
+});
+
+describe("KS2 pricing", () => {
+  it("charges KS2 Pro £2.99 and keeps the Duel Pass the same", async () => {
+    const { describeOrder } = await import("@/lib/billing");
+    expect(describeOrder({ kind: "pro", tier: "ks2" }).pricePence).toBe(299);
+    expect(describeOrder({ kind: "pro" }).pricePence).toBe(199);
+    expect(describeOrder({ kind: "bundle" }).pricePence).toBe(249);
+    expect(describeOrder({ kind: "bundle", tier: "ks2" }).pricePence).toBe(349);
+    expect(describeOrder({ kind: "pass", tier: "ks2" }).pricePence).toBe(100);
+    expect(describeOrder({ kind: "pass" }).pricePence).toBe(100);
+  });
+});

@@ -1208,3 +1208,12 @@ html { overflow-x: clip; }
 .nav-more-link:hover, .nav-more-link[aria-current="page"] { color: var(--foreground); background: var(--surface-hover); }
 .nav-more > summary.is-active { color: var(--foreground); }
 @media (min-width: 1280px) and (max-width: 1439px) { .nav-link { padding-inline: 9px; letter-spacing: 0.06em; } }
+
+/* First screen: choose your stage (a full page, not a pop-up) */
+.age-gate {
+  position: fixed; inset: 0; z-index: 60; overflow-y: auto; display: flex; align-items: flex-start;
+  padding: max(28px, env(safe-area-inset-top, 0px)) 16px calc(28px + env(safe-area-inset-bottom, 0px));
+  background: var(--background);
+}
+/* Centre when it fits, but never push the top off-screen on small phones. */
+.age-gate > div { margin-block: auto; }

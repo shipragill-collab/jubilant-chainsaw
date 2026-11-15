@@ -1,5 +1,5 @@
 /**
- * 11+ practice papers, written for Quiz Duel. Every question is original and
+ * 11+ practice papers, written for PrepPass. Every question is original and
  * made here, offline, from a seed, so "Paper 7" is the same paper every time
  * but there are as many papers as anyone needs. Nothing is copied from real
  * exam papers.

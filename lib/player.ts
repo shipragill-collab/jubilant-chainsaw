@@ -1,5 +1,7 @@
 "use client";
 
+import { loadLevel } from "./tracks";
+
 const ID_KEY = "quiz-duel:player-id";
 const NAME_KEY = "quiz-duel:name";
 
@@ -37,6 +39,10 @@ export const getSavedName = () => safeGet(NAME_KEY) ?? "";
 export const saveName = (name: string) => safeSet(NAME_KEY, name.trim());
 
 export async function api<T>(url: string, init?: { method?: string; body?: unknown }): Promise<T> {
+  // Every checkout carries the stage, so KS2 is charged the KS2 price.
+  if (url === "/api/billing/checkout" && init?.body && typeof init.body === "object" && loadLevel() === "ks2") {
+    init = { ...init, body: { ...(init.body as Record<string, unknown>), tier: "ks2" } };
+  }
   const res = await fetch(url, {
     method: init?.method ?? (init?.body ? "POST" : "GET"),
     headers: init?.body ? { "content-type": "application/json" } : undefined,
