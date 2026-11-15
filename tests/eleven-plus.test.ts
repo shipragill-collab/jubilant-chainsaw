@@ -77,12 +77,12 @@ describe("UK schools", () => {
 });
 
 describe("KS2 pricing", () => {
-  it("charges KS2 Pro £2.99 and keeps the Duel Pass the same", async () => {
+  it("charges KS2 Pro £2.49 and keeps the Duel Pass the same", async () => {
     const { describeOrder } = await import("@/lib/billing");
-    expect(describeOrder({ kind: "pro", tier: "ks2" }).pricePence).toBe(299);
+    expect(describeOrder({ kind: "pro", tier: "ks2" }).pricePence).toBe(249);
     expect(describeOrder({ kind: "pro" }).pricePence).toBe(199);
     expect(describeOrder({ kind: "bundle" }).pricePence).toBe(249);
-    expect(describeOrder({ kind: "bundle", tier: "ks2" }).pricePence).toBe(349);
+    expect(describeOrder({ kind: "bundle", tier: "ks2" }).pricePence).toBe(299);
     expect(describeOrder({ kind: "pass", tier: "ks2" }).pricePence).toBe(100);
     expect(describeOrder({ kind: "pass" }).pricePence).toBe(100);
   });
@@ -115,5 +115,12 @@ In conclusion, homework should not be banned, but it should be short.`;
     const r = analyseWriting(essay, "essay", 60);
     expect(r.criteria.find((c) => c.name === "Argument")!.score).toBe(3);
     expect(r.criteria.find((c) => c.name === "Linking ideas")!.score).toBeGreaterThanOrEqual(2);
+  });
+});
+
+describe("11+ Pack price", () => {
+  it("costs £2.99 a month", async () => {
+    const { describeOrder } = await import("@/lib/billing");
+    expect(describeOrder({ kind: "eleven" }).pricePence).toBe(299);
   });
 });
