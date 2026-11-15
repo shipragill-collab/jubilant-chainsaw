@@ -444,7 +444,7 @@ export default function ShopPage() {
                   ) : (
                     <div className="grid grid-cols-2 gap-x-3 gap-y-7 sm:grid-cols-3 sm:gap-x-6 sm:gap-y-10 xl:grid-cols-4">
                       {g.items.map((item) => (
-                    <div key={item.id} className="min-w-0">
+                    <div key={item.id} className="shop-item min-w-0">
                       <button
                         onClick={() => setTryOn(tryOn?.id === item.id ? null : item)}
                         className={`item-tile block w-full ${tryOn?.id === item.id ? "is-trying" : ""} ${

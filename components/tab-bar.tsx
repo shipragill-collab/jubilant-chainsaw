@@ -12,24 +12,25 @@ const I = (d: ReactNode) => (
 );
 
 const ICONS = {
-  home: I(<path d="M4 11.5 12 5l8 6.5V19a1 1 0 0 1-1 1h-4v-5h-6v5H5a1 1 0 0 1-1-1z" />),
   study: I(<><rect x="4" y="6" width="13" height="14" rx="2" /><path d="M8 3h11a1 1 0 0 1 1 1v13" /></>),
   raj: I(<><rect x="5" y="6" width="14" height="13" rx="3" /><path d="M12 6V3M9.5 12h.01M14.5 12h.01M9.5 15.5c1.4 1 3.6 1 5 0" /></>),
+  shop: I(<><path d="M5 8h14l-1.2 11a1 1 0 0 1-1 .9H7.2a1 1 0 0 1-1-.9z" /><path d="M9 8V6.5a3 3 0 0 1 6 0V8" /></>),
   more: I(<><circle cx="5" cy="12" r="1.3" /><circle cx="12" cy="12" r="1.3" /><circle cx="19" cy="12" r="1.3" /></>),
 };
 
 const MORE = [
+  { href: "/", label: "Home", note: "Start here" },
   { href: "/streak", label: "Streak", note: "Your daily habit" },
   { href: "/leaderboard", label: "Leaderboard", note: "Who's winning" },
-  { href: "/shop", label: "Shop", note: "Skins and coins" },
   { href: "/pass", label: "Duel Pass", note: "Season rewards" },
   { href: "/pricing", label: "Plans", note: "Pro and Ultimate" },
   { href: "/search", label: "Search", note: "Find a set" },
 ];
 
 /**
- * Phones get an app-style bar at the bottom, in thumb reach: Home, Study, a
- * big New duel button, Raj, and More (a sheet with everything else).
+ * Phones get an app-style bar at the bottom, in thumb reach: Study, Raj, a
+ * big New duel button in the middle, Shop, and More (Home and everything
+ * else; the logo also goes home).
  */
 export function TabBar() {
   const path = usePathname();
@@ -51,14 +52,14 @@ export function TabBar() {
   return (
     <>
       <nav className="tab-bar" aria-label="Main">
-        {tab("/", "Home", ICONS.home)}
         {tab("/study", "Study", ICONS.study)}
+        {tab("/tutor", "Raj", ICONS.raj)}
         <Link href="/#start" className="tab-duel" aria-label="New duel">
           <svg viewBox="0 0 24 24" className="size-6" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden>
             <path d="M12 5v14M5 12h14" />
           </svg>
         </Link>
-        {tab("/tutor", "Raj", ICONS.raj)}
+        {tab("/shop", "Shop", ICONS.shop)}
         <button type="button" className="tab" aria-current={inMore ? "page" : undefined} aria-haspopup="dialog" onClick={() => sheet.current?.showModal()}>
           {ICONS.more}
           <span>More</span>

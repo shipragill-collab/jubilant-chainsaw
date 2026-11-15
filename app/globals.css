@@ -1056,3 +1056,12 @@ body {
 @media (max-width: 767px) {
   .set-tabs { position: sticky; top: 56px; z-index: 20; margin-inline: -16px; padding: 8px 16px; background: var(--glass); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
 }
+
+/* Shop tiles: tags and buttons shrink to the tile on narrow phones */
+.shop-item .rarity { max-width: 100%; white-space: normal; line-height: 1.25; padding-block: 3px; }
+.shop-item button, .shop-item a { max-width: 100%; }
+.shop-item .btn { white-space: normal; text-align: left; height: auto; min-height: 2rem; padding-block: 6px; }
+/* Safety net: nothing may widen the page sideways on a phone */
+html { overflow-x: clip; }
+.plan { min-width: 0; }
+.plan-audience { white-space: normal; line-height: 1.3; }

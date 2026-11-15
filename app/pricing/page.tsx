@@ -187,7 +187,7 @@ export default function PricingPage() {
         </div>
       </div>
 
-      <div className="grid items-stretch gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.12fr)_minmax(0,1fr)] lg:gap-6">
+      <div className="grid grid-cols-[minmax(0,1fr)] items-stretch gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.12fr)_minmax(0,1fr)] lg:gap-6">
         <PlanCard
           variant="solo"
           audience="Best for solo learners"
