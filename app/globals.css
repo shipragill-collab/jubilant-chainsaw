@@ -1027,9 +1027,20 @@ body {
   transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .tab-duel:active { transform: scale(0.92); }
-@media (max-width: 767px) {
+@media (max-width: 1279px) {
   .tab-bar { display: grid; }
   body { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
+}
+/* Tablets: the same bar, floating in the middle of the bottom edge */
+@media (min-width: 768px) and (max-width: 1279px) {
+  .tab-bar {
+    left: 50%; right: auto; width: min(560px, calc(100% - 48px)); transform: translateX(-50%);
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px)); padding: 6px 10px; border-radius: 20px;
+    border: 1px solid var(--surface-border); box-shadow: var(--shadow-lg);
+  }
+  .tab { font-size: 11px; min-height: 52px; }
+  .tab-duel { width: 56px; height: 56px; box-shadow: 0 0 0 5px var(--surface), 0 10px 24px -8px var(--brand); }
+  body { padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px)); }
 }
 .more-sheet {
   width: 100%; max-width: 520px; margin: auto auto 0; padding: 12px 16px calc(20px + env(safe-area-inset-bottom, 0px));

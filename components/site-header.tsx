@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { refreshProfiles, useProfile } from "@/lib/use-profile";
 import { RajHeaderBuddy } from "./raj-mood-card";
 import { SkinSoundToggle } from "./skin-provider";
@@ -81,11 +81,6 @@ export function SiteHeader() {
     refreshProfiles();
   }, [path]);
   const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
-  const mobileNav = useRef<HTMLElement>(null);
-  // On phones, scroll the menu row so the current page is in view.
-  useEffect(() => {
-    mobileNav.current?.querySelector<HTMLElement>('[aria-current="page"]')?.scrollIntoView({ inline: "center", block: "nearest" });
-  }, [path]);
   return (
     <header className="site-head sticky top-0 z-40">
       <div className="site-bar mx-auto flex h-14 max-w-7xl items-center gap-2 px-4 sm:h-16 sm:gap-3 sm:px-8">
@@ -113,7 +108,7 @@ export function SiteHeader() {
           <RajHeaderBuddy />
           <WalletChip />
         </span>
-        <span className="hidden shrink-0 whitespace-nowrap sm:block">
+        <span className="hidden shrink-0 whitespace-nowrap xl:block">
           <Link href="/#start" className={buttonClass({ variant: "brand" })}>
             <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
               <path d="M12 5v14M5 12h14" strokeLinecap="round" />
@@ -122,16 +117,6 @@ export function SiteHeader() {
           </Link>
         </span>
       </div>
-      <nav ref={mobileNav} className="mobile-nav mx-auto hidden max-w-7xl items-center gap-1 overflow-x-auto px-3 py-1.5 [scrollbar-width:none] sm:px-7 md:flex xl:hidden" aria-label="Main">
-        {[...NAV, { href: "/search", label: "Search" }].map((n) => (
-          <Link key={n.href} href={n.href} className="nav-link shrink-0" aria-current={isActive(n.href) ? "page" : undefined}>
-            {n.label}
-          </Link>
-        ))}
-        <span className="ml-auto sm:hidden">
-          <ThemeToggle />
-        </span>
-      </nav>
     </header>
   );
 }
