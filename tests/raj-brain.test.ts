@@ -134,3 +134,24 @@ describe("commands mid-practice", () => {
     expect(lastReply(h)).toMatch(/memory trick|picture/);
   });
 });
+
+describe("Raj thinking", () => {
+  it("says what he's doing, matched to the message", async () => {
+    const { thinkingSteps, thinkTime } = await import("@/components/raj-chat");
+    expect(thinkingSteps("Give me a hint", "Flashcard 2 of 9", true)[1]).toMatch(/hint/);
+    expect(thinkingSteps("the chloroplasts", "Flashcard 2 of 9\n\n**Where…**", true)[0]).toMatch(/Checking your answer/);
+    expect(thinkingSteps("Quiz me", undefined, true)[1]).toMatch(/question/);
+    expect(thinkingSteps("Why do plants need light?", undefined, true)[0]).toMatch(/Reading your notes/);
+    expect(thinkTime("hi", false)).toBeGreaterThanOrEqual(750);
+    expect(thinkTime("x".repeat(500), false)).toBeLessThanOrEqual(1800);
+    expect(thinkTime("anything", true)).toBeLessThan(400);
+  });
+});
+
+describe("Raj thinking matches revision questions", () => {
+  it("doesn't mistake 'next week' for a quiz", async () => {
+    const { thinkingSteps } = await import("@/components/raj-chat");
+    expect(thinkingSteps("How should I revise for my exams next week?", undefined, false)[1]).toMatch(/Planning/);
+    expect(thinkingSteps("Next question", "**Correct!**", true)[1]).toMatch(/question/);
+  });
+});

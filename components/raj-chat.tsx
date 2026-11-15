@@ -170,6 +170,49 @@ class GoLocal extends Error {}
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+/** What Raj says he's doing while he thinks, matched to what was asked. */
+export function thinkingSteps(message: string, lastReply: string | undefined, hasSet: boolean): string[] {
+  const m = message.toLowerCase();
+  const answering = Boolean(lastReply && /Flashcard \d+ of/.test(lastReply)) && !/\b(quiz|next|skip|explain|why|summar|plan|hint)\b/.test(m);
+  if (/\b(hint|clue)\b/.test(m)) return ["Looking at the question…", "Thinking of a good hint…"];
+  if (answering) return ["Checking your answer…", "Comparing it with your notes…"];
+  if (/\b(plan|schedule|revis|exams?)\b/.test(m)) return hasSet ? ["Counting your flashcards…", "Planning your sessions…"] : ["Thinking about what works…", "Planning your sessions…"];
+  if (/\b(quiz|test me|practi[cs]e)\b|^\s*(next|another|skip|start)\b/.test(m)) return ["Checking which cards you know…", "Picking a question for you…"];
+  if (/\b(summar|overview|key (ideas|points)|recap)/.test(m)) return ["Reading the whole set…", "Pulling out the key ideas…"];
+  if (/\b(mnemonic|memory trick|remember)\b/.test(m)) return ["Looking at the key terms…", "Thinking up a memory trick…"];
+  if (/\b(topics|what('s| is) in)\b/.test(m)) return ["Looking through the set…"];
+  if (/\b(why|how|what|explain|difference|compare|example|mean)\b/.test(m)) return hasSet ? ["Reading your notes…", "Finding the clearest way to explain…"] : ["Thinking…", "Finding the clearest way to explain…"];
+  if (/\b(stress|nervous|worried|focus|motivat|tired)\b/.test(m)) return ["Thinking about what helps…"];
+  return hasSet ? ["Thinking…", "Reading your notes…"] : ["Thinking…"];
+}
+
+/** How long Raj "thinks" before answering: a beat, a little longer for longer questions. */
+export function thinkTime(message: string, reduced: boolean): number {
+  if (reduced) return 250;
+  return Math.min(1800, Math.max(750, 600 + message.trim().length * 14));
+}
+
+/** The bubble Raj shows while thinking: bouncing dots and what he's doing. */
+function ThinkingBubble({ steps }: { steps: string[] }) {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    setI(0);
+    if (steps.length < 2) return;
+    const t = setInterval(() => setI((n) => Math.min(n + 1, steps.length - 1)), 900);
+    return () => clearInterval(t);
+  }, [steps]);
+  return (
+    <span className="raj-thinking" role="status" aria-live="polite">
+      <span className="raj-dots" aria-hidden>
+        <i />
+        <i />
+        <i />
+      </span>
+      <span key={i} className="raj-thought">{steps[i] ?? "Thinking…"}</span>
+    </span>
+  );
+}
+
 export function RajChat({ setId, setTitle }: { setId: string | null; setTitle?: string }) {
   const knowledge = useKnowledge(setId);
   const storageKey = `quiz-duel:raj:${setId ?? "general"}`;
@@ -179,6 +222,7 @@ export function RajChat({ setId, setTitle }: { setId: string | null; setTitle?: 
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<string | null>(null);
   const [typing, setTyping] = useState(false);
+  const [steps, setSteps] = useState<string[]>(["Thinking…"]);
   const activity = useRajActivity();
   // Once you're chatting, you're studying today, so Raj cheers up.
   const feeling: RajFeeling | undefined = activity ? (messages.length ? (activity.streak >= 7 ? "proud" : "happy") : activity.feeling) : undefined;
@@ -221,6 +265,22 @@ export function RajChat({ setId, setTitle }: { setId: string | null; setTitle?: 
     abort.current = ctrl;
     const show = (reply: string) => setMessages([...history, { role: "assistant", content: reply }]);
     let reply = "";
+    // Raj takes a visible moment to think, then writes his answer out.
+    const reduced = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    setSteps(thinkingSteps(content, [...messages].reverse().find((m) => m.role === "assistant")?.content, Boolean(setId)));
+    const started = Date.now();
+    const minThink = thinkTime(content, Boolean(reduced));
+    const waitThink = () => sleep(Math.max(0, minThink - (Date.now() - started)));
+    const typeOut = async (full: string) => {
+      const parts = full.split(/(\s+)/);
+      const step = Math.max(1, Math.ceil(parts.length / 90)); // long replies type faster
+      for (let i = 0; i < parts.length; i += step) {
+        if (ctrl.signal.aborted) return;
+        show(parts.slice(0, i + step).join(""));
+        await sleep(reduced ? 0 : 22);
+      }
+      show(full);
+    };
     try {
       try {
         if (typeof navigator !== "undefined" && navigator.onLine === false) throw new GoLocal();
@@ -238,16 +298,27 @@ export function RajChat({ setId, setTitle }: { setId: string | null; setTitle?: 
           const data = (await res.json().catch(() => ({}))) as { error?: string };
           throw new Error(data.error ?? "Raj couldn't answer just now.");
         }
-        setMode(res.headers.get("x-raj-mode"));
+        const serverMode = res.headers.get("x-raj-mode");
+        setMode(serverMode);
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
+        let shown = false;
         for (;;) {
           const { done, value } = await reader.read();
           if (done) break;
           reply += decoder.decode(value, { stream: true });
-          show(reply);
+          // Claude streams as it writes; show it once the thinking beat is over.
+          if (serverMode === "claude") {
+            if (!shown) await waitThink();
+            shown = true;
+            show(reply);
+          }
         }
         if (!reply.trim()) throw new GoLocal();
+        if (serverMode !== "claude") {
+          await waitThink();
+          await typeOut(reply);
+        }
         refreshProfiles();
       } catch (err) {
         if (!(err instanceof GoLocal) && (err as Error).name !== "TypeError") throw err;
@@ -255,14 +326,9 @@ export function RajChat({ setId, setTitle }: { setId: string | null; setTitle?: 
         // Offline: Raj thinks on this device, from the cached study set.
         setMode("device");
         const local = brainReply(history, knowledge);
-        await sleep(350);
-        for (let i = 0; i < local.length; i += 6) {
-          if (ctrl.signal.aborted) return;
-          show(local.slice(0, i + 6));
-          await sleep(12);
-        }
+        await waitThink();
+        await typeOut(local);
         reply = local;
-        show(reply);
       }
       if (/^\s*\*\*Correct/.test(reply) && skinActive()) sfx.chime();
     } catch (err) {
@@ -388,7 +454,7 @@ export function RajChat({ setId, setTitle }: { setId: string | null; setTitle?: 
                       );
                     })()
                   ) : (
-                    <span className="text-muted-foreground">Flipping through your notes…</span>
+                    <ThinkingBubble steps={steps} />
                   )}
                 </div>
               </div>

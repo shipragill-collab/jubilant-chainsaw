@@ -1065,3 +1065,14 @@ body {
 html { overflow-x: clip; }
 .plan { min-width: 0; }
 .plan-audience { white-space: normal; line-height: 1.3; }
+
+/* Raj thinking: three dots bounce while a status line says what he's doing */
+.raj-thinking { display: inline-flex; align-items: center; gap: 10px; color: var(--muted-foreground); }
+.raj-dots { display: inline-flex; gap: 4px; padding: 9px 11px; border-radius: 12px; background: var(--raj-tint); }
+.raj-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--raj-forest); animation: raj-dot 1.1s ease-in-out infinite; }
+.raj-dots i:nth-child(2) { animation-delay: 0.15s; }
+.raj-dots i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes raj-dot { 0%, 60%, 100% { transform: translateY(0); opacity: 0.45; } 30% { transform: translateY(-4px); opacity: 1; } }
+.raj-thought { font-size: 15px; font-style: italic; animation: raj-thought-in 0.35s ease both; }
+@keyframes raj-thought-in { from { opacity: 0; transform: translateY(4px); } }
+@media (prefers-reduced-motion: reduce) { .raj-dots i, .raj-thought { animation: none; } }
