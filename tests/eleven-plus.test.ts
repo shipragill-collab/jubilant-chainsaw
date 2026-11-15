@@ -87,3 +87,33 @@ describe("KS2 pricing", () => {
     expect(describeOrder({ kind: "pass" }).pricePence).toBe(100);
   });
 });
+
+describe("11+ writing checker", () => {
+  it("rewards a well-built story and gives a next step to a weak one", async () => {
+    const { analyseWriting } = await import("@/lib/writing");
+    const good = `Nobody had ever noticed the little green door before. Rain hammered the cobbles like a thousand tiny drums as Mia crept closer, her heart thudding.
+
+"Who's there?" she whispered. Silence. Then, slowly, the door creaked open, releasing a smell of cinnamon and old books.
+
+Inside, candles glimmered on every shelf; their flames danced as silently as falling snow. Mia hesitated, then stepped through, her fingers brushing the rough, icy stone of the doorway.
+
+Somewhere far below, something enormous stirred. She should have turned back! Instead, determined and trembling, she followed the spiral staircase down into the darkness.`;
+    const weak = "I went to the park. It was nice. I saw a dog. It was big. I went home. It was good. I had tea. It was nice.";
+    const g = analyseWriting(good, "creative", 100);
+    const w = analyseWriting(weak, "creative", 100);
+    expect(g.total).toBeGreaterThan(w.total + 6);
+    expect(g.paragraphs).toBe(4);
+    expect(w.wish.length).toBeGreaterThan(10);
+  });
+  it("looks for linking words and both sides in an essay", async () => {
+    const { analyseWriting } = await import("@/lib/writing");
+    const essay = `Should homework be banned? Firstly, homework helps us practise. Furthermore, it builds good habits.
+
+On the other hand, some people argue that children need time to rest. However, a little homework is still useful.
+
+In conclusion, homework should not be banned, but it should be short.`;
+    const r = analyseWriting(essay, "essay", 60);
+    expect(r.criteria.find((c) => c.name === "Argument")!.score).toBe(3);
+    expect(r.criteria.find((c) => c.name === "Linking ideas")!.score).toBeGreaterThanOrEqual(2);
+  });
+});

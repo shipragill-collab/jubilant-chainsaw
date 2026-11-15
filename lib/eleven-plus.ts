@@ -36,9 +36,9 @@ export interface Paper {
 }
 
 export const SUBJECTS_11: { id: Subject11; name: string; blurb: string; count: number; minutes: number }[] = [
-  { id: "maths", name: "Maths", blurb: "Arithmetic, fractions, percentages, ratio, shapes and word problems.", count: 20, minutes: 25 },
+  { id: "maths", name: "Maths", blurb: "Arithmetic, algebra, time, rotation, fractions, ratio and lots of word problems.", count: 30, minutes: 40 },
   { id: "verbal", name: "Verbal reasoning", blurb: "Letter codes, analogies, odd one out, hidden words and sequences.", count: 24, minutes: 20 },
-  { id: "english", name: "English", blurb: "Spelling, vocabulary, grammar and punctuation.", count: 20, minutes: 20 },
+  { id: "english", name: "English", blurb: "Vocabulary, spelling, grammar, punctuation and writing techniques. Plus creative and essay writing.", count: 25, minutes: 25 },
   { id: "nonverbal", name: "Non-verbal reasoning", blurb: "Shape patterns: what comes next and the odd one out.", count: 12, minutes: 12 },
 ];
 
@@ -95,11 +95,11 @@ const money = (p: number) => (p < 100 ? `${p}p` : `£${(p / 100).toFixed(2)}`);
 
 const MATHS: ((r: R) => PaperQuestion)[] = [
   (r) => {
-    const a = int(r, 23, 98), b = int(r, 12, 49);
+    const a = int(r, 123, 489), b = int(r, 13, 49);
     return mc(r, "Multiplication", `What is ${a} × ${b}?`, String(a * b), nearNums(r, a * b, String, 10), `${a} × ${b} = ${a * b}. Split it: ${a} × ${Math.floor(b / 10) * 10} = ${a * Math.floor(b / 10) * 10}, plus ${a} × ${b % 10} = ${a * (b % 10)}.`);
   },
   (r) => {
-    const d = int(r, 6, 19), q = int(r, 12, 64);
+    const d = int(r, 12, 29), q = int(r, 24, 96);
     return mc(r, "Division", `What is ${d * q} ÷ ${d}?`, String(q), nearNums(r, q, String, 2), `${d} × ${q} = ${d * q}, so ${d * q} ÷ ${d} = ${q}.`);
   },
   (r) => {
@@ -164,6 +164,120 @@ const MATHS: ((r: R) => PaperQuestion)[] = [
     const a = (int(r, 11, 99) / 10), b = (int(r, 11, 99) / 10);
     const ans = Math.round((a + b) * 10) / 10;
     return mc(r, "Decimals", `What is ${a} + ${b}?`, String(ans), nearNums(r, Math.round(ans * 10), (x) => String(x / 10), 10), `Line up the decimal points: ${a} + ${b} = ${ans}.`);
+  },
+  // --- Algebra (harder) ---
+  (r) => {
+    const n = int(r, 3, 12), a = int(r, 2, 6), b = int(r, 1, 5), c = a * (n - b);
+    return mc(r, "Algebra", `Solve ${a}(n − ${b}) = ${c}. What is n?`, String(n), nearNums(r, n, String, 1).concat(String(n - b)), `Divide both sides by ${a}: n − ${b} = ${n - b}. Add ${b}: n = ${n}.`);
+  },
+  (r) => {
+    const n = int(r, 2, 15), a = int(r, 3, 7), c = int(r, 1, a - 1), b = int(r, 1, 20), d = (a - c) * n + b;
+    return mc(r, "Algebra", `Solve ${a}n + ${b} = ${c}n + ${d}. What is n?`, String(n), nearNums(r, n, String, 1), `Take ${c}n from both sides: ${a - c === 1 ? "" : a - c}n + ${b} = ${d}. Take ${b}: ${a - c === 1 ? "" : a - c}n = ${d - b}. So n = ${n}.`);
+  },
+  (r) => {
+    const a = int(r, 2, 6), b = int(r, 2, 9), k = int(r, 2, 4);
+    const ans = k * a * a - b;
+    return mc(r, "Algebra", `If a = ${a} and b = ${b}, what is ${k}a² − b?`, String(ans), [String(k * a * 2 - b), String((k * a) ** 2 - b), String(k * a * a + b), String(ans + k)], `a² = ${a * a}. ${k} × ${a * a} = ${k * a * a}. Then − ${b} = ${ans}.`);
+  },
+  (r) => {
+    const step = int(r, 3, 9), c = int(r, -4, 6), seq = [1, 2, 3, 4].map((n) => step * n + c);
+    const rule = `${step}n ${c >= 0 ? "+" : "−"} ${Math.abs(c)}`;
+    return mc(r, "Algebra", `What is the nth term of ${seq.join(", ")}, …?`, rule, [`${step}n`, `n + ${step}`, `${step}n ${c >= 0 ? "−" : "+"} ${Math.abs(c)}`, `${seq[0]}n + ${step}`], `It goes up by ${step}, so it's ${step}n. ${step} × 1 = ${step}, and the first term is ${seq[0]}, so adjust by ${c}: ${rule}.`);
+  },
+  (r) => {
+    const x = int(r, 6, 15), d = int(r, 2, 7), names = pick(r, [["Sam", "his sister"], ["Priya", "her brother"], ["Leo", "his cousin"]] as const);
+    const total = 2 * x + d;
+    return mc(r, "Algebra", `${names[0]} is x years old. ${names[1][0].toUpperCase() + names[1].slice(1)} is ${d} years older. Together they are ${total}. How old is ${names[0]}?`, String(x), nearNums(r, x, String, 1).concat(String(x + d)), `x + (x + ${d}) = ${total}, so 2x = ${total - d} and x = ${x}.`);
+  },
+  // --- Time (harder) ---
+  (r) => {
+    const h = int(r, 1, 11), m = pick(r, [5, 15, 20, 35, 45, 50]), pm = r() < 0.6;
+    const right = `${String(pm ? h + 12 : h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+    return mc(r, "Time", `What is ${h}:${String(m).padStart(2, "0")} ${pm ? "pm" : "am"} in the 24-hour clock?`, right, [`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`, `${String((pm ? h + 12 : h) + 1).padStart(2, "0")}:${String(m).padStart(2, "0")}`, `${String(pm ? h + 10 : h + 2).padStart(2, "0")}:${String(m).padStart(2, "0")}`, `${h}${String(m).padStart(2, "0")}`], pm ? `For pm times add 12 to the hour: ${h} + 12 = ${h + 12}.` : "Morning times keep the same hour, with a 0 in front if needed.");
+  },
+  (r) => {
+    const start = int(r, 21, 23) * 60 + pick(r, [10, 25, 40, 55]), dur = int(r, 2, 4) * 60 + pick(r, [5, 20, 35, 50]);
+    const t = (m: number) => `${String(Math.floor(m / 60) % 24).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+    const hm = (m: number) => `${Math.floor(m / 60)} h ${m % 60} min`;
+    return mc(r, "Time", `A night train leaves at ${t(start)} and arrives at ${t(start + dur)}. How long is the journey?`, hm(dur), [hm(dur + 60), hm(dur - 60), hm(24 * 60 - dur), hm(dur + 10)].filter((x) => !x.startsWith("-")), `From ${t(start)} to midnight is ${hm(24 * 60 - start)}. Then midnight to ${t(start + dur)} is ${hm(start + dur - 24 * 60)}. Together: ${hm(dur)}.`);
+  },
+  (r) => {
+    const first = int(r, 7, 8) * 60 + pick(r, [5, 15, 40, 50]), gap = pick(r, [12, 15, 20, 25, 35]), k = int(r, 4, 7);
+    const t = (m: number) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+    const ans = first + (k - 1) * gap;
+    const ord = ["", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th"][k];
+    return mc(r, "Time", `The first bus leaves at ${t(first)}. Buses leave every ${gap} minutes. When does the ${ord} bus leave?`, t(ans), [t(ans + gap), t(first + k * gap + gap), t(ans - gap), t(first + k * 10)].filter((x) => x !== t(ans)), `There are ${k - 1} gaps before the ${ord} bus: ${k - 1} × ${gap} = ${(k - 1) * gap} minutes after ${t(first)}, which is ${t(ans)}.`);
+  },
+  (r) => {
+    const h = int(r, 1, 4), q = pick(r, [[1, 4], [1, 2], [3, 4], [1, 3]] as const);
+    const mins = h * 60 + (60 * q[0]) / q[1];
+    return mc(r, "Time", `How many minutes are in ${h} ${q[0]}/${q[1]} hours?`, String(mins), [String(Math.round(h * 100 + (100 * q[0]) / q[1])), String(mins + 15), String(h * 60 + q[0] * 10), String(mins - 15)], `${h} hour${h > 1 ? "s" : ""} = ${h * 60} minutes, and ${q[0]}/${q[1]} of an hour = ${(60 * q[0]) / q[1]} minutes. Total ${mins}.`);
+  },
+  // --- Word problems ---
+  (r) => {
+    const a = int(r, 3, 9) * 5 + 40, b = int(r, 2, 8) * 10 + 50, na = int(r, 2, 4), nb = int(r, 2, 3), off = pick(r, [10, 20, 25]);
+    const full = a * na + b * nb, pay = Math.round(full * (100 - off)) / 100;
+    return mc(r, "Word problems", `Notebooks cost ${money(a)} and pens cost ${money(b)}. Mia buys ${na} notebooks and ${nb} pens, and gets ${off}% off the total. How much does she pay?`, money(pay), [money(full), money(full - off), money(Math.round(full * off) / 100), money(pay + 10)], `Total: ${na} × ${money(a)} + ${nb} × ${money(b)} = ${money(full)}. ${off}% off leaves ${100 - off}%: ${money(pay)}.`);
+  },
+  (r) => {
+    const speed = pick(r, [40, 48, 60, 72, 80]), mins = pick(r, [90, 150, 45, 105, 135]);
+    const d = (speed * mins) / 60;
+    return mc(r, "Word problems", `A car travels at ${speed} km per hour for ${Math.floor(mins / 60) ? `${Math.floor(mins / 60)} h ` : ""}${mins % 60} min. How far does it go?`, `${d} km`, [`${speed * Math.ceil(mins / 60)} km`, `${(speed * mins) / 100} km`, `${d + speed / 4} km`, `${d - speed / 4} km`], `${mins} minutes is ${mins / 60} hours. ${speed} × ${mins / 60} = ${d} km.`);
+  },
+  (r) => {
+    const people = pick(r, [4, 6, 8]), want = pick(r, [6, 10, 12, 3, 9].filter((x) => x !== people)), g = pick(r, [200, 240, 300, 360]);
+    const ans = (g / people) * want;
+    return mc(r, "Word problems", `A recipe for ${people} people needs ${g} g of flour. How much flour is needed for ${want} people?`, `${ans} g`, [`${g + (want - people) * 10} g`, `${g * want} g`, `${(g / people) * (want + 1)} g`, `${g / 2} g`], `For 1 person: ${g} ÷ ${people} = ${g / people} g. For ${want}: × ${want} = ${ans} g.`);
+  },
+  (r) => {
+    const total = pick(r, [24, 36, 48, 60, 72]), f1 = pick(r, [3, 4, 6]), f2 = pick(r, [2, 3, 4]);
+    const spent1 = total / f1, rest = total - spent1, spent2 = rest / f2, left = rest - spent2;
+    if (!Number.isInteger(spent2)) return MATHS[0](r);
+    return mc(r, "Word problems", `Ali has £${total}. He spends 1/${f1} of it on a book, then 1/${f2} of what is left on lunch. How much does he have left?`, `£${left}`, [`£${total - total / f1 - total / f2}`, `£${rest}`, `£${spent2}`, `£${left + spent2 / 2}`], `1/${f1} of £${total} = £${spent1}, leaving £${rest}. 1/${f2} of £${rest} = £${spent2}, leaving £${left}.`);
+  },
+  (r) => {
+    const a = pick(r, [[250, 180], [500, 320], [400, 275], [750, 480]] as const), b = pick(r, [[1000, 340], [1000, 620], [600, 390]] as const);
+    const ua = a[1] / a[0], ub = b[1] / b[0];
+    const better = ua < ub ? `${a[0]} g for ${money(a[1])}` : `${b[0]} g for ${money(b[1])}`;
+    return mc(r, "Word problems", `Which is better value: ${a[0]} g of cereal for ${money(a[1])} or ${b[0]} g for ${money(b[1])}?`, better, [ua < ub ? `${b[0]} g for ${money(b[1])}` : `${a[0]} g for ${money(a[1])}`, "They cost the same per gram"], `Price per 100 g: ${money(Math.round(ua * 100))} vs ${money(Math.round(ub * 100))}. The cheaper one per 100 g is better value.`);
+  },
+  (r) => {
+    const price = pick(r, [40, 60, 80, 120, 150, 250]), pc = pick(r, [10, 15, 20, 25, 30]);
+    const ans = price + (price * pc) / 100;
+    return mc(r, "Word problems", `A bike costs £${price}. The price goes up by ${pc}%. What is the new price?`, `£${ans}`, [`£${price + pc}`, `£${(price * pc) / 100}`, `£${price - (price * pc) / 100}`, `£${ans + 5}`], `${pc}% of £${price} is £${(price * pc) / 100}. Add it on: £${ans}.`);
+  },
+  (r) => {
+    const rows = int(r, 6, 14), per = int(r, 12, 25), empty = int(r, 5, 30);
+    const ans = rows * per - empty;
+    return mc(r, "Word problems", `A hall has ${rows} rows of ${per} chairs. ${empty} chairs are empty. How many people are sitting down?`, String(ans), nearNums(r, ans, String, 5).concat(String(rows * per + empty)), `${rows} × ${per} = ${rows * per} chairs. Take away ${empty} empty: ${ans}.`);
+  },
+  // --- Rotation and turns ---
+  (r) => {
+    const dirs = ["north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west"];
+    const s = int(r, 0, 7), turn = pick(r, [90, 135, 180, 270, 45, 225]), cw = r() < 0.6;
+    const end = (s + ((cw ? 1 : -1) * turn) / 45 + 64) % 8;
+    return mc(r, "Rotation", `You face ${dirs[s]} and turn ${turn}° ${cw ? "clockwise" : "anticlockwise"}. Which way do you face now?`, dirs[end], [dirs[(s + ((cw ? -1 : 1) * turn) / 45 + 64) % 8], dirs[(end + 2) % 8], dirs[(end + 6) % 8], dirs[(end + 4) % 8]], `Each 45° is one step round the compass. ${turn}° is ${turn / 45} steps ${cw ? "clockwise" : "anticlockwise"} from ${dirs[s]}: ${dirs[end]}.`);
+  },
+  (r) => {
+    const from = int(r, 1, 11), steps = int(r, 2, 8), to = ((from + steps - 1) % 12) + 1;
+    return mc(r, "Rotation", `The minute hand moves from ${from} to ${to}, clockwise. How many degrees does it turn?`, `${steps * 30}°`, [`${steps * 15}°`, `${steps * 60}°`, `${360 - steps * 30}°`, `${steps * 30 + 30}°`], `A full turn is 360°, and there are 12 numbers, so each gap is 30°. ${steps} gaps × 30° = ${steps * 30}°.`);
+  },
+  (r) => {
+    const shapes: [string, number][] = [["an equilateral triangle", 3], ["a square", 4], ["a regular pentagon", 5], ["a regular hexagon", 6], ["a rectangle (not a square)", 2], ["a regular octagon", 8], ["a parallelogram", 2]];
+    const [name, order] = pick(r, shapes);
+    return mc(r, "Rotation", `What is the order of rotational symmetry of ${name}?`, String(order), nearNums(r, order, String, 1).concat("1"), `It fits onto itself ${order} times in one full turn, so the order is ${order}.`);
+  },
+  (r) => {
+    const start = pick(r, [0, 45, 90, 135, 180]), turn = pick(r, [90, 180, 270]), cw = r() < 0.5;
+    const s: Shape = { sides: 1, rotation: start, fill: "solid", dots: 0 };
+    const right: Shape = { ...s, rotation: start + (cw ? turn : -turn) };
+    const q = nvq(r, "Rotation", `Which shows the arrow turned ${turn}° ${cw ? "clockwise" : "anticlockwise"}?`, [s], right, [
+      { ...s, rotation: start + (cw ? -turn : turn) },
+      { ...s, rotation: start + 45 },
+      { ...s, rotation: start + (cw ? turn : -turn) + 90 },
+      { ...s },
+    ], `${turn}° is ${turn / 90} quarter turn${turn > 90 ? "s" : ""} ${cw ? "clockwise" : "anticlockwise"}.`);
+    return q;
   },
 ];
 
@@ -353,6 +467,102 @@ const VOCAB: [string, string, string[]][] = [
   ["obscure", "not well known", ["famous", "obvious", "clean"]],
   ["tranquil", "calm and peaceful", ["busy", "frightening", "cold"]],
   ["vivid", "bright and clear", ["dull", "alive", "faint"]],
+  ["ambiguous", "having more than one meaning", ["very clear", "very old", "full of energy"]],
+  ["apprehensive", "worried about what might happen", ["very clever", "ready to learn", "angry"]],
+  ["audacious", "boldly daring", ["very loud", "shy", "careless"]],
+  ["belligerent", "aggressive and hostile", ["beautiful", "bored", "friendly"]],
+  ["cacophony", "a harsh mix of loud sounds", ["a sweet tune", "a long silence", "a heavy rain"]],
+  ["conspicuous", "easy to notice", ["hidden", "suspicious", "careful"]],
+  ["dejected", "sad and disappointed", ["thrown out", "excited", "rejected by a team"]],
+  ["eloquent", "speaking clearly and persuasively", ["elegant-looking", "very quiet", "rude"]],
+  ["ephemeral", "lasting a very short time", ["lasting forever", "magical", "tiny"]],
+  ["exasperated", "very annoyed", ["exhausted", "amazed", "relieved"]],
+  ["fervent", "full of strong feeling", ["calm", "feverish with illness", "fair"]],
+  ["gregarious", "enjoying other people's company", ["greedy", "lonely", "serious"]],
+  ["haughty", "proud and looking down on others", ["humble", "naughty", "tall"]],
+  ["immaculate", "perfectly clean or tidy", ["huge", "messy", "not finished"]],
+  ["incessant", "never stopping", ["innocent", "rare", "quiet"]],
+  ["jubilant", "full of joy after success", ["jealous", "tired", "puzzled"]],
+  ["lethargic", "slow and lacking energy", ["lively", "lucky", "logical"]],
+  ["lucid", "clear and easy to understand", ["lucky", "confusing", "sleepy"]],
+  ["malevolent", "wishing harm to others", ["kind", "male", "cheerful"]],
+  ["melancholy", "a deep, quiet sadness", ["a type of fruit", "great joy", "anger"]],
+  ["nonchalant", "calm and relaxed, not worried", ["nervous", "rude", "excited"]],
+  ["obstinate", "stubborn and refusing to change", ["obvious", "flexible", "polite"]],
+  ["placid", "calm and not easily upset", ["plastic", "furious", "nervous"]],
+  ["precarious", "dangerously unsteady", ["precious", "safe", "early"]],
+  ["resilient", "able to recover quickly", ["resting", "fragile", "silent"]],
+  ["serene", "calm and peaceful", ["screaming", "serious", "sneaky"]],
+  ["sinister", "suggesting something evil", ["sincere", "cheerful", "simple"]],
+  ["solitary", "alone", ["solid", "crowded", "sunny"]],
+  ["tenacious", "not giving up easily", ["tense", "lazy", "tiny"]],
+  ["trepidation", "fear about what may happen", ["excitement", "travel", "trouble with money"]],
+  ["ubiquitous", "found everywhere", ["unique", "rare", "unknown"]],
+  ["vigilant", "watchful and alert", ["violent", "sleepy", "careless"]],
+  ["wary", "cautious about possible danger", ["weary", "trusting", "warm"]],
+  ["zealous", "very enthusiastic", ["jealous", "lazy", "zigzag"]],
+];
+
+/** Hard words met in a sentence: work the meaning out from the context. */
+const IN_CONTEXT: [string, string, string, string[]][] = [
+  ["The cave was so cavernous that our voices echoed for ages.", "cavernous", "huge and hollow", ["dark and damp", "full of bats", "very narrow"]],
+  ["After the long hike, the weary walkers trudged back to camp.", "trudged", "walked slowly and heavily", ["ran quickly", "skipped happily", "crawled"]],
+  ["The fox moved stealthily so that the hens would not hear it.", "stealthily", "quietly and secretly", ["quickly and loudly", "proudly", "clumsily"]],
+  ["The teacher was astonished when the shy boy won the debate.", "astonished", "very surprised", ["very angry", "bored", "disappointed"]],
+  ["The old bridge looked so dilapidated that nobody dared to cross it.", "dilapidated", "falling apart", ["freshly painted", "very long", "crowded"]],
+  ["Her explanation was so concise that it fitted on one line.", "concise", "short and clear", ["confusing", "long and detailed", "rude"]],
+  ["The crowd fell silent, captivated by the singer's voice.", "captivated", "completely charmed", ["trapped in a cage", "annoyed", "confused"]],
+  ["The detective scrutinised every inch of the room.", "scrutinised", "examined very closely", ["cleaned", "ignored", "painted"]],
+  ["The usually boisterous class was strangely quiet.", "boisterous", "noisy and lively", ["clever", "tidy", "sleepy"]],
+  ["A torrential downpour flooded the streets in minutes.", "torrential", "extremely heavy", ["light", "warm", "short"]],
+];
+
+const AFFIXES: [string, string, string[]][] = [
+  ["Which prefix makes \"possible\" mean the opposite?", "im", ["un", "dis", "in"]],
+  ["Which prefix makes \"appear\" mean the opposite?", "dis", ["un", "im", "mis"]],
+  ["Which prefix makes \"legal\" mean the opposite?", "il", ["un", "im", "dis"]],
+  ["Which prefix makes \"responsible\" mean the opposite?", "ir", ["un", "in", "dis"]],
+  ["What does the prefix \"sub-\" mean, as in submarine?", "under", ["above", "against", "again"]],
+  ["What does the prefix \"anti-\" mean, as in antibiotic?", "against", ["before", "many", "under"]],
+  ["What does the prefix \"pre-\" mean, as in prehistoric?", "before", ["after", "again", "not"]],
+  ["What does the suffix \"-less\" mean, as in fearless?", "without", ["full of", "able to be", "more"]],
+  ["Which word means \"able to be read\"?", "legible", ["readful", "legitable", "readless"]],
+];
+
+const HOMOPHONES: [string, string, string[]][] = [
+  ["The wind ___ the leaves across the yard.", "blew", ["blue", "blow", "bleu"]],
+  ["She couldn't ___ the music over the noise.", "hear", ["here", "heer", "hare"]],
+  ["We walked ___ the dark forest.", "through", ["threw", "thorough", "though"]],
+  ["The knight fought ___ the king's honour.", "for", ["four", "fore", "fur"]],
+  ["Please ___ your name at the top.", "write", ["right", "rite", "wright"]],
+  ["The ___ of the story was to be kind.", "moral", ["morale", "mortal", "morel"]],
+  ["Which ___ do you take to school?", "route", ["root", "rout", "rote"]],
+  ["The sun ___ brightly all day.", "shone", ["shown", "shon", "shoned"]],
+];
+
+/** Spotting writer's techniques (useful for comprehension and for your own writing). */
+const TECHNIQUES: [string, string, string[], string][] = [
+  ["\"The waves were as tall as houses.\"", "simile", ["metaphor", "personification", "alliteration"], "It compares using \"as\", so it's a simile."],
+  ["\"The classroom was a zoo.\"", "metaphor", ["simile", "onomatopoeia", "rhetorical question"], "It says one thing IS another, without \"like\" or \"as\": a metaphor."],
+  ["\"The wind whispered through the trees.\"", "personification", ["simile", "alliteration", "hyperbole"], "Wind can't really whisper: it's given a human action."],
+  ["\"Seven silly snakes slithered south.\"", "alliteration", ["onomatopoeia", "metaphor", "simile"], "The same sound starts several words close together."],
+  ["\"The bacon sizzled and the kettle hissed.\"", "onomatopoeia", ["alliteration", "personification", "metaphor"], "Sizzled and hissed sound like the noises they describe."],
+  ["\"I've told you a million times!\"", "hyperbole", ["simile", "fact", "personification"], "It's a huge exaggeration for effect."],
+  ["\"Do we really want our parks covered in litter?\"", "rhetorical question", ["simile", "command", "metaphor"], "A question asked to make the reader think, not to get an answer."],
+  ["\"Our school needs to be safer, greener and fairer.\"", "rule of three", ["simile", "onomatopoeia", "hyperbole"], "Three ideas in a row make the point memorable."],
+];
+
+const CONNECTIVES: [string, string, string[], string][] = [
+  ["It was raining. ___, we still went to the beach.", "Nevertheless", ["Therefore", "Because", "Firstly"], "\"Nevertheless\" shows a contrast: we went anyway."],
+  ["He hadn't revised. ___, he found the test hard.", "Consequently", ["However", "Although", "Meanwhile"], "\"Consequently\" shows a result."],
+  ["___ the hero searched the castle, the villain escaped.", "While", ["Therefore", "Because of", "Finally"], "\"While\" shows two things happening at the same time."],
+  ["Homework helps us practise. ___, it teaches us to work alone.", "Furthermore", ["However", "Despite", "Unless"], "\"Furthermore\" adds another point."],
+  ["Some people love winter. ___, others prefer summer.", "On the other hand", ["As a result", "Firstly", "Because"], "\"On the other hand\" introduces the opposite view."],
+];
+
+const FORMAL: [string, string[], string][] = [
+  ["I am writing to request a meeting regarding the school trip.", ["Hiya! Can we chat about the trip?", "Gonna need to talk about the trip, OK?", "Trip?? Let's talk lol"], "Formal writing uses full sentences and no slang."],
+  ["We would be grateful if you could reply by Friday.", ["Get back to me by Friday, yeah?", "Reply by Friday or else!", "Friday's the deadline, mate."], "Polite, formal phrasing suits a letter."],
 ];
 
 const GRAMMAR: [string, string, string[], string][] = [
@@ -386,6 +596,34 @@ const WORD_CLASS: [string, string, string, string[]][] = [
 ];
 
 const ENGLISH: ((r: R) => PaperQuestion)[] = [
+  (r) => {
+    const [w, right, wrong] = pick(r, VOCAB);
+    return mc(r, "Vocabulary", `Which word is closest in meaning to "${w}"?`, right, wrong, `"${w[0].toUpperCase() + w.slice(1)}" means ${right}.`);
+  },
+  (r) => {
+    const [s, w, right, wrong] = pick(r, IN_CONTEXT);
+    return mc(r, "Vocabulary in context", `"${s}" What does "${w}" mean here?`, right, wrong, `The clues in the sentence show that "${w}" means ${right}.`);
+  },
+  (r) => {
+    const [q, right, wrong] = pick(r, AFFIXES);
+    return mc(r, "Prefixes and suffixes", q, right, wrong, `The answer is "${right}".`);
+  },
+  (r) => {
+    const [s, right, wrong] = pick(r, HOMOPHONES);
+    return mc(r, "Homophones", `Which word fills the gap? "${s}"`, right, wrong, `"${right}" is the right spelling for this meaning.`);
+  },
+  (r) => {
+    const [quote, right, wrong, why] = pick(r, TECHNIQUES);
+    return mc(r, "Writing techniques", `Which technique is used here? ${quote}`, right, wrong, why);
+  },
+  (r) => {
+    const [s, right, wrong, why] = pick(r, CONNECTIVES);
+    return mc(r, "Linking words", `Which word or phrase fits best? "${s}"`, right, wrong, why);
+  },
+  (r) => {
+    const [right, wrong, why] = pick(r, FORMAL);
+    return mc(r, "Formal writing", "Which sentence would suit a formal letter?", right, wrong, why);
+  },
   (r) => {
     const [right, wrong] = pick(r, SPELLING);
     return mc(r, "Spelling", "Which word is spelt correctly?", right, wrong, `The correct spelling is "${right}".`);
@@ -581,7 +819,14 @@ export const TIPS: Record<string, string> = {
   Grammar: "Read the sentence aloud with each option. Take away extra people (\"Mia and\") to test pronouns.",
   Punctuation: "Check speech marks, apostrophes and commas one at a time.",
   "Word classes": "Nouns name things, verbs are actions, adjectives describe nouns, adverbs describe verbs.",
-  Rotation: "Pick one corner or point and follow it round. Count the quarter turns.",
+  Rotation: "A quarter turn is 90°, a half turn 180°, a full turn 360°. Pick one point and follow it round, counting the quarter turns.",
+  "Word problems": "Underline the numbers and what the question really asks. Do one step at a time and write each step down.",
+  "Vocabulary in context": "Cover the hard word and read the sentence. What word would make sense there? Then find the closest option.",
+  "Prefixes and suffixes": "Learn the common ones: un-, dis-, im-, il-, ir- mean not; pre- before; sub- under; -less without; -ful full of.",
+  Homophones: "Same sound, different spelling. Make up a memory trick, like 'hear' has an 'ear' in it.",
+  "Writing techniques": "Simile compares with like or as; metaphor says something IS something else; personification gives human actions to things.",
+  "Linking words": "Ask what the link does: add (furthermore), contrast (however, nevertheless), result (therefore, consequently) or time (meanwhile).",
+  "Formal writing": "No slang or contractions; polite, complete sentences; think 'letter to the head teacher'.",
   Sides: "Count the sides of each shape and write the numbers down. Then it's a number sequence.",
   "Shading and counting": "Track one thing at a time: first the shading, then the number of dots.",
 };

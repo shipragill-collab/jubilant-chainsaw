@@ -338,6 +338,7 @@ export const ELEVEN_PLUS = {
   features: [
     "40 practice papers in each subject: maths, verbal and non-verbal reasoning, English",
     "Timed papers with answers explained",
+    "Every creative and essay writing task, with Raj's feedback",
     "Weak-spot report: see exactly which question types to practise",
     "Your best score saved for every paper, so you can see progress",
   ],

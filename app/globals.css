@@ -1217,3 +1217,11 @@ html { overflow-x: clip; }
 }
 /* Centre when it fits, but never push the top off-screen on small phones. */
 .age-gate > div { margin-block: auto; }
+
+/* 11+ writing */
+.writing-box {
+  width: 100%; min-height: 360px; padding: 16px; border-radius: 10px; resize: vertical;
+  font-size: 18px; line-height: 1.6; color: var(--foreground); background: var(--surface);
+  border: 1px solid var(--input); outline: none;
+}
+.writing-box:focus { border-color: var(--foreground); }

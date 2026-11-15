@@ -92,6 +92,20 @@ export default function ElevenPlusPage() {
         </div>
       </section>
 
+      <section aria-labelledby="writing" className="space-y-4">
+        <h2 id="writing" className="font-mono text-[12px] font-medium tracking-[0.12em] text-muted-foreground uppercase">Writing</h2>
+        <div className="grid gap-4 md:grid-cols-2">
+          <Link href="/11-plus/writing?kind=creative" className="surface subject-card subject-english block space-y-1 p-5 transition hover:shadow-[inset_0_0_0_1px_var(--input)]">
+            <span className="block font-display text-[24px] font-bold tracking-[-0.02em]">Creative writing</span>
+            <span className="block text-body text-muted-foreground">Stories and descriptions with planning tips, a timer and instant feedback.</span>
+          </Link>
+          <Link href="/11-plus/writing?kind=essay" className="surface subject-card subject-verbal block space-y-1 p-5 transition hover:shadow-[inset_0_0_0_1px_var(--input)]">
+            <span className="block font-display text-[24px] font-bold tracking-[-0.02em]">Essay writing</span>
+            <span className="block text-body text-muted-foreground">Persuasive and balanced essays, letters and speeches, marked by Raj.</span>
+          </Link>
+        </div>
+      </section>
+
       <section aria-labelledby="weak" className="space-y-4">
         <h2 id="weak" className="font-mono text-[12px] font-medium tracking-[0.12em] text-muted-foreground uppercase">Your weak spots</h2>
         <div className={`surface relative overflow-hidden p-5 ${active ? "" : "is-preview"}`}>
