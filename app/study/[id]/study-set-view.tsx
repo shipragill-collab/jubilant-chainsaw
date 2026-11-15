@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { RajChat } from "@/components/raj-chat";
+import { Segmented } from "@/components/segmented";
 import { Badge, Button, Card, Section } from "@/components/ui";
 import { api, getPlayerId } from "@/lib/player";
 import { refreshProfiles } from "@/lib/use-profile";
@@ -90,33 +91,26 @@ export function StudySetView({ set, ownerHash }: { set: PublicSet; ownerHash: st
             <Button variant="secondary" onClick={() => copy(window.location.href.split("#")[0], "Link copied")}>
               {copied === "Link copied" ? "Link copied!" : "Share"}
             </Button>
-            {isOwner && (
-              <Button variant="ghost" onClick={remove}>
-                Delete
-              </Button>
-            )}
           </div>
+          {isOwner && (
+            <button type="button" onClick={remove} className="text-label text-muted-foreground underline underline-offset-4 hover:text-destructive">
+              Delete this set
+            </button>
+          )}
         </div>
       }
     >
       <div className="space-y-6">
-        <div role="tablist" className="flex flex-wrap gap-1">
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              role="tab"
-              aria-selected={tab === t.id}
-              onClick={() => {
-                setTab(t.id);
-                history.replaceState(null, "", t.id === "notes" ? window.location.pathname : `#${t.id}`);
-              }}
-              className={`rounded-full px-4 py-2 text-body-lg transition ${
-                tab === t.id ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
+        <div className="set-tabs">
+          <Segmented
+            label="Study set sections"
+            options={TABS}
+            value={tab}
+            onChange={(id) => {
+              setTab(id);
+              history.replaceState(null, "", id === "notes" ? window.location.pathname : `#${id}`);
+            }}
+          />
         </div>
 
         {tab === "notes" ? (

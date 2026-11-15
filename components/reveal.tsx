@@ -11,14 +11,13 @@ export function MotionRoot({ children }: { children: ReactNode }) {
 }
 
 /**
- * Slides content up into place as it scrolls into view. The starting offset
- * is small and the content is already visible, so nothing is hidden if
- * JavaScript is slow or the page is captured as a still.
+ * Slides content up into place as it scrolls into view. It starts partly
+ * visible, so nothing is ever blank if the scroll observer misses.
  */
 export function Reveal({ children, delay = 0, y = 28, ...rest }: { children: ReactNode; delay?: number; y?: number } & HTMLMotionProps<"div">) {
   return (
     <motion.div
-      initial={{ opacity: 0.001, y }}
+      initial={{ opacity: 0.4, y }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "0px 0px -10% 0px" }}
       transition={{ ...spring, delay }}

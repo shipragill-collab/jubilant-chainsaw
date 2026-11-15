@@ -248,7 +248,7 @@ export default function ShopPage() {
         </div>
         <div className="grid gap-5">
           {/* Coins: two compact packs, then the hero on the right */}
-          <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] sm:grid-rows-2">
+          <div className="pack-scroll sm:grid sm:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] sm:grid-rows-2">
             {COIN_PACKS.map((pack, i) => (
               <div key={pack.id} className={i === 2 ? "order-first sm:order-none sm:col-start-2 sm:row-span-2 sm:row-start-1" : "sm:col-start-1"}>
                 <PackCard
@@ -268,7 +268,7 @@ export default function ShopPage() {
             ))}
           </div>
           {/* Gems: mirrored, hero on the left */}
-          <div className="grid gap-4 sm:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] sm:grid-rows-2">
+          <div className="pack-scroll sm:grid sm:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] sm:grid-rows-2">
             {GEM_PACKS.map((pack, i) => (
               <div key={pack.id} className={i === 2 ? "order-first sm:order-none sm:col-start-1 sm:row-span-2 sm:row-start-1" : "sm:col-start-2"}>
                 <PackCard
@@ -442,7 +442,7 @@ export default function ShopPage() {
                       ))}
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 gap-x-8 gap-y-10 sm:grid-cols-2 xl:grid-cols-3">
+                    <div className="grid grid-cols-2 gap-x-3 gap-y-7 sm:grid-cols-3 sm:gap-x-6 sm:gap-y-10 xl:grid-cols-4">
                       {g.items.map((item) => (
                     <div key={item.id} className="min-w-0">
                       <button
@@ -453,10 +453,10 @@ export default function ShopPage() {
                         aria-label={`Try on ${item.name}`}
                       >
                         <div className={`item-art tint-${item.season ? "festive" : item.rarity}`}>
-                          <Avatar equipped={{ ...equipped, [item.slot]: item.id }} size={112} />
+                          <Avatar equipped={{ ...equipped, [item.slot]: item.id }} size={96} />
                         </div>
                       </button>
-                      <div className="mt-3 flex items-center gap-2 text-body-lg">
+                      <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-body font-medium sm:text-body-lg">
                         <span className="truncate">{item.name}</span>
                         <span className="shrink-0 text-muted-foreground">
                           <PriceLabel item={item} />
@@ -467,7 +467,7 @@ export default function ShopPage() {
                         <RarityBadge item={item} />
                         <SourceTag item={item} />
                       </div>
-                      <p className="mt-1.5 text-body text-muted-foreground">{item.description}</p>
+                      <p className="mt-1.5 hidden text-body text-muted-foreground sm:block">{item.description}</p>
                       <div className="mt-3">
                         <BuyButton item={item} />
                       </div>

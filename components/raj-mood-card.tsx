@@ -30,11 +30,11 @@ export function RajMoodCard({ href, compact = false }: { href?: string; compact?
   return (
     <section
       aria-label="Raj and your study streak"
-      className={`raj-room flex gap-5 rounded-[24px] border-[1.5px] border-surface-border bg-surface shadow-[0_3px_0_var(--surface-border)] ${
+      className={`raj-room flex gap-5 rounded-[14px] border border-surface-border bg-surface ${
         compact ? "flex-col items-start p-5" : "flex-col items-center p-6 sm:flex-row sm:items-center sm:p-7"
       }`}
     >
-      <div className={`grid shrink-0 place-items-center rounded-[20px] bg-[var(--raj-tint)] ${compact ? "h-[120px] w-full" : "h-[150px] w-full sm:w-[170px]"}`}>
+      <div className={`grid shrink-0 place-items-center rounded-[10px] bg-[var(--raj-tint)] ${compact ? "h-[120px] w-full" : "h-[150px] w-full sm:w-[170px]"}`}>
         <RajCompanion feeling={activity.feeling} size={compact ? 104 : 128} followPointer label={`Raj looks ${activity.feeling}`} />
       </div>
       <div className="min-w-0 flex-1 space-y-3">
@@ -69,7 +69,7 @@ export function RajMoodCard({ href, compact = false }: { href?: string; compact?
         </div>
         <Link
           href={target}
-          className="inline-flex h-10 items-center rounded-full bg-[var(--raj-forest)] px-5 text-body font-semibold text-white shadow-[0_3px_0_var(--raj-forest-deep)] transition active:translate-y-[3px] active:shadow-none"
+          className="btn inline-flex h-10 items-center rounded-[6px] bg-[var(--raj-forest)] px-4 text-[12px] text-white hover:brightness-110"
         >
           {line.cta}
         </Link>

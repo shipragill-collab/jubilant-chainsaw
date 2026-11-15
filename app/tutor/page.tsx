@@ -30,22 +30,17 @@ export default function TutorPage() {
       intro="Raj is your AI study tutor: clear explanations, answers about your notes, and quizzes until it sticks."
       aside={
         <div className="space-y-4 pt-4">
-          <RajMoodCard compact href="/study" />
-          <p className="pt-2 text-label font-medium tracking-wide text-muted-foreground uppercase">Study with</p>
+          <div className="hidden lg:block">
+            <RajMoodCard compact href="/study" />
+          </div>
+          <p className="font-mono text-[11px] tracking-[0.12em] text-muted-foreground uppercase lg:pt-2">Study with</p>
           <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => setSetId(null)}
-              className={`rounded-full px-4 py-2 text-body transition ${setId === null ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}
-            >
+            <button type="button" onClick={() => setSetId(null)} aria-pressed={setId === null} className="chip">
               Anything
             </button>
             {sets.map((s) => (
-              <button
-                key={s.id}
-                onClick={() => setSetId(s.id)}
-                className={`max-w-full truncate rounded-full px-4 py-2 text-body transition ${setId === s.id ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}
-              >
-                {s.title}
+              <button type="button" key={s.id} onClick={() => setSetId(s.id)} aria-pressed={setId === s.id} className="chip max-w-full">
+                <span className="truncate">{s.title}</span>
               </button>
             ))}
           </div>

@@ -1042,3 +1042,17 @@ body {
 .more-link { display: grid; gap: 2px; padding: 14px; border-radius: 10px; box-shadow: inset 0 0 0 1px var(--surface-border); }
 .more-link[aria-current="page"] { box-shadow: inset 0 0 0 1.5px var(--brand); }
 @media (prefers-reduced-motion: reduce) { .more-sheet[open] { animation: none; } .tab-duel { transition: none; } }
+
+/* Top-up packs: a swipeable row on phones, the bento grid from sm up */
+.pack-scroll { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; margin-inline: -16px; padding: 4px 16px 8px; }
+.pack-scroll::-webkit-scrollbar { display: none; }
+.pack-scroll > * { flex: 0 0 76%; scroll-snap-align: start; }
+@media (min-width: 640px) {
+  .pack-scroll { gap: 16px; overflow: visible; margin-inline: 0; padding: 0; }
+  .pack-scroll > * { flex: none; }
+}
+
+/* Study set tabs stick under the slim phone header while you scroll */
+@media (max-width: 767px) {
+  .set-tabs { position: sticky; top: 56px; z-index: 20; margin-inline: -16px; padding: 8px 16px; background: var(--glass); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+}
