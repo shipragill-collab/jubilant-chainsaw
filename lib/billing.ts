@@ -1,8 +1,8 @@
 import Stripe from "stripe";
-import { COIN_PACKS, GEM_PACKS, MIN_PRICE_PENCE, PLANS, itemById } from "./catalog";
+import { COIN_PACKS, GEM_PACKS, MIN_PRICE_PENCE, PLANS, PRO_YEARLY, itemById } from "./catalog";
 import { BUNDLE, PASS } from "./pass";
 import { GameError } from "./game";
-import { giveItem, grantPass, grantPro, profileOf } from "./profile";
+import { giveItem, grantPass, grantPro, grantProYear, profileOf } from "./profile";
 import { newId, read, update } from "./store";
 import type { Db, Order } from "./types";
 
@@ -29,6 +29,9 @@ export function describeOrder(o: Pick<Order, "kind" | "packId" | "itemId">) {
   if (o.kind === "pro") {
     return { name: "Quiz Duel Pro", detail: "Monthly subscription", pricePence: PLANS.pro.pricePence, coins: PLANS.pro.monthlyCoins, gems: 0, recurring: true };
   }
+  if (o.kind === "pro_year") {
+    return { name: "Quiz Duel Pro (yearly)", detail: "Yearly subscription · about two months free", pricePence: PRO_YEARLY.pricePence, coins: PRO_YEARLY.coins, gems: 0, recurring: true, interval: "year" as const };
+  }
   if (o.kind === "bundle") {
     return { name: `Quiz Duel ${BUNDLE.name}`, detail: "Monthly subscription · Pro + Duel Pass", pricePence: BUNDLE.pricePence, coins: PLANS.pro.monthlyCoins, gems: 0, recurring: true };
   }
@@ -52,7 +55,7 @@ export function describeOrder(o: Pick<Order, "kind" | "packId" | "itemId">) {
 
 /** Start a purchase. Returns where to send the browser. */
 export async function startCheckout(req: Request, playerId: string, kind: unknown, packId: unknown, itemId?: unknown): Promise<string> {
-  if (kind !== "pro" && kind !== "coins" && kind !== "gems" && kind !== "pass" && kind !== "bundle" && kind !== "item") throw new GameError("Unknown purchase.");
+  if (kind !== "pro" && kind !== "pro_year" && kind !== "coins" && kind !== "gems" && kind !== "pass" && kind !== "bundle" && kind !== "item") throw new GameError("Unknown purchase.");
   if (kind === "item") {
     const db = await read();
     if (db.profiles[playerId]?.owned.includes(String(itemId))) throw new GameError("You already own this.", 409);
@@ -84,7 +87,7 @@ export async function startCheckout(req: Request, playerId: string, kind: unknow
           currency: "gbp",
           unit_amount: item.pricePence,
           product_data: { name: item.name, description: item.detail },
-          ...(item.recurring ? { recurring: { interval: "month" as const } } : {}),
+          ...(item.recurring ? { recurring: { interval: "interval" in item && item.interval === "year" ? ("year" as const) : ("month" as const) } } : {}),
         },
       },
     ],
@@ -106,6 +109,11 @@ export function fulfil(db: Db, orderId: string, stripeIds?: { customer?: string 
   if (stripeIds?.customer) p.stripeCustomerId = stripeIds.customer;
   if (order.kind === "pro") {
     grantPro(p);
+    p.proInterval = "month";
+    if (stripeIds?.subscription) p.stripeSubscriptionId = stripeIds.subscription;
+  } else if (order.kind === "pro_year") {
+    grantProYear(p);
+    p.proInterval = "year";
     if (stripeIds?.subscription) p.stripeSubscriptionId = stripeIds.subscription;
   } else if (order.kind === "bundle") {
     // One subscription keeps both going; renewals and cancellations match either id.
@@ -163,7 +171,11 @@ export async function handleWebhook(rawBody: string, signature: string | null) {
     if (!sub) return;
     await update((db) => {
       for (const [id, p] of Object.entries(db.profiles)) {
-        if (p.stripeSubscriptionId === sub) grantPro(profileOf(db, id));
+        if (p.stripeSubscriptionId === sub) {
+          const prof = profileOf(db, id);
+          if (prof.proInterval === "year") grantProYear(prof);
+          else grantPro(prof);
+        }
         if (p.stripePassSubscriptionId === sub) grantPass(profileOf(db, id));
       }
     });

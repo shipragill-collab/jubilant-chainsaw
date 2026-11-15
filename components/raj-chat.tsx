@@ -8,7 +8,7 @@ import { sfx, skinActive } from "@/lib/sfx";
 import { refreshProfiles } from "@/lib/use-profile";
 import { useRajActivity } from "@/lib/use-raj";
 import { RAJ_STATUS, RajCompanion, type RajState } from "./raj-companion";
-import { Button, ErrorText } from "./ui";
+import { Button, ErrorNotice } from "./ui";
 
 interface Msg {
   role: "user" | "assistant";
@@ -398,9 +398,7 @@ export function RajChat({ setId, setTitle }: { setId: string | null; setTitle?: 
       </div>
 
       {error && (
-        <p className="px-5 pb-2 text-label text-destructive">
-          <ErrorText message={error} />
-        </p>
+<div className="px-5 pb-2"><ErrorNotice message={error} className="text-label text-destructive" /></div>
       )}
       {messages.length > 0 && !busy && (
         <div className="flex gap-2 overflow-x-auto px-5 pb-2">

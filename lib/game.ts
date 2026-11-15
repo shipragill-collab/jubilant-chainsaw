@@ -1,3 +1,4 @@
+import { INVITE_REWARD } from "./catalog";
 import { peekProfile, publicId } from "./profile";
 import {
   MAX_PLAYERS,
@@ -139,6 +140,7 @@ export function toView(
     winnerId: winnerId ? publicId(winnerId) : null,
     rematchId: duel.rematchId,
     rematchOf: duel.rematchOf,
+    inviteBonus: me && duel.inviteBonus?.includes(me.id) ? INVITE_REWARD.coins : 0,
     players: duel.players.map((p) => ({
       id: publicId(p.id),
       avatar: look(p.id).equipped,

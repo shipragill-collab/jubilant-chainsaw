@@ -8,7 +8,8 @@ import { PreviewCard, SetThumbnail } from "@/components/gallery";
 import { DuelOrbit } from "@/components/duel-orbit";
 import { RajMoodCard } from "@/components/raj-mood-card";
 import { Reveal, RiseWords } from "@/components/reveal";
-import { Button, Panel, Spinner, buttonClass, inputClass, ErrorText } from "@/components/ui";
+import { WelcomeTour } from "@/components/welcome-tour";
+import { Button, Panel, Spinner, buttonClass, inputClass, ErrorNotice } from "@/components/ui";
 import { api, getPlayerId, getSavedName, saveName } from "@/lib/player";
 import { SAMPLES } from "@/lib/samples";
 import { timeAgo } from "@/lib/time";
@@ -28,6 +29,7 @@ export function HomeClient() {
 
   return (
     <>
+      <WelcomeTour />
       <Hero />
       <Reveal className="pb-12 sm:pb-16">
         <RajMoodCard />
@@ -322,9 +324,7 @@ function StartDuel() {
           </label>
 
           {error && (
-            <p role="alert" className="rounded-2xl bg-destructive-soft px-4 py-3 text-body text-destructive">
-              <ErrorText message={error} />
-            </p>
+<ErrorNotice message={error} className="rounded-2xl bg-destructive-soft px-4 py-3 text-body text-destructive" />
           )}
 
           <Button type="submit" variant="brand" size="lg" disabled={!canSubmit} className="w-full sm:w-auto">

@@ -965,3 +965,22 @@ body {
 .surface { border-radius: 12px; box-shadow: none; }
 .panel { border-radius: 14px; }
 @media (prefers-reduced-motion: reduce) { .btn, .plan-cta, .pack-btn { transition: none; } }
+
+/* The card shown when a free limit is reached */
+.upgrade-card {
+  margin-top: 4px; border-radius: 12px; padding: 16px 18px; font-size: 15px; line-height: 1.5; color: var(--foreground);
+  background: linear-gradient(135deg, color-mix(in oklab, var(--brand) 10%, var(--surface)), var(--surface));
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--brand) 35%, var(--surface-border));
+}
+
+/* First-visit welcome tour */
+.welcome {
+  width: min(460px, calc(100vw - 32px)); margin: auto; padding: 22px; border: 0; border-radius: 16px;
+  display: none; flex-direction: column; gap: 20px; color: var(--foreground); background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--surface-border), var(--shadow-lg);
+}
+.welcome[open] { display: flex; animation: welcome-in 0.4s cubic-bezier(0.34, 1.4, 0.64, 1); }
+.welcome::backdrop { background: rgba(10, 9, 8, 0.6); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+.welcome-stage { min-height: 300px; display: grid; align-items: center; overflow: hidden; }
+@keyframes welcome-in { from { opacity: 0; transform: translateY(16px) scale(0.97); } }
+@media (prefers-reduced-motion: reduce) { .welcome[open] { animation: none; } }

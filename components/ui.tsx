@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
+import { UpgradePrompt } from "./upgrade-prompt";
 
 type Variant = "primary" | "brand" | "secondary" | "ghost";
 
@@ -63,18 +64,18 @@ export const inputClass =
   "w-full rounded-2xl border border-input bg-surface px-4 text-body-lg text-foreground placeholder:text-faint-foreground outline-none transition focus:border-foreground";
 
 /** An error message; when it's about the Free plan's limits, adds a link to the plans page. */
-export function ErrorText({ message }: { message: string }) {
+/** An error box, or the upgrade card when the "error" is a free limit. */
+export function ErrorNotice({ message, className }: { message: string; className: string }) {
+  if (/Upgrade to Pro/.test(message)) return <UpgradePrompt message={message} />;
   return (
-    <>
+    <p role="alert" className={className}>
       {message}
-      {/Upgrade to Pro/.test(message) && (
-        <>
-          {" "}
-          <a href="/pricing" className="font-medium underline underline-offset-4">
-            See Pro
-          </a>
-        </>
-      )}
-    </>
+    </p>
   );
+}
+
+export function ErrorText({ message }: { message: string }) {
+  // Hitting a free limit isn't an error to the player: offer the trial or Pro.
+  if (/Upgrade to Pro/.test(message)) return <UpgradePrompt message={message} />;
+  return <>{message}</>;
 }

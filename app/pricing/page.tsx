@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { Avatar } from "@/components/avatar";
 import { Button, Spinner } from "@/components/ui";
-import { PLANS, currentMonth, formatPrice, proSkinFor } from "@/lib/catalog";
+import { PLANS, PRO_YEARLY, TRIAL_DAYS, currentMonth, formatPrice, proSkinFor } from "@/lib/catalog";
+import { Segmented } from "@/components/segmented";
 import { BUNDLE, PASS } from "@/lib/pass";
 import { api, getPlayerId } from "@/lib/player";
 import { refreshProfiles, useProfile, type ClientProfile } from "@/lib/use-profile";
@@ -45,6 +46,7 @@ function PlanCard({
   icon,
   title,
   price,
+  per = "month",
   was,
   tagline,
   features,
@@ -56,6 +58,7 @@ function PlanCard({
   icon: ReactNode;
   title: string;
   price: number;
+  per?: "month" | "year";
   was?: number;
   tagline: string;
   features: string[];
@@ -63,7 +66,7 @@ function PlanCard({
   children: ReactNode;
 }) {
   return (
-    <article className={`plan plan-${variant} flex flex-col`} aria-label={`${title}, ${formatPrice(price)} a month. ${audience}`}>
+    <article className={`plan plan-${variant} flex flex-col`} aria-label={`${title}, ${formatPrice(price)} a ${per}. ${audience}`}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="plan-audience">
           {icon}
@@ -74,7 +77,7 @@ function PlanCard({
       <h2 className="mt-5 font-display text-[26px] leading-none font-extrabold tracking-[-0.03em]">{title}</h2>
       <p className="mt-3 flex flex-wrap items-baseline gap-x-2">
         <span className="font-display text-[46px] leading-none font-extrabold tracking-[-0.04em] tabular-nums">{formatPrice(price)}</span>
-        <span className="text-body-lg opacity-65">/ month</span>
+        <span className="text-body-lg opacity-65">/ {per}</span>
         {was && <s className="text-body-lg opacity-50 tabular-nums">{formatPrice(was)}</s>}
       </p>
       <p className="mt-3 text-body-lg opacity-75">{tagline}</p>
@@ -96,6 +99,7 @@ export default function PricingPage() {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [billing, setBilling] = useState<"month" | "year">("month");
   const monthly = proSkinFor(currentMonth());
 
   useEffect(() => {
@@ -105,6 +109,7 @@ export default function PricingPage() {
     else if (c) setNotice("Pro has been cancelled. You're on the Free plan.");
     const p = q.get("purchased");
     if (p === "pro") setNotice("Welcome to Pro! Claim this month's skin below.");
+    if (p === "pro_year") setNotice(`Welcome to Pro for a year! ${PRO_YEARLY.coins.toLocaleString()} bonus coins are in your wallet.`);
     if (p === "bundle") setNotice(`Welcome to ${BUNDLE.name}! Pro and the Duel Pass are both switched on.`);
   }, []);
 
@@ -117,6 +122,21 @@ export default function PricingPage() {
       window.location.href = url;
     } catch (err) {
       setError((err as Error).message);
+      setBusy(null);
+    }
+  }
+
+  async function startTrial() {
+    setBusy("trial");
+    setError(null);
+    try {
+      const next = await api<ClientProfile>("/api/pro/trial", { body: { playerId: getPlayerId() } });
+      setProfile((p) => (p ? { ...p, ...next } : p));
+      setNotice(`Pro is on for ${TRIAL_DAYS} days. No card needed, and it simply ends if you don't upgrade.`);
+      refreshProfiles();
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
       setBusy(null);
     }
   }
@@ -173,11 +193,24 @@ export default function PricingPage() {
           audience="Best for solo learners"
           icon={ICONS.solo}
           title="Pro"
-          price={PLANS.pro.pricePence}
+          price={billing === "year" ? PRO_YEARLY.pricePence : PLANS.pro.pricePence}
+          per={billing}
+          was={billing === "year" ? PLANS.pro.pricePence * 12 : undefined}
           tagline={PLANS.pro.tagline}
           features={PLANS.pro.features.slice(0, 5)}
-          status={pro ? `Active${profile?.proUntil ? ` · until ${until(profile.proUntil)}` : ""}` : undefined}
+          status={pro ? `${profile?.onTrial ? "Free trial" : "Active"}${profile?.proUntil ? ` · until ${until(profile.proUntil)}` : ""}` : undefined}
         >
+          {!pro && (
+            <Segmented
+              label="Pro billing"
+              value={billing}
+              onChange={setBilling}
+              options={[
+                { id: "month", label: "Monthly" },
+                { id: "year", label: `Yearly · save ${Math.round((1 - PRO_YEARLY.pricePence / (PLANS.pro.pricePence * 12)) * 100)}%` },
+              ]}
+            />
+          )}
           {monthly && (
             <div className="flex items-center gap-3 rounded-2xl bg-[color-mix(in_oklab,var(--plan-accent)_12%,transparent)] p-3">
               <Avatar equipped={{ ...(profile?.equipped ?? {}), skin: monthly.id }} size={44} />
@@ -193,14 +226,25 @@ export default function PricingPage() {
               {pro && claimed && <span className="text-label opacity-70">Claimed</span>}
             </div>
           )}
-          {pro ? (
+          {pro && profile?.onTrial ? (
+            <button type="button" className="plan-cta" onClick={() => go("pro", "/api/billing/checkout", { kind: billing === "year" ? "pro_year" : "pro" })} disabled={busy !== null}>
+              {spin("pro")} Keep Pro · {formatPrice(billing === "year" ? PRO_YEARLY.pricePence : PLANS.pro.pricePence)}
+            </button>
+          ) : pro ? (
             <Button variant="secondary" className="w-full" onClick={() => go("mpro", "/api/billing/manage", { which: "pro" })} disabled={busy !== null}>
               {profile?.paymentsLive ? "Manage Pro" : "Cancel Pro"}
             </Button>
           ) : (
-            <button type="button" className="plan-cta" onClick={() => go("pro", "/api/billing/checkout", { kind: "pro" })} disabled={busy !== null}>
-              {spin("pro")} Go Pro · {formatPrice(PLANS.pro.pricePence)}
-            </button>
+            <>
+              <button type="button" className="plan-cta" onClick={() => go("pro", "/api/billing/checkout", { kind: billing === "year" ? "pro_year" : "pro" })} disabled={busy !== null}>
+                {spin("pro")} Go Pro · {formatPrice(billing === "year" ? PRO_YEARLY.pricePence : PLANS.pro.pricePence)}
+              </button>
+              {profile?.trialAvailable && (
+                <button type="button" onClick={startTrial} disabled={busy !== null} className="block w-full text-center text-body underline underline-offset-4 opacity-85 hover:opacity-100">
+                  {busy === "trial" ? "Starting…" : `Or try it free for ${TRIAL_DAYS} days, no card`}
+                </button>
+              )}
+            </>
           )}
         </PlanCard>
 

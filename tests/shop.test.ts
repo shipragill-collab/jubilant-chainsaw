@@ -44,6 +44,7 @@ describe("shop", () => {
 
   it("pays coins once per finished duel", () => {
     const db = emptyDb();
+    profileOf(db, "b").firstDuelDone = true; // not a first duel, so no invite bonus here
     const duel = { id: "d", players: [{ id: "a" }, { id: "b" }] } as unknown as Duel;
     rewardDuel(db, duel, "a");
     rewardDuel(db, duel, "a");

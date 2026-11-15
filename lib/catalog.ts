@@ -302,3 +302,12 @@ export const formatPrice = (pence: number) => (pence === 0 ? "Free" : pence < 10
 
 /** Coins earned for finishing a duel. */
 export const DUEL_REWARD = { played: 20, win: 30, tie: 15 };
+
+/** Both players get this when someone finishes their first ever duel from a friend's link. */
+export const INVITE_REWARD = { coins: 200, monthlyCap: 10 };
+
+/** Free Pro trial, once per player, no card needed. */
+export const TRIAL_DAYS = 7;
+
+/** Pro paid yearly: about two months free, with a year of bonus coins up front. */
+export const PRO_YEARLY = { pricePence: 1999, coins: 12_000 };

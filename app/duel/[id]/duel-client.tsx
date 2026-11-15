@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Avatar } from "@/components/avatar";
 import { Coins } from "@/components/coin";
 import { Badge, Button, Card, Spinner, inputClass } from "@/components/ui";
-import { DUEL_REWARD } from "@/lib/catalog";
+import { DUEL_REWARD, INVITE_REWARD } from "@/lib/catalog";
 import { sfx, skinActive } from "@/lib/sfx";
 import { refreshProfiles } from "@/lib/use-profile";
 import { api, getPlayerId, getSavedName, saveName } from "@/lib/player";
@@ -93,6 +93,50 @@ export function DuelClient({ id }: { id: string }) {
 }
 
 const isFinished = (view: DuelView, publicId: string) => view.players.find((p) => p.id === publicId)?.finished ?? false;
+
+/** Shares the result image (stories, group chats); falls back to saving it and copying the link. */
+function ShareResult({ view }: { view: DuelView }) {
+  const [state, setState] = useState<"idle" | "busy" | "saved" | "error">("idle");
+  async function share() {
+    setState("busy");
+    const url = `${window.location.origin}/duel/${view.id}`;
+    const text = `I just played a Quiz Duel on ${view.title}. Think you can beat me?`;
+    try {
+      const blob = await fetch(`/api/duels/${view.id}/card`).then((r) => {
+        if (!r.ok) throw new Error("card");
+        return r.blob();
+      });
+      const file = new File([blob], "quiz-duel-result.png", { type: "image/png" });
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], text, url });
+        setState("idle");
+        return;
+      }
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "quiz-duel-result.png";
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      await navigator.clipboard?.writeText(`${text} ${url}`).catch(() => undefined);
+      setState("saved");
+    } catch (err) {
+      if ((err as Error).name === "AbortError") return setState("idle");
+      setState("error");
+    }
+  }
+  return (
+    <span className="inline-flex flex-wrap items-center gap-2">
+      <Button variant="secondary" size="lg" onClick={share} disabled={state === "busy"}>
+        <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <path d="M12 3v12M7 8l5-5 5 5M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5" />
+        </svg>
+        {state === "busy" ? "Making card…" : "Share result"}
+      </Button>
+      {state === "saved" && <span role="status" className="text-label text-muted-foreground">Image saved and link copied. Post it anywhere!</span>}
+      {state === "error" && <span role="status" className="text-label text-destructive">Couldn&apos;t make the image. Try again?</span>}
+    </span>
+  );
+}
 
 function ShareLink({ compact = false }: { compact?: boolean }) {
   const [copied, setCopied] = useState(false);
@@ -478,13 +522,20 @@ function Results({ view, playerId }: { view: DuelView; playerId: string }) {
             coins for the shop.
           </p>
         )}
+        {done && view.inviteBonus > 0 && (
+          <p className="pt-1 text-body text-foreground">
+            First duel together: you both got a <Coins className="font-semibold" amount={view.inviteBonus} /> coin invite bonus!
+          </p>
+        )}
       </Card>
 
       <Scoreboard view={view} playerId={playerId} />
 
       {!opponent && (
         <Card className="space-y-3">
-          <p className="text-label text-muted-foreground">Send this link to your friend so they can play the same quiz:</p>
+          <p className="text-label text-muted-foreground">
+            Send this link to your friend so they can play the same quiz. If it&apos;s their first duel, you both get {INVITE_REWARD.coins} bonus coins.
+          </p>
           <ShareLink />
         </Card>
       )}
@@ -502,6 +553,7 @@ function Results({ view, playerId }: { view: DuelView; playerId: string }) {
               "Rematch"
             )}
           </Button>
+          <ShareResult view={view} />
           <Button variant="secondary" size="lg" onClick={() => router.push("/leaderboard")}>
             Leaderboard
           </Button>

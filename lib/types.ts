@@ -48,6 +48,8 @@ export interface Duel {
   rematchId: string | null;
   /** Coins have been paid out for this finished duel. */
   rewarded?: boolean;
+  /** Players who got the invite bonus when this duel finished. */
+  inviteBonus?: string[];
 }
 
 export interface NoteSection {
@@ -117,12 +119,23 @@ export interface Profile {
   stripePassSubscriptionId?: string;
   /** Checkout sessions already credited (idempotency). */
   credited: string[];
+  /** Billing period of the current paid Pro subscription. */
+  proInterval?: "month" | "year";
+  /** When the free Pro trial was started (once per player) and when it ends. */
+  trialStartedAt?: number;
+  trialUntil?: number;
+  /** Has finished at least one duel (for invite rewards). */
+  firstDuelDone?: boolean;
+  /** Who invited this player (their internal id). */
+  invitedBy?: string;
+  /** Invite bonuses earned this month, capped. */
+  inviteBonuses?: { month: string; count: number };
 }
 
 export interface Order {
   id: string;
   playerId: string;
-  kind: "pro" | "coins" | "gems" | "pass" | "bundle" | "item";
+  kind: "pro" | "pro_year" | "coins" | "gems" | "pass" | "bundle" | "item";
   packId?: string;
   itemId?: string;
   createdAt: number;
@@ -181,6 +194,8 @@ export interface DuelView {
   } | null;
   /** Full answer key, only once the requesting player has finished. */
   review: Question[] | null;
+  /** Coins the requesting player got from the invite bonus on this duel (0 if none). */
+  inviteBonus: number;
 }
 
 export interface LeaderboardRow {

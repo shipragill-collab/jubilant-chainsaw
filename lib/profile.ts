@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { DEFAULT_EQUIPPED, DUEL_REWARD, ITEMS, PLANS, STARTER_ITEMS, currentMonth, howToGet, itemById, proSkinFor, seasonStatus, SEASON_LABEL, type Slot } from "./catalog";
+import { DEFAULT_EQUIPPED, DUEL_REWARD, INVITE_REWARD, ITEMS, PLANS, PRO_YEARLY, TRIAL_DAYS, STARTER_ITEMS, currentMonth, howToGet, itemById, proSkinFor, seasonStatus, SEASON_LABEL, type Slot } from "./catalog";
 import { PASS, seasonOf, tierFor, tierRewards, type Track } from "./pass";
 import { GameError } from "./game";
 import { update } from "./store";
@@ -161,21 +161,51 @@ export function equipItem(db: Db, playerId: string, slot: Slot, itemId: string |
 }
 
 /** Grant Pro for a period (from a purchase or renewal), adding the monthly coin bonus. */
-export function grantPro(p: Profile, days = 31, now = Date.now()) {
+export function grantPro(p: Profile, days = 31, now = Date.now(), coins = PLANS.pro.monthlyCoins) {
   const from = p.proUntil && p.proUntil > now ? p.proUntil : now;
   p.plan = "pro";
   p.proUntil = from + days * 24 * 3600 * 1000;
-  p.coins += PLANS.pro.monthlyCoins;
+  p.coins += coins;
+}
+
+/** A year of Pro, with a year's bonus coins up front. */
+export const grantProYear = (p: Profile, now = Date.now()) => grantPro(p, 366, now, PRO_YEARLY.coins);
+
+/** The free Pro trial: once per player, no card, no bonus coins. */
+export function startTrial(db: Db, playerId: string, now = Date.now()) {
+  const p = profileOf(db, playerId, now);
+  if (p.trialStartedAt) throw new GameError("You've already used your free trial.", 409);
+  if (isPro(p, now)) throw new GameError("You already have Pro.", 409);
+  grantPro(p, TRIAL_DAYS, now, 0);
+  p.trialStartedAt = now;
+  p.trialUntil = p.proUntil ?? undefined;
+  return p;
 }
 
 /** Pay out coins once a duel has finished. */
-export function rewardDuel(db: Db, duel: Duel, winnerId: string | null) {
+export function rewardDuel(db: Db, duel: Duel, winnerId: string | null, now = Date.now()) {
   if (duel.rewarded || duel.players.length < 2) return;
   for (const pl of duel.players) {
     const p = profileOf(db, pl.id);
     p.coins += DUEL_REWARD.played + (winnerId === null ? DUEL_REWARD.tie : winnerId === pl.id ? DUEL_REWARD.win : 0);
     addXp(p, PASS.xp.duel + (winnerId === pl.id ? PASS.xp.win : 0));
   }
+  // Invite bonus: the friend who joined finished their first ever duel.
+  const [host, ...guests] = duel.players;
+  const hostProfile = profileOf(db, host.id, now);
+  const month = new Date(now).toISOString().slice(0, 7);
+  for (const g of guests) {
+    const gp = profileOf(db, g.id, now);
+    if (gp.firstDuelDone || gp.invitedBy || g.id === host.id) continue;
+    const earned = hostProfile.inviteBonuses?.month === month ? hostProfile.inviteBonuses.count : 0;
+    if (earned >= INVITE_REWARD.monthlyCap) continue;
+    gp.invitedBy = host.id;
+    gp.coins += INVITE_REWARD.coins;
+    hostProfile.coins += INVITE_REWARD.coins;
+    hostProfile.inviteBonuses = { month, count: earned + 1 };
+    duel.inviteBonus = [...(duel.inviteBonus ?? []), host.id, g.id];
+  }
+  for (const pl of duel.players) profileOf(db, pl.id, now).firstDuelDone = true;
   duel.rewarded = true;
 }
 
@@ -197,6 +227,9 @@ export function profileView(p: Profile, now = Date.now()) {
     passUntil: hasPass(p, now) ? (p.passUntil ?? null) : null,
     pass: p.pass ?? { season: seasonOf(now).id, xp: 0, claimed: [] },
     hasPassSubscription: Boolean(p.stripePassSubscriptionId),
+    trialAvailable: !p.trialStartedAt && !pro,
+    onTrial: pro && Boolean(p.trialUntil && p.proUntil === p.trialUntil),
+    proInterval: pro ? (p.proInterval ?? "month") : null,
   };
 }
 
