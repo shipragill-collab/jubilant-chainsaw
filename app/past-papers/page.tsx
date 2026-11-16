@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { FREE_PAPERS, SUBJECTS_11 } from "@/lib/eleven-plus";
 import { LIBRARY } from "@/lib/library";
 import { admissionsLink, schoolById, type School } from "@/lib/schools";
-import { loadTargets } from "@/lib/tracks";
+import { loadTargets, usesTargets, useLevel } from "@/lib/tracks";
 
 /** Official GCSE past paper finders. Papers stay on the exam boards' own sites. */
 const BOARDS = [
@@ -17,6 +17,8 @@ const BOARDS = [
 /** Past papers: real ones from their official sources, plus practice papers in the same style. */
 export default function PastPapersPage() {
   const [targets, setTargets] = useState<School[]>([]);
+  const level = useLevel();
+  const showSchools = level !== undefined && usesTargets(level);
   useEffect(() => setTargets(loadTargets().map(schoolById).filter((s): s is School => Boolean(s))), []);
 
   return (
@@ -55,7 +57,9 @@ export default function PastPapersPage() {
             <p className="text-body">
               Grammar school tests (such as GL Assessment&apos;s) aren&apos;t published, but many areas share free familiarisation papers. Many independent schools put sample or past entrance papers on their admissions pages.
             </p>
-            {targets.length ? (
+            {!showSchools ? (
+              <p className="text-body text-muted-foreground">Search for a school&apos;s name plus &quot;11+ sample papers&quot; to find the papers it shares.</p>
+            ) : targets.length ? (
               <ul className="grid gap-2">
                 {targets.map((s) => (
                   <li key={s.id}>

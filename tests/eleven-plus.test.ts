@@ -124,3 +124,12 @@ describe("11+ Pack price", () => {
     expect(describeOrder({ kind: "eleven" }).pricePence).toBe(299);
   });
 });
+
+describe("target schools by stage", () => {
+  it("only KS2 and 11+ use target schools", async () => {
+    const { usesTargets } = await import("@/lib/tracks");
+    expect([usesTargets("ks2"), usesTargets("11plus"), usesTargets("ks3"), usesTargets("gcse")]).toEqual([true, true, false, false]);
+    expect(tracksFor("gcse", ["tiffin", "st-pauls"]).map((t) => t.id)).toEqual(["gcse"]);
+    expect(tracksFor("ks3", ["tiffin"]).map((t) => t.id)).toEqual(["ks3"]);
+  });
+});

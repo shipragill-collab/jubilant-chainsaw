@@ -19,6 +19,9 @@ export const LEVEL_HOME: Record<Level, { href: string; cta: string }> = {
   gcse: { href: "/past-papers", cta: "Past papers" },
 };
 
+/** Target schools are for children moving to secondary school (KS2 and 11+), not KS3 or GCSE. */
+export const usesTargets = (level: Level | null) => level !== "ks3" && level !== "gcse";
+
 /** KS2 and 11+ are younger children: no pop-ups and no sales prompts. */
 export const isYoung = (level: Level | null) => level === "ks2" || level === "11plus";
 
@@ -131,7 +134,7 @@ export const TRACKS: Record<string, Track> = {
 
 /** Which tracks fit a student's level and target schools. */
 export function tracksFor(level: Level | null, targetIds: string[]): Track[] {
-  const targets = targetIds.map(schoolById).filter((s): s is School => Boolean(s));
+  const targets = usesTargets(level) ? targetIds.map(schoolById).filter((s): s is School => Boolean(s)) : [];
   const ids = new Set<string>();
   for (const s of targets) {
     if (s.type === "grammar") ids.add(s.region === "Northern Ireland" ? "niGrammar" : "grammar11");

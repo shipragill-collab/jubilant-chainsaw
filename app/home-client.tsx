@@ -14,7 +14,7 @@ import { api, getPlayerId, getSavedName, saveName } from "@/lib/player";
 import { SAMPLES } from "@/lib/samples";
 import { timeAgo } from "@/lib/time";
 import type { StudySetSummary } from "@/lib/types";
-import { LEVEL_HOME, LEVELS, loadLevel, saveLevel, type Level } from "@/lib/tracks";
+import { LEVEL_HOME, LEVELS, loadLevel, saveLevel, usesTargets, type Level } from "@/lib/tracks";
 
 const MIN = 80;
 const MAX = 40_000;
@@ -61,7 +61,7 @@ function LevelStrip() {
     <section aria-labelledby="level-strip" className="space-y-3">
       <div className="flex flex-wrap items-end justify-between gap-2">
         <h2 id="level-strip" className="font-mono text-[12px] font-medium tracking-[0.12em] text-muted-foreground uppercase">What are you studying for?</h2>
-        <Link href="/goals" className="font-mono text-[11px] tracking-[0.1em] text-muted-foreground uppercase underline-offset-4 hover:text-foreground hover:underline">Target schools →</Link>
+        <Link href="/goals" className="font-mono text-[11px] tracking-[0.1em] text-muted-foreground uppercase underline-offset-4 hover:text-foreground hover:underline">{usesTargets(level) ? "Target schools →" : "Your track →"}</Link>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {LEVELS.map((l) => (

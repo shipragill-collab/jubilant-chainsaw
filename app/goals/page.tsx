@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { admissionsLink, HOW_TO_GET_IN, MAX_TARGETS, REGIONS, schoolById, SCHOOLS, type Region, type School, type SchoolType } from "@/lib/schools";
-import { LEVELS, loadDone, loadLevel, loadTargets, onGoalsChange, saveLevel, toggleDone, toggleTarget, tracksFor, type Level } from "@/lib/tracks";
+import { LEVELS, loadDone, loadLevel, loadTargets, onGoalsChange, saveLevel, toggleDone, toggleTarget, tracksFor, usesTargets, type Level } from "@/lib/tracks";
 
 
 function useGoals() {
@@ -58,7 +58,8 @@ export default function GoalsPage() {
   );
   const tracks = tracksFor(level, targets);
   const full = targets.length >= MAX_TARGETS;
-  const types = new Set(targets.map((id) => schoolById(id)?.type).filter(Boolean) as SchoolType[]);
+  const showSchools = usesTargets(level);
+  const types = new Set(showSchools ? (targets.map((id) => schoolById(id)?.type).filter(Boolean) as SchoolType[]) : []);
 
   const toggle = (id: string) => {
     const r = toggleTarget(id);
@@ -70,7 +71,12 @@ export default function GoalsPage() {
       <header className="max-w-3xl space-y-3">
         <p className="font-mono text-[12px] tracking-[0.14em] text-muted-foreground uppercase">Your goals</p>
         <h1 className="display text-[42px] leading-[1.02] sm:text-[58px]">Where are you heading?</h1>
-        <p className="text-body-lg text-muted-foreground">Tell us what you&apos;re studying for and pick up to {MAX_TARGETS} target schools. We&apos;ll build a step-by-step track to get you there. This stays on your device.</p>
+        <p className="text-body-lg text-muted-foreground">
+          {showSchools
+            ? <>Tell us what you&apos;re studying for and pick up to {MAX_TARGETS} target schools. We&apos;ll build a step-by-step track to get you there.</>
+            : <>Tell us what you&apos;re studying for and we&apos;ll build a step-by-step track for your exams.</>}{" "}
+          This stays on your device.
+        </p>
       </header>
 
       <section aria-labelledby="level" className="space-y-3">
@@ -86,6 +92,7 @@ export default function GoalsPage() {
         </div>
       </section>
 
+      {showSchools && (
       <section aria-labelledby="targets" className="space-y-3" id="schools">
         <div className="flex flex-wrap items-end justify-between gap-2">
           <h2 id="targets" className="font-mono text-[12px] font-medium tracking-[0.12em] text-muted-foreground uppercase">
@@ -141,6 +148,8 @@ export default function GoalsPage() {
         </div>
       </section>
 
+      )}
+
       {types.size > 0 && (
         <section aria-label="How entry works" className="grid gap-4 md:grid-cols-2">
           {[...types].map((t) => (
@@ -160,9 +169,9 @@ export default function GoalsPage() {
       )}
 
       <section aria-labelledby="track" className="space-y-4">
-        <h2 id="track" className="font-mono text-[12px] font-medium tracking-[0.12em] text-muted-foreground uppercase">3 · Your track</h2>
+        <h2 id="track" className="font-mono text-[12px] font-medium tracking-[0.12em] text-muted-foreground uppercase">{showSchools ? 3 : 2} · Your track</h2>
         {!tracks.length ? (
-          <p className="surface p-5 text-body-lg text-muted-foreground">Pick what you&apos;re studying for, or a target school, and your track appears here.</p>
+          <p className="surface p-5 text-body-lg text-muted-foreground">{showSchools ? <>Pick what you&apos;re studying for, or a target school, and your track appears here.</> : <>Pick what you&apos;re studying for and your track appears here.</>}</p>
         ) : (
           tracks.map((t) => {
             const total = t.steps.length;
