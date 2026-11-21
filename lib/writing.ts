@@ -1,3 +1,4 @@
+import { comprehensionById } from "./content/comprehensions";
 /**
  * 11+ creative and essay writing: original tasks, planning help, and an
  * offline checker that gives "two stars and a wish" style feedback. It can't
@@ -66,7 +67,25 @@ export const WRITING_TASKS: WritingTask[] = [
 
 export const FREE_WRITING_PER_KIND = 3;
 
-export const taskById = (id: string) => WRITING_TASKS.find((t) => t.id === id);
+/** Tasks based on a scholarship comprehension: comp-<id>-creative or comp-<id>-essay. */
+function comprehensionTask(id: string): WritingTask | undefined {
+  const m = /^comp-(\d+)-(creative|essay)$/.exec(id);
+  if (!m) return undefined;
+  const c = comprehensionById(Number(m[1]));
+  if (!c) return undefined;
+  const kind = m[2] as WritingKind;
+  return {
+    id,
+    kind,
+    form: kind === "creative" ? "story" : "discursive",
+    title: `${c.title}: ${kind === "creative" ? "creative response" : "essay"}`,
+    prompt: kind === "creative" ? c.creative : c.essay,
+    minutes: 35,
+    plan: kind === "creative" ? STORY_PLAN : DISCURSIVE_PLAN,
+  };
+}
+
+export const taskById = (id: string) => WRITING_TASKS.find((t) => t.id === id) ?? comprehensionTask(id);
 
 // ---------------------------------------------------------------------------
 // Offline checker

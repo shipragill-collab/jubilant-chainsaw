@@ -43,7 +43,7 @@ export const SUBJECTS_11: { id: Subject11; name: string; blurb: string; count: n
 ];
 
 /** How many papers the 11+ Pack offers per subject (free: paper 1). */
-export const PAPERS_PER_SUBJECT = 40;
+export const PAPERS_PER_SUBJECT = 90;
 export const FREE_PAPERS = 1;
 
 // ---------------------------------------------------------------------------
@@ -60,10 +60,10 @@ export function rng(seed: number) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
-type R = () => number;
-const int = (r: R, lo: number, hi: number) => lo + Math.floor(r() * (hi - lo + 1));
-const pick = <T,>(r: R, xs: readonly T[]) => xs[Math.floor(r() * xs.length)];
-function shuffle<T>(r: R, xs: T[]): T[] {
+export type R = () => number;
+export const int = (r: R, lo: number, hi: number) => lo + Math.floor(r() * (hi - lo + 1));
+export const pick = <T,>(r: R, xs: readonly T[]) => xs[Math.floor(r() * xs.length)];
+export function shuffle<T>(r: R, xs: T[]): T[] {
   const a = [...xs];
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(r() * (i + 1));
@@ -71,10 +71,10 @@ function shuffle<T>(r: R, xs: T[]): T[] {
   }
   return a;
 }
-const seedOf = (s: string) => [...s].reduce((h, c) => (Math.imul(h, 31) + c.charCodeAt(0)) | 0, 7);
+export const seedOf = (s: string) => [...s].reduce((h, c) => (Math.imul(h, 31) + c.charCodeAt(0)) | 0, 7);
 
 /** Put the right answer among the distractors, shuffled, with no duplicates. */
-function mc(r: R, topic: string, prompt: string, right: string, wrong: string[], explain: string): PaperQuestion {
+export function mc(r: R, topic: string, prompt: string, right: string, wrong: string[], explain: string): PaperQuestion {
   const opts = [right];
   for (const w of wrong) if (w !== right && !opts.includes(w) && opts.length < 5) opts.push(w);
   const options = shuffle(r, opts);
@@ -82,18 +82,18 @@ function mc(r: R, topic: string, prompt: string, right: string, wrong: string[],
 }
 
 /** Plausible wrong numbers near the right one. */
-function nearNums(r: R, n: number, fmt: (x: number) => string = String, step = 0): string[] {
+export function nearNums(r: R, n: number, fmt: (x: number) => string = String, step = 0): string[] {
   const d = step || Math.max(1, Math.round(Math.abs(n) * 0.1));
   const cands = [n + d, n - d, n + 2 * d, n - 2 * d, n + 10, n - 1, n + 1, Math.round(n * 1.5), Math.round(n / 2)].filter((x) => x !== n && x >= 0);
   return shuffle(r, [...new Set(cands)]).slice(0, 4).map(fmt);
 }
-const money = (p: number) => (p < 100 ? `${p}p` : `£${(p / 100).toFixed(2)}`);
+export const money = (p: number) => (p < 100 ? `${p}p` : `£${(p / 100).toFixed(2)}`);
 
 // ---------------------------------------------------------------------------
 // Maths
 // ---------------------------------------------------------------------------
 
-const MATHS: ((r: R) => PaperQuestion)[] = [
+export const MATHS: ((r: R) => PaperQuestion)[] = [
   (r) => {
     const a = int(r, 123, 489), b = int(r, 13, 49);
     return mc(r, "Multiplication", `What is ${a} × ${b}?`, String(a * b), nearNums(r, a * b, String, 10), `${a} × ${b} = ${a * b}. Split it: ${a} × ${Math.floor(b / 10) * 10} = ${a * Math.floor(b / 10) * 10}, plus ${a} × ${b % 10} = ${a * (b % 10)}.`);
@@ -373,7 +373,7 @@ const COMPOUND: [string, string[], string[]][] = [
   ["butter", ["fly", "cup", "milk"], ["bread", "cream", "jam", "honey"]],
 ];
 
-const VERBAL: ((r: R) => PaperQuestion)[] = [
+export const VERBAL: ((r: R) => PaperQuestion)[] = [
   (r) => {
     const [a, b] = shuffle(r, WORDS4).slice(0, 2), k = pick(r, [1, 2, 3, -1, -2]);
     const right = shiftWord(b, k);
@@ -595,7 +595,7 @@ const WORD_CLASS: [string, string, string, string[]][] = [
   ["I was tired but I kept going.", "but", "conjunction", ["preposition", "noun", "adverb"]],
 ];
 
-const ENGLISH: ((r: R) => PaperQuestion)[] = [
+export const ENGLISH: ((r: R) => PaperQuestion)[] = [
   (r) => {
     const [w, right, wrong] = pick(r, VOCAB);
     return mc(r, "Vocabulary", `Which word is closest in meaning to "${w}"?`, right, wrong, `"${w[0].toUpperCase() + w.slice(1)}" means ${right}.`);
@@ -659,7 +659,7 @@ function nvq(r: R, topic: string, prompt: string, shapes: Shape[], right: Shape,
   return { topic, prompt, options: optionShapes.map((_, i) => String.fromCharCode(65 + i)), answer: optionShapes.indexOf(right), explain, shapes, optionShapes };
 }
 
-const NONVERBAL: ((r: R) => PaperQuestion)[] = [
+export const NONVERBAL: ((r: R) => PaperQuestion)[] = [
   (r) => {
     const step = pick(r, [45, 90]), start = pick(r, [0, 45, 90]), dir = r() < 0.5 ? 1 : -1;
     const seq = Array.from({ length: 5 }, (_, i): Shape => ({ sides: 1, rotation: start + dir * i * step, fill: "solid", dots: 0 }));

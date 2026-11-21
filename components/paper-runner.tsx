@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { saveResult, topicStats, type PaperQuestion } from "@/lib/eleven-plus";
 import { ShapeArt } from "./shape-art";
 
@@ -17,7 +17,15 @@ function grade(pct: number) {
  * A timed practice paper: one question at a time, jump to any question,
  * then a score, a topic breakdown and every answer explained.
  */
-export function PaperRunner({ resultKey, title, minutes, questions, onAgain }: { resultKey: string; title: string; minutes: number; questions: PaperQuestion[]; onAgain?: () => void }) {
+export function PaperRunner({ resultKey, title, minutes, questions, onAgain, passage, extra }: { resultKey: string; title: string; minutes: number; questions: PaperQuestion[]; onAgain?: () => void; passage?: { title: string; text: string; kind?: string }; extra?: ReactNode }) {
+  const passageBox = passage && (
+    <details className="passage" open>
+      <summary>
+        <span className="font-mono text-[11px] tracking-[0.12em] text-muted-foreground uppercase">{passage.kind ?? "Passage"}</span> <strong>{passage.title}</strong>
+      </summary>
+      <p className="mt-2 text-body-lg leading-relaxed">{passage.text}</p>
+    </details>
+  );
   const [started, setStarted] = useState(false);
   const [done, setDone] = useState(false);
   const [answers, setAnswers] = useState<(number | null)[]>(() => questions.map(() => null));
@@ -103,6 +111,7 @@ export function PaperRunner({ resultKey, title, minutes, questions, onAgain }: {
           ))}
         </ol>
         <p className="text-[11px] font-medium tracking-[0.1em] text-muted-foreground uppercase">{q.topic}</p>
+        {passageBox}
         <h2 className="text-[21px] leading-snug sm:text-[22px]">{q.prompt}</h2>
         {q.shapes && (
           <div className="nv-row" aria-label="The sequence">
@@ -202,6 +211,7 @@ export function PaperRunner({ resultKey, title, minutes, questions, onAgain }: {
           ))}
         </ul>
       </div>
+      {extra}
       <ol className="space-y-3">
         {questions.map((q, i) => (
           <li key={i} className={`surface p-5 ${correct[i] ? "" : "exam-missed"}`}>

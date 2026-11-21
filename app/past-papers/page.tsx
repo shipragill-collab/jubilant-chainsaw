@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { FREE_PAPERS, SUBJECTS_11 } from "@/lib/eleven-plus";
-import { LIBRARY } from "@/lib/library";
+import { GCSE_FREE, GCSE_PAPERS, GCSE_SUBJECTS } from "@/lib/gcse";
+import { useProfile } from "@/lib/use-profile";
 import { admissionsLink, schoolById, type School } from "@/lib/schools";
 import { loadTargets, usesTargets, useLevel } from "@/lib/tracks";
 
@@ -17,6 +18,9 @@ const BOARDS = [
 /** Past papers: real ones from their official sources, plus practice papers in the same style. */
 export default function PastPapersPage() {
   const [targets, setTargets] = useState<School[]>([]);
+  const [openGcse, setOpenGcse] = useState<string | null>("maths");
+  const { profile } = useProfile();
+  const pro = profile?.plan === "pro";
   const level = useLevel();
   const showSchools = level !== undefined && usesTargets(level);
   useEffect(() => setTargets(loadTargets().map(schoolById).filter((s): s is School => Boolean(s))), []);
@@ -82,8 +86,8 @@ export default function PastPapersPage() {
         </div>
       </section>
 
-      <section aria-labelledby="gcse" className="space-y-4">
-        <h2 id="gcse" className="text-[28px] leading-tight">GCSE</h2>
+      <section id="gcse" aria-labelledby="gcse-h" className="space-y-4">
+        <h2 id="gcse-h" className="text-[28px] leading-tight">GCSE</h2>
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="surface space-y-3 p-5">
             <h3 className="font-mono text-[12px] tracking-[0.12em] text-muted-foreground uppercase">Official past papers</h3>
@@ -105,17 +109,29 @@ export default function PastPapersPage() {
           </div>
           <div className="surface space-y-3 p-5">
             <h3 className="font-mono text-[12px] tracking-[0.12em] text-muted-foreground uppercase">Practice papers (ours)</h3>
-            <p className="text-body">Quick 15-question papers on core GCSE topics, marked instantly.</p>
-            <ul className="grid gap-2 sm:grid-cols-2">
-              {LIBRARY.map((p) => (
-                <li key={p.slug}>
-                  <Link href={`/past-papers/practice?pack=${p.slug}`} className="result-row w-full">
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate font-semibold">{p.title}</span>
-                      <span className="font-mono text-[11px] tracking-[0.08em] text-muted-foreground uppercase">15 questions · 15 min</span>
+            <p className="text-body">{GCSE_PAPERS} timed papers in every subject, marked instantly with every answer explained. Papers 1–{GCSE_FREE} are free.</p>
+            <ul className="grid gap-3">
+              {GCSE_SUBJECTS.map((s) => (
+                <li key={s.id} className="rounded-[10px] p-3 shadow-[inset_0_0_0_1px_var(--surface-border)]">
+                  <button type="button" onClick={() => setOpenGcse(openGcse === s.id ? null : s.id)} className="flex w-full items-center justify-between gap-2 text-left" aria-expanded={openGcse === s.id}>
+                    <span>
+                      <span className="block font-semibold">{s.name}</span>
+                      <span className="text-label text-muted-foreground">{s.blurb}</span>
                     </span>
-                    <span aria-hidden>›</span>
-                  </Link>
+                    <span aria-hidden className="text-muted-foreground">{openGcse === s.id ? "−" : "+"}</span>
+                  </button>
+                  {openGcse === s.id && (
+                    <ol className="paper-grid mt-3">
+                      {Array.from({ length: GCSE_PAPERS }, (_, i) => i + 1).map((n) => (
+                        <li key={n}>
+                          <Link href={`/past-papers/practice?subject=${s.id}&n=${n}`} className={`paper-chip ${n > GCSE_FREE && !pro ? "is-locked" : ""}`}>
+                            <span>{n}</span>
+                            {n <= GCSE_FREE ? <small>Free</small> : !pro ? <small>Pro</small> : null}
+                          </Link>
+                        </li>
+                      ))}
+                    </ol>
+                  )}
                 </li>
               ))}
             </ul>

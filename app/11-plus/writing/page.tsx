@@ -197,7 +197,7 @@ export default function WritingPage() {
 
   const task = taskId ? taskById(taskId) : null;
   const list = useMemo(() => WRITING_TASKS.filter((t) => t.kind === kind), [kind]);
-  const locked = (t: WritingTask) => !active && WRITING_TASKS.filter((x) => x.kind === t.kind).indexOf(t) >= FREE_WRITING_PER_KIND;
+  const locked = (t: WritingTask) => !t.id.startsWith("comp-") && !active && WRITING_TASKS.filter((x) => x.kind === t.kind).indexOf(t) >= FREE_WRITING_PER_KIND;
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 py-8 sm:py-12">

@@ -1281,3 +1281,9 @@ html[data-scrolled] .site-head { box-shadow: 0 1px 0 color-mix(in oklab, var(--s
   :is(.btn, .chip, .level-card, .exam-option, .paper-chip, .target-btn, .tab, .tab-duel, .result-row, .game-card, .more-link, .paper-nav button, .track-dot, .pack-btn, .shop-item button):active { transform: none; opacity: 0.75; }
   .welcome[open] { animation: scrim-in 0.2s ease-out; }
 }
+
+/* Comprehension passage above questions */
+.passage { padding: 14px 16px; border-radius: 10px; background: var(--muted); }
+.passage > summary { cursor: pointer; list-style: none; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.passage > summary::-webkit-details-marker { display: none; }
+.passage[open] > summary { margin-bottom: 2px; }

@@ -336,7 +336,7 @@ export const ELEVEN_PLUS = {
   pricePence: 299,
   tagline: "Unlimited 11+ practice papers for less than a coffee a month.",
   features: [
-    "40 practice papers in each subject: maths, verbal and non-verbal reasoning, English",
+    "90 practice papers in each subject: maths, verbal and non-verbal reasoning, English",
     "Timed papers with answers explained",
     "Every creative and essay writing task, with Raj's feedback",
     "Weak-spot report: see exactly which question types to practise",
