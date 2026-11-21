@@ -87,6 +87,13 @@ export function SiteHeader() {
     refreshProfiles();
   }, [path]);
   const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
+  // Scroll edge: only show the header's soft divider once content slides under it.
+  useEffect(() => {
+    const onScroll = () => document.documentElement.toggleAttribute("data-scrolled", window.scrollY > 4);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
   return (
     <header className="site-head sticky top-0 z-40">
       <div className="site-bar mx-auto flex h-14 max-w-7xl items-center gap-2 px-4 sm:h-16 sm:gap-3 sm:px-8">

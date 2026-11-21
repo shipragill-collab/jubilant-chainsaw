@@ -114,7 +114,7 @@ export function WelcomeTour() {
             initial={{ opacity: 0, x: dir * 40 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: dir * -40 }}
-            transition={{ type: "spring", stiffness: 260, damping: 26 }}
+            transition={{ type: "spring", bounce: 0, duration: 0.35 }}
             className="grid justify-items-center gap-6 text-center"
           >
             <div className="grid h-[130px] place-items-center">

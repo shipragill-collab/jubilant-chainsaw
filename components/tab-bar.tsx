@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { ThemeToggle } from "./theme-toggle";
+import { useSheet } from "./use-sheet";
 
 const I = (d: ReactNode) => (
   <svg viewBox="0 0 24 24" className="size-[22px]" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -38,13 +39,13 @@ const MORE = [
  */
 export function TabBar() {
   const path = usePathname();
-  const sheet = useRef<HTMLDialogElement>(null);
+  const { ref: sheet, open, close } = useSheet();
   const active = (href: string) => (href === "/" ? path === "/" : path === href || path.startsWith(`${href}/`));
   const inMore = MORE.some((m) => active(m.href));
 
   useEffect(() => {
     sheet.current?.close();
-  }, [path]);
+  }, [path, sheet]);
 
   const tab = (href: string, label: string, icon: ReactNode) => (
     <Link href={href} className="tab" aria-current={active(href) ? "page" : undefined}>
@@ -64,14 +65,14 @@ export function TabBar() {
           </svg>
         </Link>
         {tab("/shop", "Shop", ICONS.shop)}
-        <button type="button" className="tab" aria-current={inMore ? "page" : undefined} aria-haspopup="dialog" onClick={() => sheet.current?.showModal()}>
+        <button type="button" className="tab" aria-current={inMore ? "page" : undefined} aria-haspopup="dialog" onClick={open}>
           {ICONS.more}
           <span>More</span>
         </button>
       </nav>
 
-      <dialog ref={sheet} className="more-sheet" aria-label="More pages" onClick={(e) => e.target === sheet.current && sheet.current?.close()}>
-        <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-[var(--input)]" aria-hidden />
+      <dialog ref={sheet} className="more-sheet" aria-label="More pages" onClick={(e) => e.target === sheet.current && close()}>
+        <div className="sheet-grabber" aria-hidden />
         <ul className="grid grid-cols-2 gap-2">
           {MORE.map((m) => (
             <li key={m.href}>

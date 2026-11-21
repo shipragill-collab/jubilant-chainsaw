@@ -3,7 +3,8 @@
 import { MotionConfig, motion, type HTMLMotionProps } from "motion/react";
 import type { ReactNode } from "react";
 
-const spring = { type: "spring", stiffness: 140, damping: 22, mass: 0.9 } as const;
+/** Critically damped (no overshoot): content settles calmly into place. */
+const spring = { type: "spring", bounce: 0, duration: 0.6 } as const;
 
 /** Respects the device's reduced-motion setting for every Motion animation inside. */
 export function MotionRoot({ children }: { children: ReactNode }) {
@@ -40,7 +41,7 @@ export function RiseWords({ text, className = "" }: { text: string; className?: 
             className="inline-block"
             initial={{ y: "105%" }}
             animate={{ y: 0 }}
-            transition={{ ...spring, stiffness: 120, delay: 0.06 * i }}
+            transition={{ ...spring, duration: 0.7, delay: 0.06 * i }}
           >
             {w}
             {i < words.length - 1 ? " " : ""}
